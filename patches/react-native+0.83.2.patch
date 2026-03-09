@@ -1,0 +1,15 @@
+diff --git a/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake b/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake
+index baa0fef..d02c8d0 100644
+--- a/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake
++++ b/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake
+@@ -120,3 +120,9 @@ endif()
+ # We set REACTNATIVE_MERGED_SO so libraries/apps can selectively decide to depend on either libreactnative.so
+ # or link against a old prefab target (this is needed for React Native 0.76 on).
+ set(REACTNATIVE_MERGED_SO true)
++
++# c++_shared link fix — propagates to all autolinked + codegen targets via common_flags
++find_library(LIBCXX_APP c++_shared)
++if(LIBCXX_APP)
++  target_link_libraries(common_flags INTERFACE ${LIBCXX_APP})
++endif()
+\ No newline at end of file
