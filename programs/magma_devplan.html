@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAGMA — Monolith Hackathon Dev Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800;900&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080400;--card:#130b02;--card2:#1a0f03;--b:rgba(255,107,53,0.1);--b2:rgba(255,107,53,0.24);--a:#ff6b35;--a2:#ffb347;--a3:#ff4500;--a4:#00ff88;--a5:#00c8ff;--t:#f0d8c0;--m:#7a4a30;--d:#2a1508;--w:#fff5ee;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--t);font-family:'Space Mono',monospace;min-height:100vh;cursor:none;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;opacity:0.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;}
+.cur{position:fixed;width:8px;height:8px;background:var(--a);border-radius:50%;pointer-events:none;z-index:99999;box-shadow:0 0 14px var(--a);}
+.cR{position:fixed;width:30px;height:30px;border:1px solid rgba(255,107,53,0.35);border-radius:50%;pointer-events:none;z-index:99998;transition:left 0.12s,top 0.12s;}
+.prog-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--a3),var(--a2));z-index:9999;box-shadow:0 0 8px var(--a);}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:220px 1fr;max-width:1260px;margin:0 auto;}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;padding:24px 16px;border-right:1px solid var(--b);}
+.sidebar::-webkit-scrollbar{width:2px;}.sidebar::-webkit-scrollbar-thumb{background:rgba(255,107,53,0.15);}
+.sb-title{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.25em;color:rgba(255,107,53,0.3);text-transform:uppercase;margin-bottom:16px;}
+.sb-links{display:flex;flex-direction:column;gap:2px;}
+.sbl{font-family:'Syne Mono',monospace;font-size:8px;color:var(--m);text-decoration:none;padding:5px 8px;display:flex;gap:7px;transition:all 0.2s;border-left:2px solid transparent;}
+.sbl:hover,.sbl.active{color:var(--a);background:rgba(255,107,53,0.04);border-left-color:var(--a);}
+.sbl-n{font-size:7px;color:var(--d);min-width:18px;}
+.sbl.active .sbl-n{color:rgba(255,107,53,0.3);}
+.sb-score{margin-top:20px;border-top:1px solid var(--b);padding-top:14px;}
+.ss-label{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.15em;color:rgba(255,107,53,0.3);text-transform:uppercase;margin-bottom:8px;}
+.ss-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+.ss-name{font-family:'Syne Mono',monospace;font-size:7.5px;color:var(--m);}
+.ss-pct{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--a);}
+.ss-track{height:2px;background:var(--d);margin-bottom:6px;}
+.ss-fill{height:100%;background:linear-gradient(90deg,var(--a3),var(--a2));}
+.sb-meta{margin-top:14px;border-top:1px solid var(--b);padding-top:12px;font-family:'Syne Mono',monospace;font-size:7px;color:var(--d);line-height:2.2;}
+.sb-meta b{color:var(--m);}
+.sb-deadline{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:rgba(255,107,53,0.5);margin-bottom:6px;}
+
+/* MAIN */
+.main{padding:44px 52px 100px;}
+.sec{margin-bottom:52px;scroll-margin-top:20px;}
+.sec-h{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--w);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.sec-h::after{content:'';flex:1;height:1px;background:var(--b);}
+.sec-h .n{font-family:'Syne Mono',monospace;font-size:9px;color:rgba(255,107,53,0.3);letter-spacing:0.1em;}
+
+/* HERO */
+.hb-tag{font-family:'Syne Mono',monospace;font-size:8px;letter-spacing:0.3em;color:rgba(255,107,53,0.38);text-transform:uppercase;margin-bottom:10px;}
+.hb-tag::before{content:'// ';}
+.hb-h{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(28px,4vw,52px);color:var(--w);letter-spacing:-0.03em;line-height:0.9;text-transform:uppercase;margin-bottom:12px;}
+.hb-h span{background:linear-gradient(135deg,var(--a3),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hb-meta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.hbm{font-family:'Syne Mono',monospace;font-size:8px;color:var(--m);}
+.hbm b{color:var(--t);}
+.hbm.urg{color:rgba(255,107,53,0.6);}
+.hb-p{font-size:12px;line-height:1.9;color:var(--m);max-width:660px;margin-bottom:28px;}
+.hb-p b{color:var(--t);}
+
+/* ALERT */
+.alert{background:rgba(255,107,53,0.04);border:1px solid rgba(255,107,53,0.2);border-left:3px solid var(--a);padding:12px 16px;margin-bottom:16px;}
+.alert-l{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.2em;color:var(--a);text-transform:uppercase;margin-bottom:4px;}
+.alert p{font-size:11px;line-height:1.8;color:var(--t);}
+.alert p b{color:var(--a);}
+
+/* CRITERIA */
+.criteria-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.crit{background:var(--card);border:1px solid var(--b);padding:20px 18px;position:relative;overflow:hidden;}
+.crit::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.crit.pmf::before{background:linear-gradient(90deg,transparent,var(--a),transparent);}
+.crit.ux::before{background:linear-gradient(90deg,transparent,var(--a2),transparent);}
+.crit.innov::before{background:linear-gradient(90deg,transparent,var(--a3),transparent);}
+.crit.pres::before{background:linear-gradient(90deg,transparent,var(--a5),transparent);}
+.crit-pct{font-family:'Syne',sans-serif;font-weight:900;font-size:34px;color:var(--a);margin-bottom:3px;}
+.crit.ux .crit-pct{color:var(--a2);}.crit.innov .crit-pct{color:var(--a3);}.crit.pres .crit-pct{color:var(--a5);}
+.crit-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--w);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;}
+.crit-p{font-size:10.5px;line-height:1.7;color:var(--m);}
+.crit-p b{color:var(--t);}
+.crit-strat{margin-top:10px;border-top:1px solid var(--b);padding-top:8px;}
+.cs-l{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.2em;color:rgba(255,107,53,0.3);text-transform:uppercase;margin-bottom:5px;}
+.cs-items{display:flex;flex-direction:column;gap:3px;}
+.csi{font-family:'Syne Mono',monospace;font-size:8.5px;color:var(--m);display:flex;gap:7px;}
+.csi::before{content:'→';color:rgba(255,107,53,0.3);}
+.csi.done::before{content:'✓';color:var(--a4);}
+
+/* CHECKLIST */
+.progress-wrap{background:var(--card);border:1px solid var(--b);padding:14px 20px;margin-bottom:14px;display:flex;align-items:center;gap:16px;}
+.progress-label{font-family:'Syne Mono',monospace;font-size:9px;color:var(--m);white-space:nowrap;}
+.progress-track{flex:1;height:4px;background:var(--d);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--a3),var(--a4));transition:width 0.3s;}
+.progress-num{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--a);white-space:nowrap;}
+.checklist{border:1px solid var(--b);}
+.cl-group{border-bottom:1px solid var(--b);}
+.cl-group:last-child{border-bottom:none;}
+.cl-gh{background:var(--card2);padding:10px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--t);text-transform:uppercase;letter-spacing:0.06em;display:flex;justify-content:space-between;align-items:center;}
+.cl-gc{font-family:'Syne Mono',monospace;font-size:8px;color:var(--m);}
+.cli{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(255,107,53,0.04);transition:background 0.15s;cursor:none;}
+.cli:last-child{border-bottom:none;}
+.cli:hover{background:rgba(255,107,53,0.02);}
+.cl-box{width:16px;height:16px;border:1px solid var(--b2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.cli.checked .cl-box{background:var(--a4);border-color:var(--a4);}
+.cl-ck{font-size:9px;color:#080400;display:none;}
+.cli.checked .cl-ck{display:block;}
+.cl-txt{flex:1;}
+.cl-title{font-size:11px;color:var(--t);margin-bottom:2px;}
+.cli.checked .cl-title{color:var(--m);text-decoration:line-through;}
+.cl-sub{font-family:'Syne Mono',monospace;font-size:8px;color:var(--d);line-height:1.6;}
+.cl-badge{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.1em;padding:1px 6px;border:1px solid;text-transform:uppercase;flex-shrink:0;margin-top:2px;height:fit-content;}
+.cl-badge.req{border-color:rgba(255,107,53,0.3);color:rgba(255,107,53,0.4);}
+.cl-badge.mob{border-color:rgba(0,255,136,0.25);color:rgba(0,255,136,0.35);}
+.cl-badge.sub{border-color:rgba(0,200,255,0.25);color:rgba(0,200,255,0.35);}
+
+/* SCHEDULE */
+.schedule{border:1px solid var(--b);}
+.week{border-bottom:1px solid var(--b);}
+.week:last-child{border-bottom:none;}
+.wh{background:var(--card2);padding:12px 18px;cursor:none;display:flex;align-items:center;justify-content:space-between;transition:background 0.2s;}
+.wh:hover{background:rgba(255,107,53,0.04);}
+.wh-l{display:flex;align-items:center;gap:14px;}
+.wh-n{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:var(--a);text-transform:uppercase;letter-spacing:0.08em;}
+.wh-t{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--w);text-transform:uppercase;letter-spacing:0.04em;}
+.wh-d{font-family:'Syne Mono',monospace;font-size:8px;color:var(--m);}
+.wh-arr{font-size:10px;color:var(--m);transition:transform 0.2s;}
+.week.open .wh-arr{transform:rotate(180deg);}
+.wb{display:none;padding:16px 18px;border-top:1px solid var(--b);}
+.week.open .wb{display:block;}
+.day-tasks{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--b);}
+.day{border-right:1px solid var(--b);padding:9px 7px;}
+.day:last-child{border-right:none;}
+.day-lbl{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.1em;color:rgba(255,107,53,0.3);text-transform:uppercase;margin-bottom:5px;}
+.dt{font-size:8.5px;color:var(--m);padding:4px 0;border-bottom:1px solid rgba(255,107,53,0.04);line-height:1.4;}
+.dt:last-child{border-bottom:none;}
+.dt b{color:var(--t);display:block;margin-bottom:1px;font-size:7.5px;text-transform:uppercase;letter-spacing:0.04em;}
+.dt.hot b{color:var(--a);}
+.ws{margin-top:12px;background:rgba(255,107,53,0.03);border:1px solid var(--b);padding:10px 14px;}
+.ws-l{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.2em;color:rgba(255,107,53,0.3);text-transform:uppercase;margin-bottom:5px;}
+.ws-items{display:flex;gap:8px;flex-wrap:wrap;}
+.wsi{font-family:'Syne Mono',monospace;font-size:8px;color:var(--m);padding:2px 8px;border:1px solid var(--b);}
+.wsi.done{border-color:rgba(0,255,136,0.2);color:rgba(0,255,136,0.4);}
+.wsi.active{border-color:rgba(255,107,53,0.2);color:var(--a);}
+
+/* TECH GRID */
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b);border:1px solid var(--b);}
+.tg{background:var(--card);padding:16px 14px;}
+.tg-cat{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.2em;color:rgba(255,107,53,0.3);text-transform:uppercase;margin-bottom:8px;}
+.tgi{font-size:10px;color:var(--m);display:flex;gap:8px;padding:2px 0;}
+.tgi b{color:var(--t);font-size:9px;min-width:120px;flex-shrink:0;}
+
+/* CODE */
+.code{background:#040200;border:1px solid rgba(255,107,53,0.08);padding:16px 20px;font-family:'Syne Mono',monospace;font-size:9px;line-height:1.9;color:var(--m);margin:10px 0;overflow-x:auto;white-space:pre;}
+.kw{color:var(--a);}.fn{color:var(--a2);}.cm{color:rgba(255,107,53,0.25);}.str{color:rgba(0,255,136,0.4);}
+
+/* VIDEO SCRIPT */
+.video-script{border:1px solid var(--b);}
+.vs-hdr{background:var(--card2);padding:12px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--w);text-transform:uppercase;letter-spacing:0.06em;}
+.vs-scene{padding:12px 16px;border-bottom:1px solid var(--b);display:grid;grid-template-columns:70px 1fr auto;gap:14px;}
+.vs-scene:last-child{border-bottom:none;}
+.vs-time{font-family:'Syne Mono',monospace;font-size:9px;color:var(--a);font-weight:700;}
+.vs-title{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--w);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.04em;}
+.vs-action{font-size:10px;line-height:1.6;color:var(--m);}
+.vs-action b{color:var(--t);}
+.vs-tag{font-family:'Syne Mono',monospace;font-size:7px;letter-spacing:0.1em;padding:2px 7px;border:1px solid rgba(255,107,53,0.15);color:rgba(255,107,53,0.3);text-transform:uppercase;height:fit-content;white-space:nowrap;}
+
+/* REPO */
+.repo{background:#040200;border:1px solid rgba(255,107,53,0.08);padding:18px 22px;font-family:'Syne Mono',monospace;font-size:9px;line-height:1.9;color:var(--m);white-space:pre;}
+.repo .dir{color:var(--a);}
+.repo .file{color:var(--t);}
+.repo .cmt{color:rgba(255,107,53,0.22);}
+
+/* SUBMIT GRID */
+.submit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sub-card{background:var(--card);border:1px solid var(--b);padding:18px 16px;transition:border-color 0.2s;}
+.sub-card:hover{border-color:var(--b2);}
+.sub-h{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--w);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;}
+.sub-p{font-size:10px;line-height:1.7;color:var(--m);margin-bottom:9px;}
+.sub-p b{color:var(--t);}
+.sub-items{display:flex;flex-direction:column;gap:3px;}
+.si{font-family:'Syne Mono',monospace;font-size:8px;color:var(--d);display:flex;gap:6px;}
+.si::before{content:'→';color:rgba(255,107,53,0.25);}
+.si.done::before{content:'✓';color:var(--a4);}
+.si.done{color:var(--m);}
+
+/* PROGRAM SPEC */
+.prog-spec{border:1px solid var(--b);}
+.ps-prog{border-bottom:1px solid var(--b);}
+.ps-prog:last-child{border-bottom:none;}
+.ps-h{background:var(--card2);padding:10px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--w);text-transform:uppercase;letter-spacing:0.04em;display:flex;align-items:center;gap:10px;}
+.ps-id{font-family:'Syne Mono',monospace;font-size:8px;color:var(--a);letter-spacing:0.1em;}
+.ps-body{padding:14px 16px;}
+.ps-instrs{display:flex;flex-direction:column;gap:6px;}
+.ps-instr{background:var(--bg);border:1px solid rgba(255,107,53,0.06);padding:8px 12px;}
+.pi-name{font-family:'Syne Mono',monospace;font-size:9px;color:var(--a);margin-bottom:2px;}
+.pi-desc{font-size:9.5px;color:var(--m);line-height:1.5;}
+.pi-constraint{font-family:'Syne Mono',monospace;font-size:7.5px;color:rgba(0,255,136,0.3);margin-top:3px;}
+
+@media(max-width:1000px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.main{padding:80px 20px 60px;}.criteria-grid,.tech-grid,.submit-grid{grid-template-columns:1fr;}.day-tasks{grid-template-columns:repeat(4,1fr);}}
+</style>
+</head>
+<body>
+<div class="cur" id="cur"></div>
+<div class="cR" id="cR"></div>
+<div class="prog-bar" id="prog" style="width:0%"></div>
+
+<div class="layout">
+<div class="sidebar">
+  <div class="sb-title">// MAGMA Dev Plan</div>
+  <div class="sb-links" id="sblinks">
+    <a class="sbl active" href="#s1"><span class="sbl-n">01</span>Overview</a>
+    <a class="sbl" href="#s2"><span class="sbl-n">02</span>Evaluation Strategy</a>
+    <a class="sbl" href="#s3"><span class="sbl-n">03</span>Compliance Checklist</a>
+    <a class="sbl" href="#s4"><span class="sbl-n">04</span>Tech Stack</a>
+    <a class="sbl" href="#s5"><span class="sbl-n">05</span>Build Schedule</a>
+    <a class="sbl" href="#s6"><span class="sbl-n">06</span>Anchor Programs</a>
+    <a class="sbl" href="#s7"><span class="sbl-n">07</span>MWA Code</a>
+    <a class="sbl" href="#s8"><span class="sbl-n">08</span>GitHub Repo</a>
+    <a class="sbl" href="#s9"><span class="sbl-n">09</span>Demo Video Script</a>
+    <a class="sbl" href="#s10"><span class="sbl-n">10</span>Submission Checklist</a>
+  </div>
+  <div class="sb-score">
+    <div class="ss-label">// Judging Criteria</div>
+    <div class="ss-row"><span class="ss-name">Stickiness / PMF</span><span class="ss-pct">25%</span></div>
+    <div class="ss-track"><div class="ss-fill" style="width:100%"></div></div>
+    <div class="ss-row"><span class="ss-name">UX Quality</span><span class="ss-pct">25%</span></div>
+    <div class="ss-track"><div class="ss-fill" style="width:100%"></div></div>
+    <div class="ss-row"><span class="ss-name">Innovation</span><span class="ss-pct">25%</span></div>
+    <div class="ss-track"><div class="ss-fill" style="width:100%"></div></div>
+    <div class="ss-row"><span class="ss-name">Presentation</span><span class="ss-pct">25%</span></div>
+    <div class="ss-track"><div class="ss-fill" style="width:100%"></div></div>
+  </div>
+  <div class="sb-meta">
+    <div class="sb-deadline">⚠ Mar 9, 2026</div>
+    <b>Platform:</b> Android APK<br>
+    <b>Required:</b> MWA signing<br>
+    <b>Disqualified:</b> PWA wrappers<br>
+    <b>Tool:</b> Expo EAS Build<br>
+    <b>Chain:</b> Solana Mainnet
+  </div>
+</div>
+
+<div class="main">
+
+<!-- SECTION 1: OVERVIEW -->
+<div class="sec" id="s1">
+  <div class="hb-tag">Monolith Hackathon · Build-to-Win Plan</div>
+  <h1 class="hb-h">MAGMA on Solana<br><span>Development Plan</span></h1>
+  <div class="hb-meta">
+    <span class="hbm urg">⚠ Deadline: <b>Mar 9, 2026</b></span>
+    <span class="hbm">Platform: <b>Android APK</b></span>
+    <span class="hbm">Chain: <b>Solana Mainnet</b></span>
+    <span class="hbm">Signing: <b>Mobile Wallet Adapter</b></span>
+    <span class="hbm">Build: <b>Expo EAS</b></span>
+  </div>
+  <p class="hb-p">This is your <b>complete build guide to win Monolith</b>. Every task, every compliance rule, every MWA integration detail, the full Anchor program spec, the GitHub structure, demo video storyboard, and the final submission checklist. This is the only doc you need to build MAGMA correctly and competitively.</p>
+  <div class="alert"><div class="alert-l">⚡ Core eligibility risk</div><p>Monolith <b>explicitly penalises PWA wrappers and direct web ports</b> — they will "score poorly and are unlikely to win." MAGMA must demonstrate genuine Android-native development: MWA transaction signing, voice input via Android SpeechRecognizer, device haptics, native gesture handlers. Every judge interaction must feel like a real Android app, not a wrapped website.</p></div>
+</div>
+
+<!-- SECTION 2: EVALUATION -->
+<div class="sec" id="s2">
+  <div class="sec-h"><span class="n">// 02</span>Evaluation Strategy — How to Win Each 25%</div>
+  <div class="criteria-grid">
+    <div class="crit pmf">
+      <div class="crit-pct">25%</div>
+      <div class="crit-name">Stickiness &amp; PMF</div>
+      <p class="crit-p"><b>"How well does your app resonate with the Seeker community? Does it create habits and drive daily engagement?"</b><br>Narrative scoring is a 7-day cycle — that is 7 natural daily return visits built in by the protocol design.</p>
+      <div class="crit-strat">
+        <div class="cs-l">// MAGMA's answer</div>
+        <div class="cs-items">
+          <div class="csi done">7-day scoring cycle = 7 daily opens (built-in habit)</div>
+          <div class="csi done">Push notifications: score updates, graduation alerts, payouts</div>
+          <div class="csi done">Live Pyth SOL/USD ticker = reason to open every day</div>
+          <div class="csi done">DeFi yield counter visible on home = micro-reward dopamine loop</div>
+          <div class="csi">Demo line: "I open MAGMA every morning to check my narrative's score and yield"</div>
+          <div class="csi">Ship: narrative streak badge (+5% yield for 3 consecutive weeks)</div>
+        </div>
+      </div>
+    </div>
+    <div class="crit ux">
+      <div class="crit-pct">25%</div>
+      <div class="crit-name">User Experience</div>
+      <p class="crit-p"><b>"Is the app intuitive, polished, and enjoyable to use?"</b><br>Judges know native Android from a WebView. Every interaction must feel genuinely mobile — gestures, haptics, native navigation.</p>
+      <div class="crit-strat">
+        <div class="cs-l">// MAGMA's answer</div>
+        <div class="cs-items">
+          <div class="csi done">Bottom tab navigation (Android native pattern)</div>
+          <div class="csi done">Swipe gestures on cards (gesture-handler, not onClick)</div>
+          <div class="csi done">Loading skeletons during API calls (not spinners)</div>
+          <div class="csi done">Haptic feedback on stake confirm (expo-haptics)</div>
+          <div class="csi">Animate score number going up with react-native-reanimated</div>
+          <div class="csi">Visual waveform animation while voice is recording</div>
+        </div>
+      </div>
+    </div>
+    <div class="crit innov">
+      <div class="crit-pct">25%</div>
+      <div class="crit-name">Innovation / X-Factor</div>
+      <p class="crit-p"><b>"How novel and creative is the idea? Does it stand out?"</b><br>No other Solana Mobile app combines narrative capital markets + DeFi yield on stakes + AI kit generation. This is genuinely novel.</p>
+      <div class="crit-strat">
+        <div class="cs-l">// MAGMA's answer</div>
+        <div class="cs-items">
+          <div class="csi done">DeFi yield on narrative stakes — first of its kind anywhere</div>
+          <div class="csi done">Voice → AI-generated narrative NFT in 60s — unique mobile primitive</div>
+          <div class="csi done">Pyth 400ms live prices in a consumer narrative app</div>
+          <div class="csi done">ORIGIN graduation bridge — cross-chain IP capital market</div>
+          <div class="csi">Pitch line: "no other app lets you stake your opinion and earn DeFi yield while the market decides if you're right"</div>
+        </div>
+      </div>
+    </div>
+    <div class="crit pres">
+      <div class="crit-pct">25%</div>
+      <div class="crit-name">Presentation &amp; Demo</div>
+      <p class="crit-p"><b>"How clearly did the team communicate their idea? Does the demo effectively showcase the core concept?"</b><br>A polished 3-min video showing the complete voice→mint→stake→yield flow will score full marks here.</p>
+      <div class="crit-strat">
+        <div class="cs-l">// MAGMA's answer</div>
+        <div class="cs-items">
+          <div class="csi done">Full website already built (landing, whitepaper, features, token)</div>
+          <div class="csi done">Demo storyboard prepared (Section 09 below)</div>
+          <div class="csi">Record on real Android device (NOT emulator)</div>
+          <div class="csi">Narrate MWA moment explicitly: "this is native Solana Mobile signing"</div>
+          <div class="csi">Show DeFi yield accruing in real-time on DeFi screen</div>
+          <div class="csi">Pitch deck = magma_whitepaper.html (already complete)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: COMPLIANCE -->
+<div class="sec" id="s3">
+  <div class="sec-h"><span class="n">// 03</span>Rules Compliance Checklist</div>
+  <div class="progress-wrap">
+    <span class="progress-label">Completed tasks</span>
+    <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+    <span class="progress-num" id="pNum">0 / 28</span>
+  </div>
+  <div class="checklist" id="checklist">
+    <div class="cl-group">
+      <div class="cl-gh">🏗 Platform Requirements <span class="cl-gc">4 items</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Android APK produced and installable on real device</div><div class="cl-sub">Built via `eas build --platform android --profile preview`. Test install on 2+ devices before submit.</div></div><span class="cl-badge req">Required</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Solana Mobile Stack integrated — no WebView for core UX</div><div class="cl-sub">@solana-mobile/mobile-wallet-adapter-protocol-web3js. All tx signing via MWA transact(), never WalletConnect.</div></div><span class="cl-badge mob">Mobile</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Mobile Wallet Adapter (MWA) used for ALL transaction signing</div><div class="cl-sub">Every Solana tx (mint, stake, vote) goes through `transact(async (wallet) => {...})`. Zero browser redirects.</div></div><span class="cl-badge mob">MWA Required</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">App interacts meaningfully with Solana network (3+ tx types)</div><div class="cl-sub">Mint cNFT + stake $MAGMA + community vote = 3 distinct on-chain interactions, all signed natively.</div></div><span class="cl-badge req">Required</span></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-gh">📱 Mobile-First (Anti-PWA Proof) <span class="cl-gc">6 items</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Voice dictation via @react-native-voice/voice (device native)</div><div class="cl-sub">Uses Android SpeechRecognizer directly — no web speech API calls. Visual waveform animation on record.</div></div><span class="cl-badge mob">X-Factor</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Push notifications via expo-notifications</div><div class="cl-sub">Score updates, graduation events, payout confirmations — sent to device as real push, not in-app toasts only.</div></div><span class="cl-badge mob">Mobile</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Swipe gesture UX on narrative cards (react-native-gesture-handler)</div><div class="cl-sub">Swipe right = back narrative, swipe left = dismiss. PanGestureHandler, not click events.</div></div><span class="cl-badge mob">UX Polish</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Haptic feedback on key actions (expo-haptics)</div><div class="cl-sub">ImpactFeedbackStyle.Medium on stake confirm. LightImpact on vote/like. Tactile response = native feel.</div></div><span class="cl-badge mob">Polish</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Bottom tab navigation with 5 tabs</div><div class="cl-sub">Feed / Launch / Portfolio / DeFi / Profile. React Navigation BottomTabNavigator. Android-native pattern.</div></div><span class="cl-badge mob">UX</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Biometric / SecureStore lock (expo-local-authentication)</div><div class="cl-sub">Fingerprint or face unlock gating wallet-sensitive screens. Demonstrates genuine mobile depth.</div></div><span class="cl-badge mob">Mobile</span></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-gh">⛓ Solana Network Interactions <span class="cl-gc">6 items</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Narrative mint: Metaplex Bubblegum cNFT</div><div class="cl-sub">MintToCollectionV1 CPI via mpl-bubblegum. On-chain proof of authorship. NFT appears in wallet post-mint.</div></div><span class="cl-badge req">Core tx</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">$MAGMA SPL Token-2022 stake transaction with TransferHook</div><div class="cl-sub">Token-2022 TransferHook fires staking position in magma_vault in same tx as transfer. One shot.</div></div><span class="cl-badge req">Core tx</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Pyth SOL/USD feed displayed at 400ms cadence</div><div class="cl-sub">@pythnetwork/client polling H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG. Visible in Feed + DeFi screens.</div></div><span class="cl-badge req">Oracle</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Score oracle writes composite score on-chain daily</div><div class="cl-sub">magma_score Anchor program updateScore() instruction with Pyth price staleness validation (max 60s).</div></div><span class="cl-badge req">Core</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Jupiter swap (SOL → $MAGMA) functional in DeFi screen</div><div class="cl-sub">Jupiter v6 /quote + /swap-instructions. Tx built and signed via MWA. Visible in DeFi screen.</div></div><span class="cl-badge req">DeFi</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Payout distribution via magma_vault closeCycle()</div><div class="cl-sub">Weekly cron triggers closeCycle(). SOL distributed to creator + backers. Tested on devnet before mainnet.</div></div><span class="cl-badge req">Core</span></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-gh">📦 Submission Requirements <span class="cl-gc">6 items</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Functional Android APK — sideloadable, tested on 2+ devices</div><div class="cl-sub">eas build output. Min Android 10 (API 29). Test on physical device AND emulator before submit.</div></div><span class="cl-badge sub">Submit</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Public GitHub repository with full source code and README</div><div class="cl-sub">README: setup instructions, env vars list, build commands, architecture diagram. No private keys committed.</div></div><span class="cl-badge sub">Submit</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Demo video (3–5 min) on real Android device</div><div class="cl-sub">Full flow: voice input → AI generation → MWA sign → stake → Pyth price → score → yield. Narrated.</div></div><span class="cl-badge sub">Submit</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Pitch deck submitted (magma_whitepaper.html)</div><div class="cl-sub">Export as PDF or submit as URL. Already complete. Covers problem, solution, tech, tokenomics, roadmap.</div></div><span class="cl-badge sub">Submit</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">All materials submitted ≥24h before Mar 9 deadline</div><div class="cl-sub">No late entries accepted per rules. Set internal deadline: Mar 8, 12:00. Submit 24h buffer.</div></div><span class="cl-badge sub">Deadline</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Project started within 3 months of hackathon launch</div><div class="cl-sub">Verify exact launch date at radiant.nexus. Document MAGMA creation date (commits) in README for proof.</div></div><span class="cl-badge sub">Eligibility</span></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-gh">🏆 Disqualification Prevention <span class="cl-gc">4 items</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">No outside capital raised before submission deadline</div><div class="cl-sub">Vibestarter raise is post-hackathon. No external investment accepted. Document this in registration form.</div></div><span class="cl-badge req">Eligibility</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">No PWA wrapper — all tx signing via MWA (not WalletConnect)</div><div class="cl-sub">Zero WebViews for core functionality. Judges will check source code. Direct ports will be disqualified.</div></div><span class="cl-badge req">Critical</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Document what new mobile code was built during hackathon</div><div class="cl-sub">In README: list features built during hackathon window. MWA, voice, push, gestures = clearly new.</div></div><span class="cl-badge req">Eligibility</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">All registration + submission forms are accurate</div><div class="cl-sub">Any false statement = forfeit of all prizes. Double-check every field. Team size, capital raised, start date.</div></div><span class="cl-badge req">Required</span></div>
+    </div>
+    <div class="cl-group">
+      <div class="cl-gh">📱 dApp Store — Post-Win Prize Claim <span class="cl-gc">2 items</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">dApp Store listing prepared (not required at submission)</div><div class="cl-sub">Winners must publish to Solana dApp Store to claim prize. Prepare store assets NOW, publish post-results.</div></div><span class="cl-badge sub">Post-win</span></div>
+      <div class="cli" onclick="toggle(this)"><div class="cl-box"><span class="cl-ck">✓</span></div><div class="cl-txt"><div class="cl-title">Store assets ready: icon 1024×1024, 5× screenshots, descriptions</div><div class="cl-sub">1024×1024 icon (lava orange), 5× portrait screenshots 1080×1920, 100-char + 500-char descriptions ready.</div></div><span class="cl-badge sub">Post-win</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: TECH STACK -->
+<div class="sec" id="s4">
+  <div class="sec-h"><span class="n">// 04</span>Full Tech Stack</div>
+  <div class="tech-grid">
+    <div class="tg">
+      <div class="tg-cat">// Mobile — Android</div>
+      <div class="tgi"><b>Framework</b>React Native + Expo SDK 52</div>
+      <div class="tgi"><b>Language</b>TypeScript (strict)</div>
+      <div class="tgi"><b>Navigation</b>React Navigation v6 BottomTabNavigator</div>
+      <div class="tgi"><b>State</b>Zustand (global) + React Query (server)</div>
+      <div class="tgi"><b>Animations</b>react-native-reanimated 3</div>
+      <div class="tgi"><b>Gestures</b>react-native-gesture-handler</div>
+      <div class="tgi"><b>Voice Input</b>@react-native-voice/voice</div>
+      <div class="tgi"><b>Haptics</b>expo-haptics</div>
+      <div class="tgi"><b>Biometric</b>expo-local-authentication</div>
+      <div class="tgi"><b>Push</b>expo-notifications + Expo Push Service</div>
+      <div class="tgi"><b>Camera</b>expo-camera (image-to-thesis)</div>
+      <div class="tgi"><b>Build</b>EAS Build — Expo Application Services</div>
+      <div class="tgi"><b>Min Android</b>API 29 (Android 10)</div>
+    </div>
+    <div class="tg">
+      <div class="tg-cat">// Solana Stack</div>
+      <div class="tgi"><b>Web3 SDK</b>@solana/web3.js v1.x</div>
+      <div class="tgi"><b>MWA</b>@solana-mobile/mobile-wallet-adapter-protocol-web3js</div>
+      <div class="tgi"><b>Anchor client</b>@coral-xyz/anchor 0.30</div>
+      <div class="tgi"><b>Metaplex</b>@metaplex-foundation/js (Bubblegum cNFT)</div>
+      <div class="tgi"><b>Pyth</b>@pythnetwork/client (400ms polling)</div>
+      <div class="tgi"><b>Jupiter</b>v6 REST API /quote + /swap-instructions</div>
+      <div class="tgi"><b>Token</b>SPL Token-2022 + TransferHook</div>
+      <div class="tgi"><b>NFT</b>Metaplex Compressed NFT (Bubblegum)</div>
+      <div class="tgi"><b>SC Language</b>Rust + Anchor 0.30</div>
+      <div class="tgi"><b>RPC</b>Helius (devnet + mainnet)</div>
+      <div class="tgi"><b>Network</b>Devnet → Mainnet at submission</div>
+    </div>
+    <div class="tg">
+      <div class="tg-cat">// Backend API</div>
+      <div class="tgi"><b>Runtime</b>Node.js 20 + Fastify</div>
+      <div class="tgi"><b>Language</b>TypeScript</div>
+      <div class="tgi"><b>DB</b>PostgreSQL via Supabase</div>
+      <div class="tgi"><b>Cache</b>Redis via Upstash</div>
+      <div class="tgi"><b>Queue</b>BullMQ (AI agent pipeline jobs)</div>
+      <div class="tgi"><b>Storage</b>IPFS via Pinata (kit CID)</div>
+      <div class="tgi"><b>AI</b>Anthropic Claude Sonnet 4-6 / Haiku 4-5</div>
+      <div class="tgi"><b>Search</b>Tavily API (Agent A-07 fact check)</div>
+      <div class="tgi"><b>Vectors</b>Pinecone (originality check)</div>
+      <div class="tgi"><b>Auth</b>Privy (web) + MWA (mobile)</div>
+    </div>
+    <div class="tg">
+      <div class="tg-cat">// DeFi Integrations</div>
+      <div class="tgi"><b>Meteora</b>DLMM SDK + add_liquidity CPI — Max 40%</div>
+      <div class="tgi"><b>Kamino</b>kamino-lend SDK + deposit CPI — Max 35%</div>
+      <div class="tgi"><b>Save.Finance</b>deposit_reserve_liquidity CPI — Max 25%</div>
+      <div class="tgi"><b>Jupiter</b>v6 API, swap routing for all conversions</div>
+      <div class="tgi"><b>Orca</b>Whirlpool SDK for $MAGMA/SOL pool</div>
+      <div class="tgi"><b>Pyth SOL/USD</b>H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG</div>
+      <div class="tgi"><b>Pyth Entropy</b>VRF for Genesis NFT tier randomness</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: SCHEDULE -->
+<div class="sec" id="s5">
+  <div class="sec-h"><span class="n">// 05</span>Build Schedule — Day by Day</div>
+  <div class="alert"><div class="alert-l">Priority order if time compresses</div><p><b>(1) APK installs + MWA signs a tx on Android</b> → (2) voice input works → (3) AI pipeline returns kit → (4) Pyth price live → (5) DeFi screens polished. Never sacrifice (1). A non-functional APK is an automatic disqualification.</p></div>
+  <div class="schedule">
+
+    <div class="week open" id="w1">
+      <div class="wh" onclick="toggleWeek('w1')">
+        <div class="wh-l"><span class="wh-n">WEEK 1</span><span class="wh-t">Env · MWA Auth · Feed Screen · Pyth</span><span class="wh-d">Days 1–7</span></div>
+        <span class="wh-arr">▼</span>
+      </div>
+      <div class="wb">
+        <div class="day-tasks">
+          <div class="day"><div class="day-lbl">Day 1</div><div class="dt hot"><b>Repo + Env</b>Init monorepo: /app /programs /backend. Install Expo SDK 52, @solana/web3.js, MWA.</div></div>
+          <div class="day"><div class="day-lbl">Day 2</div><div class="dt hot"><b>MWA Connect</b>useAuthorization hook. Test: Phantom connects on real Android device. Session persists.</div></div>
+          <div class="day"><div class="day-lbl">Day 3</div><div class="dt hot"><b>MWA Sign</b>transact() wrapper. Test: send 0.001 SOL tx. Confirm on devnet explorer.</div></div>
+          <div class="day"><div class="day-lbl">Day 4</div><div class="dt"><b>Feed Screen</b>NarrativeCard component from mock JSON. BottomTabNavigator 5 tabs. Swipe gestures.</div></div>
+          <div class="day"><div class="day-lbl">Day 5</div><div class="dt hot"><b>Pyth Hook</b>usePythPriceFeed polling SOL/USD 400ms. Display live in Feed header.</div></div>
+          <div class="day"><div class="day-lbl">Day 6</div><div class="dt"><b>Push Notifs</b>expo-notifications. Request permission on launch. Send local test notification.</div></div>
+          <div class="day"><div class="day-lbl">Day 7</div><div class="dt hot"><b>First APK</b>eas build --platform android. Install on 2 devices. MWA flow confirmed end-to-end.</div></div>
+        </div>
+        <div class="ws"><div class="ws-l">// Week 1 exit criteria</div><div class="ws-items"><div class="wsi done">✓ MWA signs tx on real Android</div><div class="wsi done">✓ Feed screen with cards</div><div class="wsi done">✓ Pyth SOL/USD live</div><div class="wsi done">✓ APK installs clean</div></div></div>
+      </div>
+    </div>
+
+    <div class="week" id="w2">
+      <div class="wh" onclick="toggleWeek('w2')">
+        <div class="wh-l"><span class="wh-n">WEEK 2</span><span class="wh-t">Voice Input · AI Pipeline · Launch Screen</span><span class="wh-d">Days 8–14</span></div>
+        <span class="wh-arr">▼</span>
+      </div>
+      <div class="wb">
+        <div class="day-tasks">
+          <div class="day"><div class="day-lbl">Day 8</div><div class="dt hot"><b>Voice RN</b>@react-native-voice/voice on Android. Waveform animation during record. Auto-submit on silence.</div></div>
+          <div class="day"><div class="day-lbl">Day 9</div><div class="dt"><b>Launch Step 1</b>Input screen with mic + keyboard. POST to /v1/narratives/generate. Show loading state.</div></div>
+          <div class="day"><div class="day-lbl">Day 10</div><div class="dt"><b>Backend</b>POST /generate endpoint. BullMQ job. A-01 Thesis Architect + A-02 Hook Engineer running.</div></div>
+          <div class="day"><div class="day-lbl">Day 11</div><div class="dt"><b>Kit Preview</b>Launch Step 3: hook variants swipeable. Article preview collapsible. IPFS CID badge.</div></div>
+          <div class="day"><div class="day-lbl">Day 12</div><div class="dt hot"><b>All 7 Agents</b>A-03 through A-07 added. Full kit in ~55s. Test 10 real theses end-to-end.</div></div>
+          <div class="day"><div class="day-lbl">Day 13</div><div class="dt"><b>IPFS Upload</b>Pinata upload from backend. CID returned + stored in Supabase narrative record.</div></div>
+          <div class="day"><div class="day-lbl">Day 14</div><div class="dt"><b>Polish</b>Skeleton loaders during generation. Per-agent progress bar. Haptic on complete.</div></div>
+        </div>
+        <div class="ws"><div class="ws-l">// Week 2 exit criteria</div><div class="ws-items"><div class="wsi done">✓ Voice works on Android</div><div class="wsi done">✓ 7-agent pipeline ~55s</div><div class="wsi done">✓ Kit preview functional</div><div class="wsi done">✓ IPFS CID stored</div></div></div>
+      </div>
+    </div>
+
+    <div class="week" id="w3">
+      <div class="wh" onclick="toggleWeek('w3')">
+        <div class="wh-l"><span class="wh-n">WEEK 3</span><span class="wh-t">Anchor Programs · cNFT Mint · Staking · Score Oracle</span><span class="wh-d">Days 15–21</span></div>
+        <span class="wh-arr">▼</span>
+      </div>
+      <div class="wb">
+        <div class="day-tasks">
+          <div class="day"><div class="day-lbl">Day 15</div><div class="dt hot"><b>Anchor Init</b>`anchor init magma`. 4 programs. Deploy all to devnet. IDL exported to /app/src/idl/.</div></div>
+          <div class="day"><div class="day-lbl">Day 16</div><div class="dt hot"><b>cNFT Mint</b>magma_registry: submitNarrative() + mintNarrativeNFT(). Test: NFT in wallet on devnet.</div></div>
+          <div class="day"><div class="day-lbl">Day 17</div><div class="dt hot"><b>Token-2022</b>$MAGMA mint on devnet. TransferHook = magma_vault program. Test transfer + hook fires.</div></div>
+          <div class="day"><div class="day-lbl">Day 18</div><div class="dt hot"><b>Stake TX</b>magma_vault: stakeOnNarrative(). MWA signs on Android. Confirmed on devnet explorer.</div></div>
+          <div class="day"><div class="day-lbl">Day 19</div><div class="dt"><b>Score Oracle</b>magma_score: updateScore() with Pyth staleness check. Cron writes score to chain daily.</div></div>
+          <div class="day"><div class="day-lbl">Day 20</div><div class="dt"><b>Mint in App</b>Launch Step 4: mint cNFT via MWA. NFT shows in Portfolio screen post-mint.</div></div>
+          <div class="day"><div class="day-lbl">Day 21</div><div class="dt hot"><b>Full Cycle</b>Voice→AI→IPFS→MWA mint→MWA stake→daily score write. Complete cycle on devnet.</div></div>
+        </div>
+        <div class="ws"><div class="ws-l">// Week 3 exit criteria</div><div class="ws-items"><div class="wsi done">✓ All 4 Anchor programs on devnet</div><div class="wsi done">✓ cNFT mints via MWA on Android</div><div class="wsi done">✓ Stake tx signed via MWA</div><div class="wsi active">→ Full end-to-end cycle working</div></div></div>
+      </div>
+    </div>
+
+    <div class="week" id="w4">
+      <div class="wh" onclick="toggleWeek('w4')">
+        <div class="wh-l"><span class="wh-n">WEEK 4</span><span class="wh-t">DeFi Screen · Portfolio · Polish · Video · APK</span><span class="wh-d">Days 22–28</span></div>
+        <span class="wh-arr">▼</span>
+      </div>
+      <div class="wb">
+        <div class="day-tasks">
+          <div class="day"><div class="day-lbl">Day 22</div><div class="dt"><b>DeFi Screen</b>Meteora + Kamino + Save APY display. Jupiter swap UI. Pyth price card with animated ticker.</div></div>
+          <div class="day"><div class="day-lbl">Day 23</div><div class="dt"><b>Portfolio</b>My narratives list. Score history chart (react-native-chart-kit). Yield earned counter.</div></div>
+          <div class="day"><div class="day-lbl">Day 24</div><div class="dt hot"><b>Reanimated</b>Score number animation (count up). Card entrance animations. Smooth transitions between tabs.</div></div>
+          <div class="day"><div class="day-lbl">Day 25</div><div class="dt hot"><b>Final APK</b>eas build --profile production. Test on 3 devices. Fix any install/crash issues.</div></div>
+          <div class="day"><div class="day-lbl">Day 26</div><div class="dt hot"><b>Demo Video</b>Record on real Android device. Full flow per Section 09 storyboard. Narrate each step.</div></div>
+          <div class="day"><div class="day-lbl">Day 27</div><div class="dt"><b>GitHub</b>Final push. README complete with setup, architecture, build commands. No keys committed.</div></div>
+          <div class="day"><div class="day-lbl">Day 28</div><div class="dt hot"><b>SUBMIT</b>Mar 8 — 24h before deadline. APK + GitHub + video + pitch deck submitted.</div></div>
+        </div>
+        <div class="ws"><div class="ws-l">// Week 4 exit criteria</div><div class="ws-items"><div class="wsi done">✓ Production APK installable</div><div class="wsi done">✓ Demo video recorded on real device</div><div class="wsi done">✓ GitHub repo with clean README</div><div class="wsi active">→ SUBMITTED before deadline</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SECTION 6: ANCHOR PROGRAMS -->
+<div class="sec" id="s6">
+  <div class="sec-h"><span class="n">// 06</span>Anchor Program Specifications</div>
+  <div class="prog-spec">
+    <div class="ps-prog">
+      <div class="ps-h"><span class="ps-id">magma_registry</span>Narrative Registry — cNFT Mint + Scoring Gate</div>
+      <div class="ps-body">
+        <div class="ps-instrs">
+          <div class="ps-instr"><div class="pi-name">submitNarrative(thesis_cid, title, category)</div><div class="pi-desc">Creates NarrativeAccount PDA. Validates originality hash. Sets status = Pending. Emits NarrativeSubmitted event.</div><div class="pi-constraint">// signer: creator wallet · fee: 0.001 SOL to treasury</div></div>
+          <div class="ps-instr"><div class="pi-name">mintNarrativeNFT(narrative_pda)</div><div class="pi-desc">CPI to Metaplex Bubblegum MintToCollectionV1. Stores cNFT leaf index in NarrativeAccount. Sets status = Active. MWA signs on mobile.</div><div class="pi-constraint">// constraint: narrative.status == Pending · signer: creator</div></div>
+          <div class="ps-instr"><div class="pi-name">openScoring(narrative_pda)</div><div class="pi-desc">Validates score ≥ 70 precondition. Opens backing window. Sets backing_open = true, cycle_start = Clock::get().</div><div class="pi-constraint">// #[only_agent] — restricted to oracle_signer pubkey</div></div>
+          <div class="ps-instr"><div class="pi-name">graduateNarrative(narrative_pda)</div><div class="pi-desc">Validates score ≥ 85 AND sol_backed ≥ 1 SOL. Sets status = Graduated. Emits Graduated event for ORIGIN bridge listener.</div><div class="pi-constraint">// #[only_agent] · emits Wormhole cross-chain event</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-prog">
+      <div class="ps-h"><span class="ps-id">magma_vault</span>DeFi Treasury — Stake + Yield + Payout</div>
+      <div class="ps-body">
+        <div class="ps-instrs">
+          <div class="ps-instr"><div class="pi-name">stakeOnNarrative(narrative_pda, amount_lamports)</div><div class="pi-desc">Accepts SOL. Creates BackerPosition PDA (backer, narrative, amount, timestamp). If Clock::unix_timestamp - cycle_start &lt; 172800 (48h), sets early_backer = true → 1.5× multiplier on payout. Immediately deploys to DeFi vault via CPI.</div><div class="pi-constraint">// #[payable("SOL")] · constraint: narrative.status == Active</div></div>
+          <div class="ps-instr"><div class="pi-name">deployToDeFi(vault_pda, allocation)</div><div class="pi-desc">Splits vault SOL: 40% → Meteora DLMM add_liquidity CPI, 35% → Kamino deposit CPI, 25% → Save.Finance deposit_reserve_liquidity CPI. Stores position receipts.</div><div class="pi-constraint">// #[only_agent] · called after each stakeOnNarrative</div></div>
+          <div class="ps-instr"><div class="pi-name">closeCycle(narrative_pda)</div><div class="pi-desc">Redeems all DeFi positions. Calculates total yield. Distributes: 60% → creator, 30% → backers (pro-rata + early multiplier), 10% → $MAGMA stakers pool. Burns 20% of $MAGMA for slashed narratives (score &lt; 45).</div><div class="pi-constraint">// #[only_agent] · weekly cron · validates cycle_end</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-prog">
+      <div class="ps-h"><span class="ps-id">magma_score</span>Score Oracle — Pyth-Validated Daily Writes</div>
+      <div class="ps-body">
+        <div class="ps-instrs">
+          <div class="ps-instr"><div class="pi-name">updateScore(narrative_pda, score, component_scores)</div><div class="pi-desc">Validates Pyth SOL/USD price account freshness (max 60s stale). Writes composite score daily. Score = (factual×0.30) + (engagement×0.30) + (originality×0.20) + (community×0.20). Emits ScoreUpdated event.</div><div class="pi-constraint">// #[only_agent("A-06 Score Oracle")] · Pyth staleness check required</div></div>
+          <div class="ps-instr"><div class="pi-name">recordCommunityVote(narrative_pda, vote_direction)</div><div class="pi-desc">Records positive/negative vote from $MAGMA holder (min 100 $MAGMA). Contributes to community_vote component. One vote per wallet per narrative.</div><div class="pi-constraint">// constraint: voter.magma_balance ≥ 100 · no double-vote</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-prog">
+      <div class="ps-h"><span class="ps-id">magma_token</span>$MAGMA SPL Token-2022 + TransferHook</div>
+      <div class="ps-body">
+        <div class="ps-instrs">
+          <div class="ps-instr"><div class="pi-name">execute (TransferHook interface)</div><div class="pi-desc">Called by Token-2022 program on every $MAGMA transfer. If destination is a narrative backing account, automatically creates BackerPosition PDA entry. Transfer + stake = one transaction. No double-approve required.</div><div class="pi-constraint">// interface: spl_transfer_hook_interface::execute · one tx = transfer + stake</div></div>
+          <div class="ps-instr"><div class="pi-name">initialize_extra_account_meta_list()</div><div class="pi-desc">Required by TransferHook interface. Sets up ExtraAccountMetaList for the hook to reference magma_vault program and backing PDAs on every transfer.</div><div class="pi-constraint">// called once at token init · required by Token-2022 spec</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: MWA CODE -->
+<div class="sec" id="s7">
+  <div class="sec-h"><span class="n">// 07</span>MWA Integration — Critical Code Patterns</div>
+  <div class="alert"><div class="alert-l">This is the most important section for Monolith eligibility</div><p>Every single Solana transaction in MAGMA must go through <b>Mobile Wallet Adapter</b>. Using WalletConnect, a WebView, or any browser-based signing will be caught by judges reviewing source code and will result in disqualification or very low scores.</p></div>
+<div class="code"><span class="cm">// useAuthorization.ts — wallet connection hook</span>
+<span class="kw">import</span> { transact, <span class="fn">Web3MobileWallet</span> } <span class="kw">from</span> <span class="str">'@solana-mobile/mobile-wallet-adapter-protocol-web3js'</span>;
+<span class="kw">import</span> { PublicKey } <span class="kw">from</span> <span class="str">'@solana/web3.js'</span>;
+
+<span class="kw">const</span> APP_IDENTITY = {
+  name: <span class="str">'MAGMA'</span>,
+  uri: <span class="str">'https://magmaprotocol.xyz'</span>,
+  icon: <span class="str">'favicon.ico'</span>,
+};
+
+<span class="kw">export function</span> <span class="fn">useAuthorization</span>() {
+  <span class="kw">const</span> [account, setAccount] = useState&lt;PublicKey | null&gt;(null);
+
+  <span class="kw">const</span> connect = useCallback(<span class="kw">async</span> () => {
+    <span class="kw">await</span> transact(<span class="kw">async</span> (wallet: <span class="fn">Web3MobileWallet</span>) => {
+      <span class="kw">const</span> auth = <span class="kw">await</span> wallet.authorize({
+        cluster: <span class="str">'mainnet-beta'</span>,
+        identity: APP_IDENTITY,
+      });
+      setAccount(<span class="kw">new</span> PublicKey(auth.accounts[0].address));
+    });
+  }, []);
+
+  <span class="kw">return</span> { account, connect };
+}</div>
+<div class="code"><span class="cm">// useMagmaTransactions.ts — MWA transaction signing</span>
+<span class="kw">import</span> { transact } <span class="kw">from</span> <span class="str">'@solana-mobile/mobile-wallet-adapter-protocol-web3js'</span>;
+<span class="kw">import</span> * <span class="kw">as</span> Haptics <span class="kw">from</span> <span class="str">'expo-haptics'</span>;
+
+<span class="kw">export function</span> <span class="fn">useMintNarrative</span>() {
+  <span class="kw">return</span> useCallback(<span class="kw">async</span> (kitCid: string, thesisCid: string) => {
+    <span class="kw">return await</span> transact(<span class="kw">async</span> (wallet) => {
+      <span class="cm">// Build mint instruction via Anchor client</span>
+      <span class="kw">const</span> tx = <span class="kw">await</span> <span class="fn">buildMintNarrativeTx</span>(kitCid, thesisCid);
+
+      <span class="cm">// Sign natively — no browser, no WebView</span>
+      <span class="kw">const</span> [signed] = <span class="kw">await</span> wallet.signTransactions({ transactions: [tx] });
+
+      <span class="cm">// Haptic feedback confirms signing</span>
+      <span class="kw">await</span> Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      <span class="kw">return await</span> connection.sendRawTransaction(signed.serialize());
+    });
+  }, []);
+}</div>
+<div class="code"><span class="cm">// usePythPriceFeed.ts — 400ms SOL/USD oracle</span>
+<span class="kw">const</span> SOL_USD_FEED = <span class="str">'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG'</span>;
+
+<span class="kw">export function</span> <span class="fn">usePythPriceFeed</span>() {
+  <span class="kw">const</span> [price, setPrice] = useState&lt;number | null&gt;(null);
+
+  useEffect(() => {
+    <span class="kw">const</span> pythConn = <span class="kw">new</span> PythConnection(connection, PYTH_PROGRAM_KEY);
+    <span class="kw">const</span> feedKey = <span class="kw">new</span> PublicKey(SOL_USD_FEED);
+
+    <span class="kw">const</span> interval = setInterval(<span class="kw">async</span> () => {
+      <span class="kw">const</span> priceData = <span class="kw">await</span> pythConn.getLatestPriceFeeds([feedKey]);
+      <span class="kw">if</span> (priceData[0]?.price) setPrice(priceData[0].price.price);
+    }, 400);
+
+    <span class="kw">return</span> () => clearInterval(interval);
+  }, []);
+
+  <span class="kw">return</span> price;
+}</div>
+</div>
+
+<!-- SECTION 8: GITHUB REPO -->
+<div class="sec" id="s8">
+  <div class="sec-h"><span class="n">// 08</span>GitHub Repository Structure</div>
+<div class="repo"><span class="dir">magma-protocol/</span>
+├── <span class="dir">app/</span>                         <span class="cmt">← React Native (Expo SDK 52)</span>
+│   ├── <span class="dir">src/</span>
+│   │   ├── <span class="dir">screens/</span>
+│   │   │   ├── <span class="file">FeedScreen.tsx</span>          <span class="cmt">← narrative list + Pyth ticker</span>
+│   │   │   ├── <span class="file">LaunchScreen.tsx</span>        <span class="cmt">← 5-step flow: voice→AI→mint</span>
+│   │   │   ├── <span class="file">DeFiScreen.tsx</span>          <span class="cmt">← Meteora/Kamino APYs + Jupiter</span>
+│   │   │   ├── <span class="file">PortfolioScreen.tsx</span>     <span class="cmt">← my narratives + yield earned</span>
+│   │   │   └── <span class="file">ProfileScreen.tsx</span>       <span class="cmt">← wallet + tier + settings</span>
+│   │   ├── <span class="dir">hooks/</span>
+│   │   │   ├── <span class="file">useAuthorization.ts</span>     <span class="cmt">← MWA wallet connect</span>
+│   │   │   ├── <span class="file">useMagmaTransactions.ts</span> <span class="cmt">← ALL tx via MWA transact()</span>
+│   │   │   └── <span class="file">usePythPriceFeed.ts</span>     <span class="cmt">← 400ms SOL/USD polling</span>
+│   │   ├── <span class="dir">components/</span>
+│   │   │   ├── <span class="file">NarrativeCard.tsx</span>       <span class="cmt">← swipe gestures + haptics</span>
+│   │   │   ├── <span class="file">VoiceRecorder.tsx</span>       <span class="cmt">← waveform UI + RN Voice</span>
+│   │   │   └── <span class="file">AgentProgress.tsx</span>       <span class="cmt">← 7-step pipeline progress bar</span>
+│   │   └── <span class="dir">idl/</span>                        <span class="cmt">← Anchor IDL JSON (auto-generated)</span>
+│   └── <span class="file">app.json</span>                        <span class="cmt">← expo config + Android permissions</span>
+│
+├── <span class="dir">programs/</span>                        <span class="cmt">← Anchor Rust programs</span>
+│   ├── <span class="dir">magma_registry/src/lib.rs</span>    <span class="cmt">← narrative submit + cNFT mint</span>
+│   ├── <span class="dir">magma_vault/src/lib.rs</span>       <span class="cmt">← staking + DeFi + payout</span>
+│   ├── <span class="dir">magma_score/src/lib.rs</span>       <span class="cmt">← Pyth-validated score writes</span>
+│   └── <span class="dir">magma_token/src/lib.rs</span>       <span class="cmt">← Token-2022 TransferHook</span>
+│
+├── <span class="dir">backend/</span>                         <span class="cmt">← Node.js Fastify API</span>
+│   ├── <span class="dir">agents/</span>
+│   │   ├── <span class="file">01_thesisArchitect.ts</span>   <span class="cmt">← Claude Sonnet</span>
+│   │   ├── <span class="file">02_hookEngineer.ts</span>      <span class="cmt">← 5 viral hook variants</span>
+│   │   ├── <span class="file">03_articleWriter.ts</span>     <span class="cmt">← 2500+ word article</span>
+│   │   ├── <span class="file">04_imageryDirector.ts</span>   <span class="cmt">← visual brief</span>
+│   │   ├── <span class="file">05_distributionPlanner.ts</span>
+│   │   ├── <span class="file">06_scorePredictor.ts</span>    <span class="cmt">← initial score estimate</span>
+│   │   └── <span class="file">07_factChecker.ts</span>       <span class="cmt">← Tavily search validation</span>
+│   └── <span class="dir">routes/</span>
+│       ├── <span class="file">narratives.ts</span>           <span class="cmt">← POST /v1/narratives/generate</span>
+│       └── <span class="file">defi.ts</span>                 <span class="cmt">← GET /v1/defi/yields</span>
+│
+├── <span class="file">README.md</span>                        <span class="cmt">← setup, env vars, build commands</span>
+├── <span class="file">ARCHITECTURE.md</span>                  <span class="cmt">← system diagram + program addresses</span>
+└── <span class="file">.env.example</span>                     <span class="cmt">← all required keys (no values)</span></div>
+</div>
+
+<!-- SECTION 9: DEMO VIDEO -->
+<div class="sec" id="s9">
+  <div class="sec-h"><span class="n">// 09</span>Demo Video Storyboard — 3min 30sec</div>
+  <div class="alert"><div class="alert-l">Recording rules</div><p>Record on a <b>real Android device</b>, not an emulator. Narrate out loud. Explicitly say "Mobile Wallet Adapter" when signing. Show the Pyth price ticking. Show the DeFi yield number. Keep it under 4 minutes.</p></div>
+  <div class="video-script">
+    <div class="vs-hdr">// MAGMA Demo Video · 3min 30sec · Record on real Android device</div>
+    <div class="vs-scene"><span class="vs-time">0:00–0:25</span><div><div class="vs-title">Problem Hook</div><div class="vs-action">Show the MAGMA landing page + whitepaper website. <b>Voice narration:</b> "Every day, thousands of market theses are posted on X and forgotten. MAGMA turns them into on-chain capital — with DeFi yield earning while the market decides if you're right."</div></div><span class="vs-tag">Web intro</span></div>
+    <div class="vs-scene"><span class="vs-time">0:25–0:50</span><div><div class="vs-title">App Opens — Feed Screen</div><div class="vs-action">Open MAGMA on Android. Show <b>Feed screen</b> with narrative cards and <b>Pyth SOL/USD ticking</b> in the header. Swipe a card right to demonstrate gesture. <b>Narrate:</b> "Live Pyth oracle at 400ms cadence — this is a real Android app, not a web wrapper."</div></div><span class="vs-tag">PMF + UX</span></div>
+    <div class="vs-scene"><span class="vs-time">0:50–1:20</span><div><div class="vs-title">Voice-to-Thesis — The X-Factor</div><div class="vs-action">Tap "New Narrative". Tap mic button. <b>Speak your thesis out loud</b> — show the waveform animating. Tap stop. Thesis appears as structured text. <b>Narrate:</b> "Voice-to-thesis via Android's native SpeechRecognizer — no web API, fully on-device."</div></div><span class="vs-tag">Innovation</span></div>
+    <div class="vs-scene"><span class="vs-time">1:20–2:00</span><div><div class="vs-title">7 AI Agents — Kit Generation</div><div class="vs-action">Tap "Generate". Show the <b>7-agent progress bar</b> animating through each step: Thesis Architect → Hook Engineer → Article Writer → ... → Fact Checker. ~55s. Kit preview loads. Swipe through 5 hook variants. <b>Narrate:</b> "Seven Claude agents, ~55 seconds, complete content kit — then uploaded to IPFS."</div></div><span class="vs-tag">Innovation</span></div>
+    <div class="vs-scene"><span class="vs-time">2:00–2:25</span><div><div class="vs-title">MWA Mint — The Critical Moment</div><div class="vs-action">Tap "Mint Narrative NFT". Phantom opens natively. Show the <b>transaction details screen</b>. Approve. Haptic fires. NFT confirmed. <b>Narrate explicitly:</b> "This is Mobile Wallet Adapter — the Solana-native signing protocol for Android. No browser redirect, no WalletConnect."</div></div><span class="vs-tag">MWA Required</span></div>
+    <div class="vs-scene"><span class="vs-time">2:25–2:55</span><div><div class="vs-title">DeFi Screen — Yield Accruing</div><div class="vs-action">Switch to DeFi tab. Show <b>Meteora ~18% APY, Kamino ~9%, Save ~7%</b>. Show yield earned counter incrementing. Jupiter swap SOL → $MAGMA. <b>Narrate:</b> "While the community scores the narrative over 7 days, all staked SOL earns DeFi yield across Meteora, Kamino, and Save."</div></div><span class="vs-tag">DeFi X-Factor</span></div>
+    <div class="vs-scene"><span class="vs-time">2:55–3:20</span><div><div class="vs-title">Portfolio + Score Update</div><div class="vs-action">Portfolio screen — show narrative with live score. Score animates up. Push notification fires showing score update. <b>Narrate:</b> "Daily scoring written on-chain by the AI oracle — validated by Pyth price freshness every write."</div></div><span class="vs-tag">Stickiness</span></div>
+    <div class="vs-scene"><span class="vs-time">3:20–3:30</span><div><div class="vs-title">Close + CTA</div><div class="vs-action">Return to landing page. Show tagline "Ideas are molten. Make them flow." <b>Final narration:</b> "MAGMA — narrative capital markets on Solana, with DeFi yield. Built for Monolith 2026. This is what Solana Mobile can do."</div></div><span class="vs-tag">Presentation</span></div>
+  </div>
+</div>
+
+<!-- SECTION 10: SUBMISSION -->
+<div class="sec" id="s10">
+  <div class="sec-h"><span class="n">// 10</span>Final Submission Checklist</div>
+  <div class="submit-grid">
+    <div class="sub-card">
+      <div class="sub-h">📱 Android APK</div>
+      <p class="sub-p">Built via EAS Build. <b>Tested on 2+ real Android devices</b>. Min API 29. No crashes on launch. MWA signing works.</p>
+      <div class="sub-items">
+        <div class="si done">Run: eas build --platform android --profile production</div>
+        <div class="si done">Install on physical Android (not emulator for demo)</div>
+        <div class="si done">Full flow: voice → mint → stake completes clean</div>
+        <div class="si done">APK file named: magma-v1.0.0.apk</div>
+        <div class="si">Upload to Google Drive or Dropbox for submission link</div>
+      </div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-h">💻 GitHub Repository</div>
+      <p class="sub-p">Public repo. <b>README.md with full setup instructions.</b> No private keys. Clean commit history showing hackathon work.</p>
+      <div class="sub-items">
+        <div class="si done">README: setup steps, env vars, build commands</div>
+        <div class="si done">ARCHITECTURE.md: system diagram, program addresses</div>
+        <div class="si done">.env.example: all keys listed, no values</div>
+        <div class="si done">Commits from hackathon window clearly dated</div>
+        <div class="si">git tag v1.0.0 on final submission commit</div>
+      </div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-h">🎬 Demo Video</div>
+      <p class="sub-p">3min 30sec. <b>Recorded on real Android device</b>. Full flow per storyboard. Narrated. Explicitly shows MWA signing.</p>
+      <div class="sub-items">
+        <div class="si done">Follow Section 09 storyboard exactly</div>
+        <div class="si done">Record with screen recorder + mic on Android</div>
+        <div class="si done">Show MWA Phantom sign screen</div>
+        <div class="si done">Show Pyth price ticking at 400ms</div>
+        <div class="si">Upload to YouTube (unlisted) or Loom for submission</div>
+      </div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-h">📊 Pitch Deck</div>
+      <p class="sub-p"><b>magma_whitepaper.html</b> covers all required content. Export as PDF or submit as live URL. Covers problem, solution, tech, tokenomics, roadmap.</p>
+      <div class="sub-items">
+        <div class="si done">Problem: narrative ideas die on X with no capital formation</div>
+        <div class="si done">Solution: MAGMA narrative capital markets + DeFi yield</div>
+        <div class="si done">Tech: Solana Mobile Stack, MWA, Anchor, Pyth, Meteora</div>
+        <div class="si done">Tokenomics: $MAGMA SPL Token-2022, 1B fixed supply</div>
+        <div class="si done">Roadmap: devnet → mainnet → ORIGIN bridge → dApp Store</div>
+      </div>
+    </div>
+  </div>
+  <div class="alert" style="margin-top:20px;border-color:rgba(0,255,136,0.3);border-left-color:var(--a4);">
+    <div class="alert-l" style="color:var(--a4)">// Final submission command sequence</div>
+    <p>
+      <b>Mar 8, 12:00</b> — internal deadline (24h buffer).<br>
+      Submit to monolith.xyz: APK link · GitHub URL · Video URL · Pitch deck URL.<br>
+      Confirm: no outside capital raised · project started within 3 months · MWA used (not WalletConnect).<br>
+      After results: publish to Solana dApp Store to claim prize.
+    </p>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// Cursor
+const cur=document.getElementById('cur'),cR=document.getElementById('cR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx-4+'px';cur.style.top=my-4+'px';});
+(function ar(){rx+=(mx-rx-15)*0.12;ry+=(my-ry-15)*0.12;cR.style.left=rx+'px';cR.style.top=ry+'px';requestAnimationFrame(ar);})();
+
+// Scroll progress
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement;
+  const pct=(d.scrollTop/(d.scrollHeight-d.clientHeight))*100;
+  document.getElementById('prog').style.width=pct+'%';
+  // sidebar active
+  document.querySelectorAll('.sbl').forEach(l=>{
+    const id=l.getAttribute('href').substring(1);
+    const el=document.getElementById(id);
+    if(el){const r=el.getBoundingClientRect();if(r.top<=80&&r.bottom>=0)l.classList.add('active');else l.classList.remove('active');}
+  });
+});
+
+// Toggle week
+function toggleWeek(id){
+  const w=document.getElementById(id);
+  document.querySelectorAll('.week').forEach(x=>{if(x.id!==id)x.classList.remove('open');});
+  w.classList.toggle('open');
+}
+
+// Checklist
+function toggle(el){
+  el.classList.toggle('checked');
+  updateProgress();
+}
+function updateProgress(){
+  const items=document.querySelectorAll('.cli');
+  const checked=document.querySelectorAll('.cli.checked').length;
+  const pct=(checked/items.length)*100;
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pNum').textContent=checked+' / '+items.length;
+}
+updateProgress();
+</script>
+</body>
+</html>
