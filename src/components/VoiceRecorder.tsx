@@ -176,7 +176,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       startWaveformAnimation();
 
       // Start speech recognition
-      await SpeechRecognition.startRecognition({
+      await SpeechRecognition?.startRecognition({
         onResults: handleRecognitionResult,
         onError: (error) => {
           console.error('[VoiceRecorder] Recognition error:', error);
@@ -223,7 +223,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
     // Stop speech recognition
     try {
-      await SpeechRecognition.stopRecognition();
+      await SpeechRecognition?.stopRecognition();
     } catch (error) {
       console.error('[VoiceRecorder] Failed to stop recognition:', error);
     }
@@ -246,7 +246,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       if (recordingTimerRef.current) {
         clearTimeout(recordingTimerRef.current);
       }
-      SpeechRecognition.stopRecognition().catch(() => {});
+      SpeechRecognition?.stopRecognition?.().catch(() => {});
     };
   }, []);
 
