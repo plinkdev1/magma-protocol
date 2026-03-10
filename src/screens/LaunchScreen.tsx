@@ -82,7 +82,7 @@ const LaunchScreen: React.FC = () => {
   const { connect, isConnected, account } = useAuthorization();
   const progressValue = useSharedValue(0);
   const swipeOffset = useSharedValue(0);
-  const currentHookIndex = useRef(0);
+  const [currentHookIndex, setCurrentHookIndex] = useState(0);
 
   // Animate progress bar when step changes
   React.useEffect(() => {
@@ -92,17 +92,17 @@ const LaunchScreen: React.FC = () => {
   // Step 1: Handle voice transcript
   const handleTranscript = useCallback((text: string) => {
     setThesis(text);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
   }, []);
 
   // Step 1: Navigate to step 2
   const handleStep1Continue = useCallback(() => {
     if (!thesis.trim()) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
       return;
     }
     setCurrentStep(2);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Light);
   }, [thesis]);
 
   // Step 2: Check originality
@@ -112,10 +112,10 @@ const LaunchScreen: React.FC = () => {
         thesis,
       });
       setOriginalityResult(response.data);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('[LaunchScreen] Originality check failed:', error);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
     }
   }, [thesis]);
 
@@ -123,14 +123,14 @@ const LaunchScreen: React.FC = () => {
   const handleStep2Continue = useCallback(() => {
     if (!originalityResult) return;
     setCurrentStep(3);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Light);
   }, [originalityResult]);
 
   // Step 3: Start agent pipeline (MOCKED FOR DEMO)
   const handlePipelineStart = useCallback(() => {
     const mockJobId = 'demo-job-' + Date.now();
     setJobId(mockJobId);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
     setTimeout(() => {
       handlePipelineComplete({
         kitPreview: {
@@ -151,28 +151,28 @@ const LaunchScreen: React.FC = () => {
   const handlePipelineComplete = useCallback((result: any) => {
     setKitPreview(result.kitPreview);
     setCurrentStep(4);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
   }, []);
 
   // Step 4: Swipe to next hook
   const handleHookSwipe = useCallback((direction: 'left' | 'right') => {
     if (!kitPreview) return;
 
-    if (direction === 'right' && currentHookIndex.current < kitPreview.hooks.length - 1) {
-      currentHookIndex.current += 1;
+    if (direction === 'right' && currentHookIndex < kitPreview.hooks.length - 1) {
+      setCurrentHookIndex(currentHookIndex + 1);
       swipeOffset.value = withSpring(0);
-      Haptics.selectionAsync();
-    } else if (direction === 'left' && currentHookIndex.current > 0) {
-      currentHookIndex.current -= 1;
+      Haptics?.selectionAsync();
+    } else if (direction === 'left' && currentHookIndex > 0) {
+      setCurrentHookIndex(currentHookIndex - 1);
       swipeOffset.value = withSpring(0);
-      Haptics.selectionAsync();
+      Haptics?.selectionAsync();
     }
   }, [kitPreview]);
 
   // Step 4: Navigate to step 5
   const handleStep4Continue = useCallback(() => {
     setCurrentStep(5);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Medium);
   }, []);
 
   // Step 5: Sign and publish via MWA
@@ -201,12 +201,12 @@ const LaunchScreen: React.FC = () => {
 
       setPublishedNarrativeId(sendResponse.data.narrativeId);
       setIsPublishing(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('[LaunchScreen] Publish failed:', error);
       setPublishError(error instanceof Error ? error.message : 'Publish failed');
       setIsPublishing(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
     }
   }, [isConnected, connect, thesis, kitPreview]);
 
@@ -214,7 +214,7 @@ const LaunchScreen: React.FC = () => {
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as Step);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Light);
     }
   }, [currentStep]);
 
@@ -438,7 +438,7 @@ const LaunchScreen: React.FC = () => {
   const renderStep4 = () => {
     if (!kitPreview) return null;
 
-    const currentHook = kitPreview.hooks[currentHookIndex.current];
+    const currentHook = kitPreview.hooks[currentHookIndex];
 
     return (
       <Animated.View style={styles.stepContainer} entering={FadeInRight} exiting={FadeOutLeft}>
@@ -462,24 +462,24 @@ const LaunchScreen: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.hookNavButton,
-                  currentHookIndex.current === 0 && styles.hookNavButtonDisabled,
+                  currentHookIndex === 0 && styles.hookNavButtonDisabled,
                 ]}
                 onPress={() => handleHookSwipe('left')}
-                disabled={currentHookIndex.current === 0}
+                disabled={currentHookIndex === 0}
               >
                 <Text style={styles.hookNavText}>← Prev</Text>
               </TouchableOpacity>
               <Text style={styles.hookIndex}>
-                {currentHookIndex.current + 1} / {kitPreview.hooks.length}
+                {currentHookIndex + 1} / {kitPreview.hooks.length}
               </Text>
               <TouchableOpacity
                 style={[
                   styles.hookNavButton,
-                  currentHookIndex.current >= kitPreview.hooks.length - 1 &&
+                  currentHookIndex >= kitPreview.hooks.length - 1 &&
                     styles.hookNavButtonDisabled,
                 ]}
                 onPress={() => handleHookSwipe('right')}
-                disabled={currentHookIndex.current >= kitPreview.hooks.length - 1}
+                disabled={currentHookIndex >= kitPreview.hooks.length - 1}
               >
                 <Text style={styles.hookNavText}>Next →</Text>
               </TouchableOpacity>
