@@ -184,11 +184,11 @@ const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
 };
 
 const s = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: '#080400', alignItems: 'center', justifyContent: 'center' },
-  flowWrap:     { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.35, overflow: 'hidden' },
+  container:    { flex: 1, backgroundColor: '#080400', alignItems: 'center', justifyContent: 'center', paddingBottom: 60 },
+  flowWrap:     { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.42, overflow: 'hidden' },
   wave:         { position: 'absolute', bottom: 0, left: '-10%' as any, right: '-10%' as any, borderTopLeftRadius: 200, borderTopRightRadius: 200 },
-  wave1:        { height: '60%', backgroundColor: 'rgba(255,34,0,0.07)' },
-  wave2:        { height: '45%', backgroundColor: 'rgba(255,107,53,0.05)' },
+  wave1:        { height: '60%', backgroundColor: 'rgba(255,34,0,0.12)' },
+  wave2:        { height: '45%', backgroundColor: 'rgba(255,107,53,0.09)' },
 
   content:      { alignItems: 'center', zIndex: 10 },
   iconWrap:     { width: 100, height: 100, borderRadius: 24, backgroundColor: '#1a0800', borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 32, shadowColor: '#ff3200', shadowOpacity: 0.15, shadowRadius: 30, elevation: 8 },
@@ -196,7 +196,7 @@ const s = StyleSheet.create({
   iconEmoji:    { fontSize: 48 },
 
   appNameMask:  { fontFamily: 'SpaceMono', fontSize: 42, fontWeight: '700', letterSpacing: 6 },
-  tagline:      { fontFamily: 'SpaceMono', fontSize: 9, letterSpacing: 5, color: 'rgba(255,107,53,0.4)', marginTop: 4, marginBottom: 56, textTransform: 'uppercase' },
+  tagline:      { fontFamily: 'SpaceMono', fontSize: 9, letterSpacing: 5, color: 'rgba(255,107,53,0.4)', marginTop: 4, marginBottom: 40, textTransform: 'uppercase' },
 
   loaderWrap:   { width: 260, marginBottom: 16 },
   loaderLabel:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
