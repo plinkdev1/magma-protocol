@@ -9,6 +9,7 @@ import {
   TextInput,
   RefreshControl,
   Dimensions,
+  Image,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -22,6 +23,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 
 import { usePythPriceFeed } from '../hooks/usePythPriceFeed';
+import { EcosystemGrid } from '../components/EcosystemGrid';
 import { useJupiterSwap } from '../hooks/useMagmaTransactions';
 
 // Design tokens
@@ -37,6 +39,13 @@ const COLORS = {
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const PROTOCOL_LOGOS: Record<string, any> = {
+  meteora: require('../../assets/logos/protocols/meteora.png'),
+  kamino:  require('../../assets/logos/protocols/kamino.png'),
+  save:    require('../../assets/logos/protocols/save.png'),
+};
+
 
 // Protocol data
 interface Protocol {
@@ -203,7 +212,7 @@ const DeFiScreen: React.FC = () => {
       <Animated.View style={[styles.apyCard, cardStyle]}>
         <View style={styles.apyCardHeader}>
           <View style={styles.apyCardIcon}>
-            <Text style={styles.apyCardIconText}>🔥</Text>
+            <Image source={PROTOCOL_LOGOS[protocol.id]} style={{ width: 32, height: 32, borderRadius: 8 }} resizeMode="contain" />
           </View>
           <View style={styles.apyCardInfo}>
             <Text style={styles.apyCardName}>{protocol.name}</Text>
@@ -429,6 +438,7 @@ const DeFiScreen: React.FC = () => {
       {/* Vault Allocation */}
       <Text style={styles.sectionTitle}>Your Vaults</Text>
       <VaultAllocation />
+      <EcosystemGrid />
     </ScrollView>
   );
 };

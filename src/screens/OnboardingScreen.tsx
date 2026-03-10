@@ -10,6 +10,7 @@ import {
   ScrollView,
   StatusBar,
   TouchableWithoutFeedback,
+  Image,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -152,9 +153,9 @@ const VisualVault = ({ active }: { active: boolean }) => (
 
 // Slide 4 — Wallet: selection buttons
 const WALLETS = [
-  { emoji: '👻', name: 'Phantom', sub: 'Recommended · MWA' },
-  { emoji: '🎒', name: 'Backpack', sub: 'Solana Native' },
-  { emoji: '🦅', name: 'Solflare', sub: 'Ledger Compatible' },
+  { logo: require('../../assets/logos/wallets/phantom.png'), name: 'Phantom', sub: 'Recommended · MWA' },
+  { logo: require('../../assets/logos/wallets/backpack.png'), name: 'Backpack', sub: 'Solana Native' },
+  { logo: require('../../assets/logos/wallets/solflare.png'), name: 'Solflare', sub: 'Ledger Compatible' },
 ];
 const VisualWallet = () => {
   const [selected, setSelected] = useState(0);
@@ -167,7 +168,7 @@ const VisualWallet = () => {
           onPress={() => setSelected(i)}
           activeOpacity={0.7}
         >
-          <Text style={vis.walletEmoji}>{w.emoji}</Text>
+          <Image source={w.logo} style={vis.walletLogo} resizeMode="contain" />
           <View style={vis.walletInfo}>
             <Text style={vis.walletName}>{w.name}</Text>
             <Text style={vis.walletSub}>{w.sub}</Text>
@@ -364,7 +365,7 @@ const vis = StyleSheet.create({
   walletWrap: { gap: 8, width: W - 80 },
   walletBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.15)', backgroundColor: 'rgba(255,107,53,0.04)' },
   walletBtnActive: { borderColor: 'rgba(255,107,53,0.5)', backgroundColor: 'rgba(255,107,53,0.08)' },
-  walletEmoji: { fontSize: 24 },
+  walletLogo: { width: 32, height: 32, borderRadius: 6 },
   walletInfo: { flex: 1 },
   walletName: { fontFamily: 'SpaceMono', fontSize: 12, color: C.text, fontWeight: '700' },
   walletSub: { fontFamily: 'SpaceMono', fontSize: 9, color: C.muted, marginTop: 2 },
