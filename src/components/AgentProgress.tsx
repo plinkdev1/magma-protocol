@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import Animated, {
@@ -9,6 +10,7 @@ import Animated, {
   withRepeat,
   interpolateColor,
   runOnJS,
+  FadeIn,
   FadeInUp,
   FadeOutUp,
 } from 'react-native-reanimated';
@@ -87,7 +89,7 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
   const pollJobStatus = useCallback(async () => {
     try {
       const response = await axios.get<JobStatusResponse>(
-        `http://localhost:3000/v1/jobs/${jobId}/status`,
+        `${API_URL}/v1/jobs/${jobId}/status`,
         { timeout: 5000 }
       );
 

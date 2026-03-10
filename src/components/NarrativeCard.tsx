@@ -12,7 +12,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-// Design tokens
 const COLORS = {
   background: '#080400',
   primary: '#ff6b35',
@@ -52,7 +51,6 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
   const scoreWidth = useSharedValue(0);
   const isGestureActive = useRef(false);
 
-  // Initialize score animation
   React.useEffect(() => {
     scoreWidth.value = withTiming(score, { duration: 800 });
   }, [score]);
@@ -63,40 +61,29 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
 
   const handleGestureStateChange = (event: GestureHandlerStateChange) => {
     if (event.state === 2) {
-      // BEGAN
       isGestureActive.current = true;
       Haptics.selectionAsync();
     }
-
     if (event.state === 4 || event.state === 5) {
-      // END or FAILED
       isGestureActive.current = false;
-
       if (event.translationX > SWIPE_THRESHOLD) {
-        // Swipe right - back
         translationX.value = withSpring(SCREEN_WIDTH, { velocity: 2 }, () => {
           runOnJS(onBack)();
         });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else if (event.translationX < -SWIPE_THRESHOLD) {
-        // Swipe left - dismiss
         translationX.value = withSpring(-SCREEN_WIDTH, { velocity: 2 }, () => {
           runOnJS(onDismiss)();
         });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } else {
-        // Reset position
         translationX.value = withSpring(0);
       }
     }
   };
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateX: translationX.value,
-      },
-    ],
+    transform: [{ translateX: translationX.value }],
     opacity: interpolate(
       Math.abs(translationX.value),
       [0, SCREEN_WIDTH / 2, SCREEN_WIDTH],
@@ -129,72 +116,54 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
       failOffsetY={[-50, 50]}
     >
       <Animated.View style={[styles.card, cardAnimatedStyle]}>
-        {/* Score indicator */}
         <View style={styles.scoreContainer}>
           <View style={styles.scoreBarBackground}>
             <Animated.View
-              style={[
-                styles.scoreBar,
-                scoreBarStyle,
-                { backgroundColor: getScoreColor(score) },
-              ]}
+              style={[styles.scoreBar, scoreBarStyle, { backgroundColor: getScoreColor(score) }]}
             />
           </View>
           <Text style={styles.scoreText}>{score}</Text>
         </View>
 
-        {/* Content */}
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
-            {title}
-          </Text>
-          <Text style={styles.thesis} numberOfLines={3}>
-            {thesis}
-          </Text>
+          <Text style={styles.title} numberOfLines={2}>{title}</Text>
+          <Text style={styles.thesis} numberOfLines={3}>{thesis}</Text>
         </View>
 
-        {/* Metrics */}
         <View style={styles.metrics}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{solBacked.toFixed(2)}</Text>
+            <Text style={styles.metricValue}>{(solBacked ?? 0).toFixed(2)}</Text>
             <Text style={styles.metricLabel}>SOL Backed</Text>
           </View>
           <View style={styles.metricDivider} />
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{formatNumber(backers)}</Text>
+            <Text style={styles.metricValue}>{formatNumber(backers ?? 0)}</Text>
             <Text style={styles.metricLabel}>Backers</Text>
           </View>
           <View style={styles.metricDivider} />
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{daysRemaining}</Text>
+            <Text style={styles.metricValue}>{daysRemaining ?? 0}</Text>
             <Text style={styles.metricLabel}>Days Left</Text>
           </View>
         </View>
 
-        {/* Action hint */}
         <View style={styles.hintContainer}>
           <Animated.View
-            style={[
-              styles.hintArrow,
-              {
-                opacity: interpolate(translationX.value, [0, 50], [0, 1], Extrapolation.CLAMP),
-                transform: [{ translateX: interpolate(translationX.value, [0, 50], [-10, 0], Extrapolation.CLAMP) }],
-              },
-            ]}
+            style={[styles.hintArrow, {
+              opacity: interpolate(translationX.value, [0, 50], [0, 1], Extrapolation.CLAMP),
+              transform: [{ translateX: interpolate(translationX.value, [0, 50], [-10, 0], Extrapolation.CLAMP) }],
+            }]}
           >
-            <Text style={styles.hintText}>←</Text>
+            <Text style={styles.hintText}>→</Text>
           </Animated.View>
           <Text style={styles.hintLabel}>Swipe to decide</Text>
           <Animated.View
-            style={[
-              styles.hintArrow,
-              {
-                opacity: interpolate(translationX.value, [0, -50], [0, 1], Extrapolation.CLAMP),
-                transform: [{ translateX: interpolate(translationX.value, [0, -50], [10, 0], Extrapolation.CLAMP) }],
-              },
-            ]}
+            style={[styles.hintArrow, {
+              opacity: interpolate(translationX.value, [0, -50], [0, 1], Extrapolation.CLAMP),
+              transform: [{ translateX: interpolate(translationX.value, [0, -50], [10, 0], Extrapolation.CLAMP) }],
+            }]}
           >
-            <Text style={styles.hintText}>→</Text>
+            <Text style={styles.hintText}>←</Text>
           </Animated.View>
         </View>
       </Animated.View>
@@ -249,13 +218,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginBottom: 8,
-    fontFamily: 'Syne-Bold',
   },
   thesis: {
     fontSize: 14,
     color: COLORS.muted,
     lineHeight: 20,
-    fontFamily: 'Syne-Regular',
   },
   metrics: {
     flexDirection: 'row',
@@ -280,13 +247,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.primary,
-    fontFamily: 'Syne-Bold',
   },
   metricLabel: {
     fontSize: 11,
     color: COLORS.muted,
     marginTop: 2,
-    fontFamily: 'Syne-Regular',
   },
   hintContainer: {
     flexDirection: 'row',
@@ -307,7 +272,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.muted,
     marginHorizontal: 12,
-    fontFamily: 'Syne-Regular',
   },
 });
 

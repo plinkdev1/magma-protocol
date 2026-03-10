@@ -1,3 +1,5 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { API_URL } from '../config';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
@@ -64,9 +66,10 @@ interface Payout {
   type: 'yield' | 'exit' | 'bonus';
 }
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = API_URL;
 
 const PortfolioScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [narratives, setNarratives] = useState<Narrative[]>([]);
   const [backedNarratives, setBackedNarratives] = useState<BackedNarrative[]>([]);
@@ -412,7 +415,7 @@ const PortfolioScreen: React.FC = () => {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { paddingTop: insets.top }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -503,6 +506,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: 0,
   },
   content: {
     padding: 16,

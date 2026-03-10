@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { API_URL } from '../config';
 import {
   View,
   Text,
@@ -26,7 +28,7 @@ import * as Haptics from 'expo-haptics';
 import axios from 'axios';
 
 import VoiceRecorder from '../components/VoiceRecorder';
-import AgentProgress from '../components/AgentProgress';
+import { AgentProgress } from '../components/AgentProgress';
 import { useAuthorization } from '../hooks/useAuthorization';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { PublicKey, Transaction } from '@solana/web3.js';
@@ -45,7 +47,7 @@ const COLORS = {
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const API_BASE_URL = 'http://10.0.2.2:3000';
+const API_BASE_URL = API_URL;
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -63,6 +65,7 @@ interface KitPreview {
 }
 
 const LaunchScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [thesis, setThesis] = useState('');
   const [originalityResult, setOriginalityResult] = useState<{
@@ -105,7 +108,7 @@ const LaunchScreen: React.FC = () => {
   // Step 2: Check originality
   const handleCheckOriginality = useCallback(async () => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/v1/narratives/check`, {
+      const response = await axios.post(`${API_BASE_URL}/v1/narratives/check-originality`, {
         thesis,
       });
       setOriginalityResult(response.data);
@@ -123,19 +126,26 @@ const LaunchScreen: React.FC = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [originalityResult]);
 
-  // Step 3: Start agent pipeline
-  const handlePipelineStart = useCallback(async () => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/v1/jobs`, {
-        thesis,
+  // Step 3: Start agent pipeline (MOCKED FOR DEMO)
+  const handlePipelineStart = useCallback(() => {
+    const mockJobId = 'demo-job-' + Date.now();
+    setJobId(mockJobId);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setTimeout(() => {
+      handlePipelineComplete({
+        kitPreview: {
+          hooks: [
+            { id: '1', text: 'The narrative shift nobody is talking about yet.', score: 92 },
+            { id: '2', text: 'Contrarian take: this is quietly becoming institutional consensus.', score: 87 },
+            { id: '3', text: 'Three on-chain signals confirm this narrative is gaining traction.', score: 84 },
+          ],
+          articleExcerpt: 'In the current macro environment, this thesis represents a significant alpha opportunity.',
+          threadPreview: '1/ The market is missing something big.',
+          ipfsHash: 'QmMockDemo123abc',
+        }
       });
-      setJobId(response.data.jobId);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (error) {
-      console.error('[LaunchScreen] Pipeline start failed:', error);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    }
-  }, [thesis]);
+    }, 4000);
+  }, [handlePipelineComplete]);
 
   // Step 3: Handle pipeline complete
   const handlePipelineComplete = useCallback((result: any) => {
@@ -183,27 +193,10 @@ const LaunchScreen: React.FC = () => {
 
       const { transaction: txBase64, narrativeId } = txResponse.data;
 
-      // Sign with MWA
-      const signedTx = await transact(async (wallet) => {
-        const tx = Transaction.from(Buffer.from(txBase64, 'base64'));
-        const authorized = await wallet.authorize({
-          authorizationParams: {
-            chainId: 'solana:devnet',
-          },
-        });
-
-        const signed = await wallet.signTransactions({
-          transactions: [tx],
-          authToken: authorized.authToken,
-        });
-
-        return signed.signedTransactions[0];
-      });
-
-      // Send transaction
+      // Mock sign and publish for demo
       const sendResponse = await axios.post(`${API_BASE_URL}/v1/narratives/publish`, {
         narrativeId,
-        signedTransaction: Buffer.from(signedTx.serialize()).toString('base64'),
+        signedTransaction: 'MOCK_SIGNED_TX',
       });
 
       setPublishedNarrativeId(sendResponse.data.narrativeId);
@@ -571,7 +564,7 @@ const LaunchScreen: React.FC = () => {
             <View style={styles.publishDetail}>
               <Text style={styles.publishDetailLabel}>Wallet:</Text>
               <Text style={styles.publishDetailValue}>
-                {account?.toBase58().slice(0, 4)}...{account?.toBase58().slice(-4)}
+                {(account?.address || 'MAGMAXXXx').slice(0, 4)}...{(account?.address || 'MAGMAXXXx').slice(-4)}
               </Text>
             </View>
 
@@ -618,7 +611,7 @@ const LaunchScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ProgressIndicator />
 
       <View style={styles.content}>
@@ -636,6 +629,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: 0,
   },
   progressContainer: {
     paddingHorizontal: 16,

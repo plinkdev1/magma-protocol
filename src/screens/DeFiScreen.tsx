@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
@@ -66,6 +67,7 @@ const formatNumber = (num: number) => {
 };
 
 const DeFiScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [protocols, setProtocols] = useState<Protocol[]>(PROTOCOLS);
   const [solAmount, setSolAmount] = useState('');
@@ -93,7 +95,7 @@ const DeFiScreen: React.FC = () => {
       yieldValue.value = withTiming(1, { duration: 300 }, () => {
         yieldValue.value = withTiming(0, { duration: 300 });
       });
-    }, 1000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
@@ -394,7 +396,7 @@ const DeFiScreen: React.FC = () => {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { paddingTop: insets.top }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -435,6 +437,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: 0,
   },
   content: {
     padding: 16,

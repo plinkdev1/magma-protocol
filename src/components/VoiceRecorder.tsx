@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+﻿import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, PermissionsAndroid, Platform } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -298,7 +298,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
 
     return (
-      <Text style={styles.micIcon}>🎤</Text>
+      <Text style={styles.micIcon}>­ƒÄñ</Text>
     );
   };
 
@@ -311,7 +311,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           onPress={requestPermission}
           activeOpacity={0.7}
         >
-          <Text style={styles.permissionIcon}>🔇</Text>
+          <Text style={styles.permissionIcon}>­ƒöç</Text>
           <Text style={styles.permissionText}>Enable Mic</Text>
         </TouchableOpacity>
       </View>

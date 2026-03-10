@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -56,6 +57,7 @@ const APP_VERSION = '1.0.0-alpha';
 
 const ProfileScreen: React.FC = () => {
   const { account, isConnected, disconnect, isConnected: isWalletConnected } = useAuthorization();
+  const insets = useSafeAreaInsets();
   const [magmaBalance, setMagmaBalance] = useState(0);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -318,7 +320,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[styles.container, { paddingTop: insets.top }]} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       {/* Tier Badge */}
       <TierBadge />
 
@@ -435,6 +437,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: 0,
   },
   content: {
     padding: 16,

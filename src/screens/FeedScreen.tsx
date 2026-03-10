@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { API_URL } from '../config';
 import {
   View,
   Text,
@@ -27,7 +29,7 @@ const COLORS = {
   cardBorder: '#3d2a1f',
 };
 
-const API_BASE_URL = 'http://YOUR_PC_IP:3000';
+const API_BASE_URL = API_URL;
 
 type FilterType = 'All' | 'Trending' | 'New' | 'Backed';
 
@@ -44,6 +46,7 @@ interface Narrative {
 const FILTERS: FilterType[] = ['All', 'Trending', 'New', 'Backed'];
 
 const FeedScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
@@ -55,7 +58,15 @@ const FeedScreen: React.FC = () => {
       params: { filter: activeFilter.toLowerCase() },
       timeout: 10000,
     });
-    return response.data;
+    const raw = response.data.narratives || [];
+return raw.map((n: any) => ({
+  ...n,
+  solBacked: n.sol_backed ?? 0,
+  stage: (n.status || 'active').toUpperCase(),
+  daysRemaining: n.days_remaining ?? 0,
+  score: n.score ?? 0,
+  backers: n.backers ?? 0,
+}));
   }, [activeFilter]);
 
   const {
@@ -172,7 +183,7 @@ const FeedScreen: React.FC = () => {
   const keyExtractor = useCallback((item: Narrative) => item.id, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {renderPriceTicker()}
       {renderFilterBar()}
 
@@ -216,6 +227,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: 0,
   },
   priceTicker: {
     flexDirection: 'row',
