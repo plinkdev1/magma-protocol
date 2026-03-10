@@ -13,6 +13,8 @@ import LaunchScreen from './src/screens/LaunchScreen';
 import DeFiScreen from './src/screens/DeFiScreen';
 import PortfolioScreen from './src/screens/PortfolioScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import LoadingScreen from './src/screens/LoadingScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 
 // NOTE: babel.config.js must include react-native-reanimated/plugin
 // plugins: ['react-native-reanimated/plugin']
@@ -79,6 +81,23 @@ const TabBarIcon = ({ icon: Icon, focused }: { icon: React.ElementType; focused:
 );
 
 export default function App() {
+  const [appState, setAppState] = React.useState<'loading' | 'onboarding' | 'main'>('loading');
+
+  const handleLoadComplete = React.useCallback(() => {
+    setAppState('onboarding');
+  }, []);
+
+  const handleOnboardingComplete = React.useCallback(() => {
+    setAppState('main');
+  }, []);
+
+  if (appState === 'loading') {
+    return <LoadingScreen onLoadComplete={handleLoadComplete} />;
+  }
+  if (appState === 'onboarding') {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+  }
+
   return (
     <>
       <StatusBar style="light" backgroundColor={COLORS.background} />
