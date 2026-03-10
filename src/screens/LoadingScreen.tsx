@@ -195,7 +195,7 @@ const s = StyleSheet.create({
   iconShine:    { position: 'absolute', top: 8, left: 12, width: 20, height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4 },
   iconEmoji:    { fontSize: 48 },
 
-  appNameMask:  { fontFamily: 'SpaceMono', fontSize: 42, fontWeight: '700', letterSpacing: 6 },
+  appNameMask:  { fontFamily: 'SpaceMono', fontSize: 42, fontWeight: '700', letterSpacing: 6, color: '#ff6b35' },
   tagline:      { fontFamily: 'SpaceMono', fontSize: 9, letterSpacing: 5, color: 'rgba(255,107,53,0.4)', marginTop: 4, marginBottom: 40, textTransform: 'uppercase' },
 
   loaderWrap:   { width: 260, marginBottom: 16 },
