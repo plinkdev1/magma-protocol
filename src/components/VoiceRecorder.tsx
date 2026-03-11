@@ -1,5 +1,6 @@
-﻿import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, PermissionsAndroid, Platform } from 'react-native';
+import { Mic } from 'lucide-react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -298,7 +299,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
 
     return (
-      <Text style={styles.micIcon}>­ƒÄñ</Text>
+      <Mic size={state === 'recording' ? 32 : 28} color={state === 'recording' ? COLORS.accent : COLORS.primary} strokeWidth={1.5} />
     );
   };
 
@@ -311,7 +312,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           onPress={requestPermission}
           activeOpacity={0.7}
         >
-          <Text style={styles.permissionIcon}>­ƒöç</Text>
+          <Text style={styles.permissionIcon}>����</Text>
           <Text style={styles.permissionText}>Enable Mic</Text>
         </TouchableOpacity>
       </View>
@@ -434,3 +435,4 @@ const styles = StyleSheet.create({
 });
 
 export default VoiceRecorder;
+
