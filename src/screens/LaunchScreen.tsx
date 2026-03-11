@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
@@ -65,7 +66,17 @@ interface KitPreview {
 }
 
 const LaunchScreen: React.FC = () => {
+  const navigation = useNavigation() as any;
+  const [shouldNavigateToFeed, setShouldNavigateToFeed] = useState(false);
   const insets = useSafeAreaInsets();
+
+  // Navigate to Feed after successful publish
+  React.useEffect(() => {
+    if (shouldNavigateToFeed) {
+      setShouldNavigateToFeed(false);
+      try { navigation.navigate('Feed'); } catch(e) {}
+    }
+  }, [shouldNavigateToFeed]);
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [thesis, setThesis] = useState('');
   const [originalityResult, setOriginalityResult] = useState<{
@@ -149,9 +160,11 @@ const LaunchScreen: React.FC = () => {
 
   // Step 3: Handle pipeline complete
   const handlePipelineComplete = useCallback((result: any) => {
-    setKitPreview(result.kitPreview);
-    setCurrentStep(4);
-    Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
+    setTimeout(() => {
+      setKitPreview(result.kitPreview);
+      setCurrentStep(4);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
+    }, 3000);
   }, []);
 
   // Step 4: Swipe to next hook
@@ -197,11 +210,14 @@ const LaunchScreen: React.FC = () => {
       const sendResponse = await axios.post(`${API_BASE_URL}/v1/narratives/publish`, {
         narrativeId,
         signedTransaction: 'MOCK_SIGNED_TX',
+        thesis,
+        walletAddress: account?.publicKey?.toBase58() || 'unknown',
       });
 
       setPublishedNarrativeId(sendResponse.data.narrativeId);
       setIsPublishing(false);
       Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
+      setShouldNavigateToFeed(true);
     } catch (error) {
       console.error('[LaunchScreen] Publish failed:', error);
       setPublishError(error instanceof Error ? error.message : 'Publish failed');
@@ -1162,3 +1178,10 @@ const styles = StyleSheet.create({
 });
 
 export default LaunchScreen;
+
+
+
+
+
+
+

@@ -94,6 +94,7 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
       );
 
       const data = response.data;
+      if (!data || !data.steps) return;
       setOverallStatus(data.overallStatus);
 
       // Update steps
@@ -511,3 +512,4 @@ const styles = StyleSheet.create({
 });
 
 export default AgentProgress;
+
