@@ -1,5 +1,4 @@
 import React from 'react';
-import { WalletProvider } from './src/context/WalletContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,8 +6,8 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
+import { WalletProvider } from './src/context/WalletContext';
 
-// Screen imports
 import FeedScreen from './src/screens/FeedScreen';
 import LaunchScreen from './src/screens/LaunchScreen';
 import DeFiScreen from './src/screens/DeFiScreen';
@@ -17,10 +16,6 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
-// NOTE: babel.config.js must include react-native-reanimated/plugin
-// plugins: ['react-native-reanimated/plugin']
-
-// Design tokens
 const COLORS = {
   background: '#080400',
   primary: '#ff6b35',
@@ -40,6 +35,11 @@ export type RootTabParamList = {
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const queryClient = new QueryClient();
+
+const TabBarIcon = ({ icon: Icon, focused }: { icon: React.ElementType; focused: boolean }) => (
+  <Icon size={24} color={focused ? COLORS.primary : COLORS.muted} strokeWidth={focused ? 2.5 : 2} />
+);
+
 function AppTabs() {
   const insets = useSafeAreaInsets();
   return (
@@ -73,14 +73,6 @@ function AppTabs() {
   );
 }
 
-const TabBarIcon = ({ icon: Icon, focused }: { icon: React.ElementType; focused: boolean }) => (
-  <Icon
-    size={24}
-    color={focused ? COLORS.primary : COLORS.muted}
-    strokeWidth={focused ? 2.5 : 2}
-  />
-);
-
 export default function App() {
   const [appState, setAppState] = React.useState<'loading' | 'onboarding' | 'main'>('loading');
 
@@ -92,42 +84,38 @@ export default function App() {
     setAppState('main');
   }, []);
 
-  if (appState === 'loading') {
-    return <LoadingScreen onLoadComplete={handleLoadComplete} />;
-  }
-  if (appState === 'onboarding') {
-    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
-  }
-
   return (
-    <>
-      <StatusBar style="light" backgroundColor={COLORS.background} />
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <QueryClientProvider client={queryClient}>
-        <WalletProvider>
-        <SafeAreaProvider>
-          <NavigationContainer
-            theme={{
-              ...DefaultTheme,
-              dark: true,
-              colors: {
-                ...DefaultTheme.colors,
-                primary: COLORS.primary,
-                background: COLORS.background,
-                card: COLORS.card,
-                text: COLORS.text,
-                border: COLORS.muted,
-                notification: COLORS.accent,
-              },
-            }}
-          >
-            <AppTabs />
-          </NavigationContainer>
-        </SafeAreaProvider>
-              </WalletProvider>
-              </QueryClientProvider>
-      </GestureHandlerRootView>
-    </>
+    <WalletProvider>
+      {appState === 'loading' && <LoadingScreen onLoadComplete={handleLoadComplete} />}
+      {appState === 'onboarding' && <OnboardingScreen onComplete={handleOnboardingComplete} />}
+      {appState === 'main' && (
+        <>
+          <StatusBar style="light" backgroundColor={COLORS.background} />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <QueryClientProvider client={queryClient}>
+              <SafeAreaProvider>
+                <NavigationContainer
+                  theme={{
+                    ...DefaultTheme,
+                    dark: true,
+                    colors: {
+                      ...DefaultTheme.colors,
+                      primary: COLORS.primary,
+                      background: COLORS.background,
+                      card: COLORS.card,
+                      text: COLORS.text,
+                      border: COLORS.muted,
+                      notification: COLORS.accent,
+                    },
+                  }}
+                >
+                  <AppTabs />
+                </NavigationContainer>
+              </SafeAreaProvider>
+            </QueryClientProvider>
+          </GestureHandlerRootView>
+        </>
+      )}
+    </WalletProvider>
   );
 }
-

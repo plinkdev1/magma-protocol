@@ -56,7 +56,7 @@ const TIERS: Tier[] = [
 const APP_VERSION = '1.0.0-alpha';
 
 const ProfileScreen: React.FC = () => {
-  const { account, isConnected, disconnect, isConnected: isWalletConnected } = useAuthorization();
+  const { account, isConnected, disconnect, connect, isConnected: isWalletConnected } = useAuthorization();
   const insets = useSafeAreaInsets();
   const [magmaBalance, setMagmaBalance] = useState(0);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -394,6 +394,11 @@ const ProfileScreen: React.FC = () => {
 
       {/* Danger Zone */}
       <SettingsSection title="Danger Zone">
+        {!isConnected && (
+          <TouchableOpacity style={styles.dangerButton} onPress={connect} activeOpacity={0.7}>
+            <Text style={styles.dangerButtonText}>Connect Wallet</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.dangerButton}
           onPress={handleDisconnect}
@@ -771,5 +776,6 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileScreen;
+
 
 
