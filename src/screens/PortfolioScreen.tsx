@@ -143,10 +143,10 @@ const PortfolioScreen: React.FC = () => {
 
     try {
       const [narrativesRes, backedRes, payoutsRes, balanceRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/v1/users/${account.toBase58()}/narratives`),
-        axios.get(`${API_BASE_URL}/v1/users/${account.toBase58()}/backed`),
-        axios.get(`${API_BASE_URL}/v1/users/${account.toBase58()}/payouts`),
-        axios.get(`${API_BASE_URL}/v1/users/${account.toBase58()}/balance`),
+        axios.get(`${API_BASE_URL}/v1/users/${account.address}/narratives`),
+        axios.get(`${API_BASE_URL}/v1/users/${account.address}/backed`),
+        axios.get(`${API_BASE_URL}/v1/users/${account.address}/payouts`),
+        axios.get(`${API_BASE_URL}/v1/users/${account.address}/balance`),
       ]);
 
       setNarratives(narrativesRes.data);
@@ -373,7 +373,7 @@ const PortfolioScreen: React.FC = () => {
       </View>
       <Text style={styles.balanceCardValue}>{formatNumber(magmaBalance)}</Text>
       <Text style={styles.balanceCardAddress}>
-        {account ? `${account.toBase58().slice(0, 4)}...${account.toBase58().slice(-4)}` : 'Not connected'}
+        {account ? `${account.address.slice(0, 4)}...${account.address.slice(-4)}` : 'Not connected'}
       </Text>
     </Animated.View>
   );
@@ -882,3 +882,4 @@ const styles = StyleSheet.create({
 });
 
 export default PortfolioScreen;
+

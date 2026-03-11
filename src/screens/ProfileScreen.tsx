@@ -239,10 +239,10 @@ const ProfileScreen: React.FC = () => {
         </View>
       </View>
       <Text style={styles.walletAddress} numberOfLines={1}>
-        {account ? account.toBase58() : 'Not connected'}
+        {account ? account.address : 'Not connected'}
       </Text>
       <Text style={styles.walletAddressShort}>
-        {account ? formatAddress(account.toBase58()) : 'Not connected'}
+        {account ? formatAddress(account.address) : 'Not connected'}
       </Text>
     </View>
   );
@@ -771,3 +771,4 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileScreen;
+
