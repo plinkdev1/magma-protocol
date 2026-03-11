@@ -6,19 +6,19 @@ const { width: W } = Dimensions.get('window');
 const CARD_SIZE = (W - 32 - 40) / 5;
 
 const ECOSYSTEM = [
-  { name: 'Meteora',   logo: require('../../assets/logos/protocols/meteora.png') },
-  { name: 'Kamino',   logo: require('../../assets/logos/protocols/kamino.png') },
-  { name: 'Save',     logo: require('../../assets/logos/protocols/save.png') },
-  { name: 'Jupiter',  logo: require('../../assets/logos/protocols/jupiter.png') },
-  { name: 'Orca',     logo: require('../../assets/logos/protocols/orca.png') },
-  { name: 'Raydium',  logo: require('../../assets/logos/protocols/raydium.png') },
-  { name: 'Jito',     logo: require('../../assets/logos/protocols/jito.png') },
-  { name: 'Marinade', logo: require('../../assets/logos/protocols/marinade.png') },
-  { name: 'Phantom',  logo: require('../../assets/logos/wallets/phantom.png') },
-  { name: 'Backpack', logo: require('../../assets/logos/wallets/backpack.png') },
-  { name: 'Solflare', logo: require('../../assets/logos/wallets/solflare.png') },
-  { name: 'Seeker',   logo: require('../../assets/logos/wallets/seeker.png') },
-  { name: 'Sol Mobile', logo: require('../../assets/logos/wallets/solanamobile.png') },
+  { name: 'Meteora',   logo: require('../../assets/logos/protocols/meteora.jpg') },
+  { name: 'Kamino',   logo: require('../../assets/logos/protocols/kamino.jpg') },
+  { name: 'Save',     logo: require('../../assets/logos/protocols/save.jpg') },
+  { name: 'Jupiter',  logo: require('../../assets/logos/protocols/jupiter.jpg') },
+  { name: 'Orca',     logo: require('../../assets/logos/protocols/orca.jpg') },
+  { name: 'Raydium',  logo: require('../../assets/logos/protocols/raydium.jpg') },
+  { name: 'Jito',     logo: require('../../assets/logos/protocols/jito.jpg') },
+  { name: 'Marinade', logo: require('../../assets/logos/protocols/marinade.jpg') },
+  { name: 'Phantom',  logo: require('../../assets/logos/wallets/phantom.jpg') },
+  { name: 'Backpack', logo: require('../../assets/logos/wallets/backpack.jpg') },
+  { name: 'Solflare', logo: require('../../assets/logos/wallets/solflare.jpg') },
+  { name: 'Seeker',   logo: require('../../assets/logos/wallets/seeker.jpg') },
+  { name: 'Sol Mobile', logo: require('../../assets/logos/wallets/solanamobile.jpg') },
 ];
 
 export const EcosystemGrid: React.FC = () => (

@@ -41,9 +41,9 @@ const COLORS = {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const PROTOCOL_LOGOS: Record<string, any> = {
-  meteora: require('../../assets/logos/protocols/meteora.png'),
-  kamino:  require('../../assets/logos/protocols/kamino.png'),
-  save:    require('../../assets/logos/protocols/save.png'),
+  meteora: require('../../assets/logos/protocols/meteora.jpg'),
+  kamino:  require('../../assets/logos/protocols/kamino.jpg'),
+  save:    require('../../assets/logos/protocols/save.jpg'),
 };
 
 

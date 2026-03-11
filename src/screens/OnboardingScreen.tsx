@@ -153,9 +153,9 @@ const VisualVault = ({ active }: { active: boolean }) => (
 
 // Slide 4 — Wallet: selection buttons
 const WALLETS = [
-  { logo: require('../../assets/logos/wallets/phantom.png'), name: 'Phantom', sub: 'Recommended · MWA' },
-  { logo: require('../../assets/logos/wallets/backpack.png'), name: 'Backpack', sub: 'Solana Native' },
-  { logo: require('../../assets/logos/wallets/solflare.png'), name: 'Solflare', sub: 'Ledger Compatible' },
+  { logo: require('../../assets/logos/wallets/phantom.jpg'), name: 'Phantom', sub: 'Recommended · MWA' },
+  { logo: require('../../assets/logos/wallets/backpack.jpg'), name: 'Backpack', sub: 'Solana Native' },
+  { logo: require('../../assets/logos/wallets/solflare.jpg'), name: 'Solflare', sub: 'Ledger Compatible' },
 ];
 const VisualWallet = () => {
   const [selected, setSelected] = useState(0);
