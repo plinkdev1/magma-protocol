@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react';
-import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
+import {
+  transact,
+  Web3MobileWallet,
+} from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { PublicKey } from '@solana/web3.js';
-import { toUint8Array } from 'js-base64';
 
 const APP_IDENTITY = {
   name: 'MAGMA Protocol',
@@ -9,13 +11,11 @@ const APP_IDENTITY = {
   icon: 'favicon.ico',
 };
 
-const CLUSTER = 'devnet';
-
 export interface AuthorizedAccount {
   address: string;
   publicKey: PublicKey;
   label?: string;
-  walletUriBase?: string;
+  authToken?: string;
 }
 
 export const useAuthorization = () => {
@@ -29,31 +29,25 @@ export const useAuthorization = () => {
     setIsConnecting(true);
     setError(null);
     try {
-      await transact(async (wallet) => {
+      await transact(async (wallet: Web3MobileWallet) => {
         const authResult = await wallet.authorize({
-          cluster: CLUSTER,
+          cluster: 'devnet',
           identity: APP_IDENTITY,
         });
-        const { accounts, auth_token } = authResult;
-        if (!accounts || accounts.length === 0) {
-          throw new Error('No accounts returned from wallet');
-        }
-        const firstAccount = accounts[0];
-        const publicKey = new PublicKey(toUint8Array(firstAccount.address));
+        const firstAccount = authResult.accounts[0];
+        const publicKey = new PublicKey(firstAccount.address);
         setAccount({
           address: publicKey.toBase58(),
           publicKey,
           label: firstAccount.label,
-          walletUriBase: authResult.wallet_uri_base,
+          authToken: authResult.auth_token,
         });
         setIsConnected(true);
       });
     } catch (err: any) {
       console.error('[useAuthorization] Connect failed:', err);
-      if (err?.message?.includes('User rejected')) {
-        setError('Connection rejected by user');
-      } else if (err?.message?.includes('No wallet')) {
-        setError('No wallet app found. Install Phantom, Backpack or Solflare.');
+      if (err?.message?.includes('User rejected') || err?.errorCode === 'USER_DECLINED') {
+        setError('Connection rejected');
       } else {
         setError(err?.message || 'Wallet connection failed');
       }
