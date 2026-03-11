@@ -1,5 +1,6 @@
 // src/screens/OnboardingScreen.tsx
 // 6-slide onboarding — faithful RN translation of magma_app_onboarding.html
+import { useAuthorization } from '../context/WalletContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
@@ -252,6 +253,7 @@ interface OnboardingScreenProps {
 }
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
+  const { connect, isConnected } = useAuthorization();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
 
@@ -260,13 +262,19 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
     setCurrent(Math.max(0, Math.min(SLIDES.length - 1, idx)));
   }, [current]);
 
-  const handleMain = useCallback(() => {
+  const handleMain = useCallback(async () => {
+    const isWalletSlide = SLIDES[current]?.eyebrow === 'Connect Wallet';
+    if (isWalletSlide && !isConnected) {
+      await connect();
+      goTo(current + 1);
+      return;
+    }
     if (current < SLIDES.length - 1) {
       goTo(current + 1);
     } else {
       onComplete();
     }
-  }, [current, goTo, onComplete]);
+  }, [current, goTo, onComplete, connect, isConnected]);
 
   const slide = SLIDES[current];
   const entering = direction === 'forward' ? SlideInRight.duration(320) : SlideInLeft.duration(320);
@@ -401,3 +409,4 @@ const s = StyleSheet.create({
 });
 
 export default OnboardingScreen;
+
