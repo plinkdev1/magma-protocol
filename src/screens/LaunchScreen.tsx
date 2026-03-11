@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import React, { useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
@@ -69,6 +69,14 @@ const LaunchScreen: React.FC = () => {
   const navigation = useNavigation() as any;
   const [shouldNavigateToFeed, setShouldNavigateToFeed] = useState(false);
   const insets = useSafeAreaInsets();
+
+  // Reset when user navigates back to Launch tab
+  useFocusEffect(useCallback(() => {
+    // Reset flow when user comes back to Launch tab after publishing
+    if (publishedNarrativeId) {
+      handleReset();
+    }
+  }, [publishedNarrativeId, handleReset]));
 
   // Navigate to Feed after successful publish
   React.useEffect(() => {
@@ -233,6 +241,19 @@ const LaunchScreen: React.FC = () => {
       Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Light);
     }
   }, [currentStep]);
+
+  // Reset entire flow for new narrative
+  const handleReset = useCallback(() => {
+    setCurrentStep(1);
+    setThesis('');
+    setJobId(null);
+    setKitPreview(null);
+    setPublishedNarrativeId(null);
+    setPublishError(null);
+    setOriginalityResult(null);
+    setCurrentHookIndex(0);
+    setShouldNavigateToFeed(false);
+  }, []);
 
   // Progress indicator
   const ProgressIndicator = () => {
@@ -567,6 +588,9 @@ const LaunchScreen: React.FC = () => {
               <Text style={styles.narrativeIdLabel}>ID:</Text>
               <Text style={styles.narrativeIdValue}>{publishedNarrativeId}</Text>
             </View>
+            <TouchableOpacity style={styles.continueButton} onPress={handleReset} activeOpacity={0.7}>
+              <Text style={styles.continueButtonText}>Launch Another</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.publishInfo}>
@@ -1178,6 +1202,11 @@ const styles = StyleSheet.create({
 });
 
 export default LaunchScreen;
+
+
+
+
+
 
 
 
