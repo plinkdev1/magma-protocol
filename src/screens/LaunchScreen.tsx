@@ -188,7 +188,7 @@ const LaunchScreen: React.FC = () => {
       swipeOffset.value = withSpring(0);
       Haptics?.selectionAsync();
     }
-  }, [kitPreview]);
+  }, [kitPreview, currentHookIndex]);
 
   // Step 4: Navigate to step 5
   const handleStep4Continue = useCallback(() => {
