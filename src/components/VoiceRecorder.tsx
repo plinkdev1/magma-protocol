@@ -299,7 +299,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
 
     return (
-      <Mic size={state === 'recording' ? 32 : 28} color={state === 'recording' ? COLORS.accent : COLORS.primary} strokeWidth={1.5} />
+      <Mic size={state === 'recording' ? 32 : 28} color={state === 'recording' ? COLORS.accent : '#fff5ee'} strokeWidth={1.5} />
     );
   };
 
@@ -435,4 +435,5 @@ const styles = StyleSheet.create({
 });
 
 export default VoiceRecorder;
+
 
