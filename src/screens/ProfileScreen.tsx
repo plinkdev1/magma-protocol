@@ -21,7 +21,7 @@ import Animated, {
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
 
-import { useAuthorization } from '../hooks/useAuthorization';
+import { useAuthorization } from '../context/WalletContext';
 
 // Design tokens
 const COLORS = {
@@ -771,4 +771,5 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileScreen;
+
 

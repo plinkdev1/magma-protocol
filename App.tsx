@@ -1,4 +1,5 @@
 import React from 'react';
+import { WalletProvider } from './src/context/WalletContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -103,6 +104,7 @@ export default function App() {
       <StatusBar style="light" backgroundColor={COLORS.background} />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <QueryClientProvider client={queryClient}>
+        <WalletProvider>
         <SafeAreaProvider>
           <NavigationContainer
             theme={{
@@ -122,8 +124,10 @@ export default function App() {
             <AppTabs />
           </NavigationContainer>
         </SafeAreaProvider>
+              </WalletProvider>
               </QueryClientProvider>
       </GestureHandlerRootView>
     </>
   );
 }
+

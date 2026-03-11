@@ -30,7 +30,7 @@ import axios from 'axios';
 
 import VoiceRecorder from '../components/VoiceRecorder';
 import { AgentProgress } from '../components/AgentProgress';
-import { useAuthorization } from '../hooks/useAuthorization';
+import { useAuthorization } from '../context/WalletContext';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { PublicKey, Transaction } from '@solana/web3.js';
 
@@ -1202,6 +1202,7 @@ const styles = StyleSheet.create({
 });
 
 export default LaunchScreen;
+
 
 
 

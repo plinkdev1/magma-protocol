@@ -22,7 +22,7 @@ import Animated, {
 import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 
-import { useAuthorization } from '../hooks/useAuthorization';
+import { useAuthorization } from '../context/WalletContext';
 
 // Design tokens
 const COLORS = {
@@ -882,4 +882,5 @@ const styles = StyleSheet.create({
 });
 
 export default PortfolioScreen;
+
 
