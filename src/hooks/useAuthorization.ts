@@ -35,7 +35,8 @@ export const useAuthorization = () => {
           identity: APP_IDENTITY,
         });
         const firstAccount = authResult.accounts[0];
-        const publicKey = new PublicKey(firstAccount.address);
+        const addressBytes = typeof firstAccount.address === 'string' ? Buffer.from(firstAccount.address, 'base64') : firstAccount.address;
+        const publicKey = new PublicKey(addressBytes);
         setAccount({
           address: publicKey.toBase58(),
           publicKey,
@@ -75,3 +76,5 @@ export const useAuthorization = () => {
 };
 
 export default useAuthorization;
+
+
