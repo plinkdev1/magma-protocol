@@ -1,6 +1,7 @@
 // src/screens/OnboardingScreen.tsx
 // 6-slide onboarding — faithful RN translation of magma_app_onboarding.html
 import { useAuthorization } from '../context/WalletContext';
+import WalletPickerModal from '../components/WalletPickerModal';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
@@ -254,6 +255,7 @@ interface OnboardingScreenProps {
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const { connect, isConnected } = useAuthorization();
+  const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
 
@@ -265,7 +267,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const handleMain = useCallback(async () => {
     const isWalletSlide = SLIDES[current]?.eyebrow === 'Connect Wallet';
     if (isWalletSlide && !isConnected) {
-      await connect();
+      setShowWalletPicker(true); return;
       goTo(current + 1);
       return;
     }
@@ -332,6 +334,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
           <Text style={s.swipeHint}>Swipe to continue</Text>
         )}
       </View>
+      <WalletPickerModal visible={showWalletPicker} onClose={() => setShowWalletPicker(false)} />
     </View>
   );
 };
@@ -409,4 +412,5 @@ const s = StyleSheet.create({
 });
 
 export default OnboardingScreen;
+
 

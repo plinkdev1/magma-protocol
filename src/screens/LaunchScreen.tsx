@@ -31,6 +31,7 @@ import axios from 'axios';
 import VoiceRecorder from '../components/VoiceRecorder';
 import { AgentProgress } from '../components/AgentProgress';
 import { useAuthorization } from '../context/WalletContext';
+import WalletPickerModal from '../components/WalletPickerModal';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { PublicKey, Transaction } from '@solana/web3.js';
 
@@ -99,6 +100,7 @@ const LaunchScreen: React.FC = () => {
   const [publishedNarrativeId, setPublishedNarrativeId] = useState<string | null>(null);
 
   const { connect, isConnected, account } = useAuthorization();
+  const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const progressValue = useSharedValue(0);
   const swipeOffset = useSharedValue(0);
   const [currentHookIndex, setCurrentHookIndex] = useState(0);
@@ -199,7 +201,7 @@ const LaunchScreen: React.FC = () => {
   // Step 5: Sign and publish via MWA
   const handlePublish = useCallback(async () => {
     if (!isConnected) {
-      await connect();
+      setShowWalletPicker(true); return;
     }
 
     setIsPublishing(true);
@@ -660,6 +662,7 @@ const LaunchScreen: React.FC = () => {
         {currentStep === 3 && renderStep3()}
         {currentStep === 4 && renderStep4()}
         {currentStep === 5 && renderStep5()}
+      <WalletPickerModal visible={showWalletPicker} onClose={() => setShowWalletPicker(false)} />
       </View>
     </View>
   );
@@ -1202,6 +1205,7 @@ const styles = StyleSheet.create({
 });
 
 export default LaunchScreen;
+
 
 
 
