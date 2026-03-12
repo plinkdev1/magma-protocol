@@ -160,26 +160,7 @@ const WALLETS = [
   { logo: require('../../assets/logos/wallets/solflare.jpg'), name: 'Solflare', sub: 'Ledger Compatible' },
 ];
 const VisualWallet = () => {
-  const [selected, setSelected] = useState(0);
-  return (
-    <View style={vis.walletWrap}>
-      {WALLETS.map((w, i) => (
-        <TouchableOpacity
-          key={w.name}
-          style={[vis.walletBtn, selected === i && vis.walletBtnActive]}
-          onPress={() => setSelected(i)}
-          activeOpacity={0.7}
-        >
-          <Image source={w.logo} style={vis.walletLogo} resizeMode="contain" />
-          <View style={vis.walletInfo}>
-            <Text style={vis.walletName}>{w.name}</Text>
-            <Text style={vis.walletSub}>{w.sub}</Text>
-          </View>
-          {selected === i && <Text style={vis.walletCheck}>✓</Text>}
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
+  return <View />;
 };
 
 // Slide 5 — Ready: pulsing final ring
@@ -393,7 +374,7 @@ const vis = StyleSheet.create({
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, alignItems: 'center' },
   lavaBg: { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.35, backgroundColor: 'rgba(255,40,0,0.06)', borderTopLeftRadius: 200, borderTopRightRadius: 200 },
-  skipBtn: { position: 'absolute', top: 52, right: 24, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', zIndex: 20 },
+  skipBtn: { position: 'absolute', top: 80, right: 24, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', zIndex: 20 },
   skipText: { fontFamily: 'SpaceMono', fontSize: 10, color: 'rgba(255,107,53,0.5)', letterSpacing: 1 },
   dotRow: { position: 'absolute', top: 56, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 8, zIndex: 10 },
   dot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(255,107,53,0.15)' },
@@ -412,5 +393,6 @@ const s = StyleSheet.create({
 });
 
 export default OnboardingScreen;
+
 
 
