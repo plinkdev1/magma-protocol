@@ -65,24 +65,11 @@ export const WalletPickerModal: React.FC<WalletPickerModalProps> = ({
 
   const handleWalletSelect = useCallback(async (deepLink: string) => {
     try {
-      // Open wallet app first
-      await Linking.openURL(deepLink);
-      // Wait for wallet to open
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Now call transact - wallet is already open, no chooser dialog
-      await connect();
+      await connect(deepLink);
       onConnected?.();
       onClose();
     } catch (err) {
       console.error('[WalletPickerModal] Failed:', err);
-      // Still try connect even if deep link fails
-      try {
-        await connect();
-        onConnected?.();
-        onClose();
-      } catch (e) {
-        console.error('[WalletPickerModal] Connect also failed:', e);
-      }
     }
   }, [connect, onClose, onConnected]);
 
@@ -198,3 +185,4 @@ const styles = StyleSheet.create({
 });
 
 export default WalletPickerModal;
+
