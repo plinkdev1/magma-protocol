@@ -40,6 +40,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const [state, setState] = useState<RecorderState>('idle');
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const pulseValue = useSharedValue(0);
+  const isPressingRef = React.useRef(false);
+  const transcriptRef = React.useRef('');
   const buttonSize = { small: 48, medium: 64, large: 80 }[size];
 
   useEffect(() => {
@@ -50,10 +52,8 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   useSpeechRecognitionEvent('result', (event) => {
     if (event.isFinal) {
-      const transcript = event.results?.[0]?.transcript?.trim() || '';
-      if (transcript) onTranscript(transcript);
-      setState('idle');
-      pulseValue.value = withTiming(0, { duration: 200 });
+      const partial = event.results?.[0]?.transcript?.trim() || '';
+      if (partial) transcriptRef.current = (transcriptRef.current + ' ' + partial).trim();
     }
   });
 
@@ -64,8 +64,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   });
 
   useSpeechRecognitionEvent('end', () => {
-    setState((prev) => (prev === 'recording' ? 'idle' : prev));
-    pulseValue.value = withTiming(0, { duration: 200 });
+    if (isPressingRef.current) {
+      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, maxAlternatives: 1, continuous: false });
+    } else {
+      setState((prev) => (prev === 'recording' ? 'idle' : prev));
+      pulseValue.value = withTiming(0, { duration: 200 });
+    }
   });
 
   const requestPermission = useCallback(async () => {
@@ -80,10 +84,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     if (!granted) granted = await requestPermission();
     if (!granted) { onError?.('Microphone permission denied'); return; }
     try {
+      isPressingRef.current = true;
+      transcriptRef.current = '';
       setState('recording');
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       pulseValue.value = withRepeat(withTiming(1, { duration: 600 }), -1, true);
-      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, maxAlternatives: 1, continuous: true });
+      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, maxAlternatives: 1, continuous: false });
     } catch (error) {
       setState('idle');
       onError?.(error instanceof Error ? error.message : 'Failed to start');
@@ -92,11 +98,16 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   const handleStopRecording = useCallback(async () => {
     if (state !== 'recording') return;
+    isPressingRef.current = false;
     setState('processing');
     pulseValue.value = withTiming(0, { duration: 200 });
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     ExpoSpeechRecognitionModule.stop();
-    setTimeout(() => setState('idle'), 500);
+    setTimeout(() => {
+      if (transcriptRef.current) onTranscript(transcriptRef.current);
+      transcriptRef.current = '';
+      setState('idle');
+    }, 500);
   }, [state]);
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
