@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Linking,
   Image,
   Dimensions,
 } from 'react-native';
@@ -24,10 +23,10 @@ const COLORS = {
 };
 
 const WALLETS = [
-  { id: 'phantom',  name: 'Phantom',  appLink: 'phantom://',  logo: require('../../assets/logos/wallets/phantom.jpg') },
-  { id: 'backpack', name: 'Backpack', appLink: 'backpack://', logo: require('../../assets/logos/wallets/backpack.jpg') },
-  { id: 'solflare', name: 'Solflare', appLink: 'solflare://', logo: require('../../assets/logos/wallets/solflare.jpg') },
-  { id: 'jupiter',  name: 'Jupiter',  appLink: 'jupiter://',  logo: require('../../assets/logos/wallets/jupiter.png') },
+  { id: 'phantom',  name: 'Phantom',  logo: require('../../assets/logos/wallets/phantom.jpg') },
+  { id: 'backpack', name: 'Backpack', logo: require('../../assets/logos/wallets/backpack.jpg') },
+  { id: 'solflare', name: 'Solflare', logo: require('../../assets/logos/wallets/solflare.jpg') },
+  { id: 'jupiter',  name: 'Jupiter',  logo: require('../../assets/logos/wallets/jupiter.png') },
 ];
 
 interface WalletPickerModalProps {
@@ -43,12 +42,10 @@ export const WalletPickerModal: React.FC<WalletPickerModalProps> = ({
 }) => {
   const { connect, isConnecting } = useWallet();
 
-  const handleWalletSelect = useCallback(async (appLink: string) => {
+  const handleWalletSelect = useCallback(async () => {
     onClose();
     await new Promise(resolve => setTimeout(resolve, 300));
     try {
-      await Linking.openURL(appLink);
-      await new Promise(resolve => setTimeout(resolve, 600));
       await connect();
       onConnected?.();
     } catch (err) {
@@ -73,7 +70,7 @@ export const WalletPickerModal: React.FC<WalletPickerModalProps> = ({
               <TouchableOpacity
                 key={wallet.id}
                 style={styles.walletCard}
-                onPress={() => handleWalletSelect(wallet.appLink)}
+                onPress={handleWalletSelect}
                 disabled={isConnecting}
                 activeOpacity={0.7}
               >
