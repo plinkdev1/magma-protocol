@@ -784,8 +784,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 16,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    marginTop: 20,
+    minWidth: 100,
   },
   continueButtonDisabled: {
     backgroundColor: COLORS.muted,
@@ -800,6 +801,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 16,
+    alignItems: 'center',
   },
   backButton: {
     backgroundColor: COLORS.card,
@@ -808,6 +810,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
+    minWidth: 100,
+    alignItems: 'center',
   },
   backButtonText: {
     fontSize: 16,
