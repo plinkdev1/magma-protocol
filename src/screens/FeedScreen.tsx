@@ -1,4 +1,7 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
 import {
@@ -51,6 +54,7 @@ const FeedScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { price, confidence, lastUpdated, isStale, error: priceError } = usePythPriceFeed();
 
   const fetchNarratives = useCallback(async (): Promise<Narrative[]> => {
@@ -89,9 +93,8 @@ return raw.map((n: any) => ({
   }, [queryClient]);
 
   const handleBack = useCallback((narrativeId: string) => {
-    console.log('[FeedScreen] Backing narrative:', narrativeId);
-    // TODO: Navigate to LaunchScreen or open backing modal
-  }, []);
+    navigation.navigate('NarrativeDetail', { narrativeId });
+  }, [navigation]);
 
   const handleDismiss = useCallback((narrativeId: string) => {
     console.log('[FeedScreen] Dismissing narrative:', narrativeId);

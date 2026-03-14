@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
 import { WalletProvider } from './src/context/WalletContext';
 
@@ -14,6 +15,7 @@ import LaunchScreen from './src/screens/LaunchScreen';
 import DeFiScreen from './src/screens/DeFiScreen';
 import PortfolioScreen from './src/screens/PortfolioScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import NarrativeDetailScreen from './src/screens/NarrativeDetailScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -34,7 +36,13 @@ export type RootTabParamList = {
   Profile: undefined;
 };
 
+export type RootStackParamList = {
+  Main: undefined;
+  NarrativeDetail: { narrativeId: string };
+};
+
 const Tab = createBottomTabNavigator<RootTabParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const queryClient = new QueryClient();
 
 const TabBarIcon = ({ icon: Icon, focused }: { icon: React.ElementType; focused: boolean }) => (
@@ -122,7 +130,10 @@ export default function App() {
                     },
                   }}
                 >
-                  <AppTabs />
+                  <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="Main" component={AppTabs} />
+                    <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
+                  </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>
             </QueryClientProvider>
