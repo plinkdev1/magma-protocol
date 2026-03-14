@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { PanGestureHandler, GestureHandlerStateChange } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -24,7 +24,7 @@ const COLORS = {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 32;
-const SWIPE_THRESHOLD = 120;
+const SWIPE_THRESHOLD = 60;
 
 export interface NarrativeCardProps {
   title: string;
@@ -35,6 +35,7 @@ export interface NarrativeCardProps {
   daysRemaining: number;
   onBack: () => void;
   onDismiss: () => void;
+  onPress?: () => void;
 }
 
 export const NarrativeCard: React.FC<NarrativeCardProps> = ({
@@ -46,6 +47,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
   daysRemaining,
   onBack,
   onDismiss,
+  onPress,
 }) => {
   const translationX = useSharedValue(0);
   const scoreWidth = useSharedValue(0);
@@ -125,10 +127,10 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
           <Text style={styles.scoreText}>{score}</Text>
         </View>
 
-        <View style={styles.content}>
+        <TouchableOpacity style={styles.content} onPress={onPress || onBack} activeOpacity={0.7}>
           <Text style={styles.title} numberOfLines={2}>{title}</Text>
           <Text style={styles.thesis} numberOfLines={3}>{thesis}</Text>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.metrics}>
           <View style={styles.metric}>

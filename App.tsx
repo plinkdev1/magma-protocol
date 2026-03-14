@@ -1,4 +1,6 @@
 import React from 'react';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';

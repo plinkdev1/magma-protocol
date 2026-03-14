@@ -179,6 +179,7 @@ return raw.map((n: any) => ({
       backers={item.backers}
       daysRemaining={item.daysRemaining}
       onBack={() => handleBack(item.id)}
+      onPress={() => handleBack(item.id)}
       onDismiss={() => handleDismiss(item.id)}
     />
   );
