@@ -65,7 +65,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   useSpeechRecognitionEvent('end', () => {
     if (isPressingRef.current) {
-      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, maxAlternatives: 1, continuous: false });
+      ExpoSpeechRecognitionModule.start({ lang: undefined, interimResults: true, maxAlternatives: 1, continuous: false });
     } else {
       setState((prev) => (prev === 'recording' ? 'idle' : prev));
       pulseValue.value = withTiming(0, { duration: 200 });

@@ -149,7 +149,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
 
         <View style={styles.hintContainer}>
           <Animated.View
-            style={[styles.hintArrow, {
+            style={[styles.hintArrow, { left: 16,
               opacity: interpolate(translationX.value, [0, 50], [0, 1], Extrapolation.CLAMP),
               transform: [{ translateX: interpolate(translationX.value, [0, 50], [-10, 0], Extrapolation.CLAMP) }],
             }]}
@@ -158,7 +158,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
           </Animated.View>
           <Text style={styles.hintLabel}>Swipe to decide</Text>
           <Animated.View
-            style={[styles.hintArrow, {
+            style={[styles.hintArrow, { right: 16,
               opacity: interpolate(translationX.value, [0, -50], [0, 1], Extrapolation.CLAMP),
               transform: [{ translateX: interpolate(translationX.value, [0, -50], [10, 0], Extrapolation.CLAMP) }],
             }]}
@@ -260,10 +260,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingHorizontal: 16,
     width: '100%',
+    position: 'relative',
   },
   hintArrow: {
     width: 24,
     alignItems: 'center',
+    position: 'absolute',
   },
   hintText: {
     fontSize: 20,
