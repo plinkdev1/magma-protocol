@@ -83,7 +83,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setState('recording');
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       pulseValue.value = withRepeat(withTiming(1, { duration: 600 }), -1, true);
-      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, maxAlternatives: 1, continuous: false });
+      ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true, maxAlternatives: 1, continuous: true });
     } catch (error) {
       setState('idle');
       onError?.(error instanceof Error ? error.message : 'Failed to start');

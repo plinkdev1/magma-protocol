@@ -258,6 +258,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,
+    paddingHorizontal: 16,
+    width: '100%',
   },
   hintArrow: {
     width: 24,

@@ -387,7 +387,7 @@ const s = StyleSheet.create({
   title: { fontFamily: 'SpaceMono', fontSize: 28, fontWeight: '700', color: C.text, textAlign: 'center', lineHeight: 34 },
   body: { fontFamily: 'SpaceMono', fontSize: 12, color: C.muted, textAlign: 'center', lineHeight: 22, maxWidth: 300 },
   bottomArea: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingBottom: 48, paddingTop: 16, paddingHorizontal: 32, alignItems: 'center', gap: 12, backgroundColor: C.bg },
-  mainBtn: { width: '100%', paddingVertical: 16, backgroundColor: C.orange, alignItems: 'center', shadowColor: C.orange, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8 },
+  mainBtn: { width: '100%', paddingVertical: 16, backgroundColor: C.orange, alignItems: 'center', shadowColor: C.orange, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8, borderRadius: 12 },
   mainBtnText: { fontFamily: 'SpaceMono', fontSize: 13, fontWeight: '700', color: '#fff', letterSpacing: 1 },
   swipeHint: { fontFamily: 'SpaceMono', fontSize: 9, color: 'rgba(255,107,53,0.3)', letterSpacing: 2 },
 });
