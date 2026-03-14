@@ -16,6 +16,7 @@ import { RouteProp } from '@react-navigation/native';
 import { ArrowLeft, Copy, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useNarrative } from '../hooks/useNarrative';
 import { useWallet } from '../context/WalletContext';
+import { useBackNarrative } from '../hooks/useBackNarrative';
 import { RootStackParamList } from '../../App';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -99,6 +100,13 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const [selectedToken, setSelectedToken] = useState<Token>('SOL');
   const [backAmount, setBackAmount] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const { backNarrative, backing, txSignature, error: backError } = useBackNarrative();
+  const handleBackNarrative = useCallback(async () => {
+    if (!narrativeId) return;
+    const amount = parseFloat(backAmount);
+    if (isNaN(amount) || amount <= 0) return;
+    try { await backNarrative(narrativeId, amount, selectedToken); } catch (e) {}
+  }, [narrativeId, backAmount, selectedToken, backNarrative]);
 
   const handleBack = useCallback(() => navigation.goBack(), [navigation]);
 
@@ -313,19 +321,25 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           )}
         </View>
 
-        {/* Back button — stub, wired to contract in Phase B */}
+        {backError ? <Text style={styles.backErrorText}>{backError}</Text> : null}
+        {txSignature ? (
+          <TouchableOpacity onPress={() => Linking.openURL(`https://solscan.io/tx/${txSignature}?cluster=devnet`)}>
+            <Text style={styles.backSuccessText}>Backed! View on Solscan</Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity
-          style={[styles.backNarrativeBtn, !account && styles.backNarrativeBtnDisabled]}
+          style={[styles.backNarrativeBtn, (!account || backing || !!txSignature) && styles.backNarrativeBtnDisabled]}
           activeOpacity={0.8}
-          disabled={!account}
-          onPress={() => {
-            // Phase B: call useBackNarrative hook here
-            console.log('[NarrativeDetail] Back tapped — Phase B will wire this to contract');
-          }}
+          disabled={!account || backing || !!txSignature}
+          onPress={handleBackNarrative}
         >
-          <Text style={styles.backNarrativeBtnText}>
-            {account ? `BACK WITH ${selectedToken}` : 'CONNECT WALLET TO BACK'}
-          </Text>
+          {backing ? (
+            <ActivityIndicator color="#fff5ee" size="small" />
+          ) : (
+            <Text style={styles.backNarrativeBtnText}>
+              {txSignature ? `BACKED ${backAmount} ${selectedToken}` : account ? `BACK WITH ${selectedToken}` : 'CONNECT WALLET TO BACK'}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.passBtn} onPress={handleBack} activeOpacity={0.7}>
@@ -788,6 +802,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: C.bg,
     letterSpacing: 1,
+  },
+  backErrorText: {
+    color: '#ff4444',
+    fontFamily: 'SpaceMono',
+    fontSize: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  backSuccessText: {
+    color: '#00ff88',
+    fontFamily: 'IBMPlexMono',
+    fontSize: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
   passBtn: {
     borderWidth: 1,
