@@ -20,7 +20,7 @@ interface WalletContextType {
   isConnected: boolean;
   isConnecting: boolean;
   error: string | null;
-  connect: (walletBaseUri?: string) => Promise<void>;
+  connect: () => Promise<void>;
   disconnect: () => void;
 }
 
@@ -42,7 +42,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const connect = useCallback(async (walletBaseUri?: string) => {
+  const connect = useCallback(async () => {
     if (isConnecting) return;
     setIsConnecting(true);
     setError(null);
@@ -64,8 +64,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           authToken: authResult.auth_token,
         });
         setIsConnected(true);
-      }, walletBaseUri ? { baseUri: walletBaseUri } : undefined);
-    } catch (err: any) {
+      });
+    } catch (err) {
       console.error('[WalletContext] Connect failed:', err);
       setError(err?.message || 'Wallet connection failed');
       setIsConnected(false);
@@ -87,6 +87,3 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     </WalletContext.Provider>
   );
 };
-
-
-
