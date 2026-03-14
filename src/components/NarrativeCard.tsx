@@ -272,6 +272,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.muted,
     marginHorizontal: 12,
+    flexShrink: 1,
+    textAlign: 'center',
   },
 });
 

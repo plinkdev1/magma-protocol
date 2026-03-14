@@ -349,13 +349,13 @@ const vis = StyleSheet.create({
 
   // Vault
   vaultWrap: { gap: 10, width: W - 80 },
-  pill: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, backgroundColor: 'rgba(255,107,53,0.04)' },
+  pill: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, backgroundColor: 'rgba(255,107,53,0.04)', borderRadius: 12 },
   pillName: { fontFamily: 'SpaceMono', fontSize: 12, fontWeight: '700' },
   pillApy: { fontFamily: 'SpaceMono', fontSize: 10, color: C.muted },
 
   // Wallet
   walletWrap: { gap: 8, width: W - 80 },
-  walletBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.15)', backgroundColor: 'rgba(255,107,53,0.04)' },
+  walletBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.15)', backgroundColor: 'rgba(255,107,53,0.04)', borderRadius: 12 },
   walletBtnActive: { borderColor: 'rgba(255,107,53,0.5)', backgroundColor: 'rgba(255,107,53,0.08)' },
   walletLogo: { width: 32, height: 32, borderRadius: 6 },
   walletInfo: { flex: 1 },
@@ -374,7 +374,7 @@ const vis = StyleSheet.create({
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, alignItems: 'center' },
   lavaBg: { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.35, backgroundColor: 'rgba(255,40,0,0.06)', borderTopLeftRadius: 200, borderTopRightRadius: 200 },
-  skipBtn: { position: 'absolute', top: 80, right: 24, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', zIndex: 20 },
+  skipBtn: { position: 'absolute', top: 80, right: 24, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', zIndex: 20, borderRadius: 12 },
   skipText: { fontFamily: 'SpaceMono', fontSize: 10, color: 'rgba(255,107,53,0.5)', letterSpacing: 1 },
   dotRow: { position: 'absolute', top: 56, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 8, zIndex: 10 },
   dot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(255,107,53,0.15)' },

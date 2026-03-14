@@ -1,4 +1,5 @@
 import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -50,8 +51,8 @@ function AppTabs() {
           backgroundColor: COLORS.background,
           borderTopColor: COLORS.muted,
           borderTopWidth: 1,
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
+          height: 64 + insets.bottom,
+          paddingBottom: insets.bottom + 8,
           paddingTop: 8,
         },
         tabBarActiveTintColor: COLORS.primary,
@@ -76,11 +77,23 @@ function AppTabs() {
 export default function App() {
   const [appState, setAppState] = React.useState<'loading' | 'onboarding' | 'main'>('loading');
 
-  const handleLoadComplete = React.useCallback(() => {
-    setAppState('onboarding');
+  const handleLoadComplete = React.useCallback(async () => {
+    try {
+      const seen = await AsyncStorage.getItem('hasSeenOnboarding');
+      if (seen === 'true') {
+        setAppState('main');
+      } else {
+        setAppState('onboarding');
+      }
+    } catch {
+      setAppState('onboarding');
+    }
   }, []);
 
-  const handleOnboardingComplete = React.useCallback(() => {
+  const handleOnboardingComplete = React.useCallback(async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+    } catch {}
     setAppState('main');
   }, []);
 

@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Syne-Bold',
   },
   progressStepLine: {
-    width: 50,
+    width: 32,
     height: 3,
     backgroundColor: COLORS.card,
     marginHorizontal: 4,
