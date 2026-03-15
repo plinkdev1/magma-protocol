@@ -238,7 +238,7 @@ export function useBackNarrative(): UseBackNarrativeReturn {
           });
 
           const authorizedPubkey = new PublicKey(
-            authResult.accounts[0].address
+            (() => { const r = authResult.accounts[0].address; return typeof r === "string" ? Buffer.from(r, "base64") : r; })()
           );
 
           // Fetch fresh blockhash
