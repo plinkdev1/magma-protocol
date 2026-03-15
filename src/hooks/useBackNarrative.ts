@@ -139,11 +139,20 @@ function buildBackNarrativeInstruction(
   const DISCRIMINATOR = Buffer.from([75, 87, 9, 26, 36, 72, 2, 16]);
 
   // Serialize args (Borsh layout matching Anchor)
-  const data = Buffer.allocUnsafe(8 + 16 + 8 + 8); // discriminator + id + amount + deadline
+  // Hermes-safe manual LE encoding (no BigInt buffer methods)
+  const data = Buffer.alloc(8 + 16 + 8 + 8);
   DISCRIMINATOR.copy(data, 0);
-  Buffer.from(narrativeIdBytes).copy(data, 8); // [u8; 16]
-  data.writeBigUInt64LE(amountLamports, 24); // u64 LE
-  data.writeBigInt64LE(deadlineUnix, 32);     // i64 LE deadline
+  Buffer.from(narrativeIdBytes).copy(data, 8);
+  // Write amountLamports as u64 LE (split into two u32)
+  const amtLo = Number(amountLamports & BigInt(0xFFFFFFFF));
+  const amtHi = Number((amountLamports >> BigInt(32)) & BigInt(0xFFFFFFFF));
+  data.writeUInt32LE(amtLo, 24);
+  data.writeUInt32LE(amtHi, 28);
+  // Write deadlineUnix as i64 LE (split into two u32)
+  const dlLo = Number(deadlineUnix & BigInt(0xFFFFFFFF));
+  const dlHi = Number((deadlineUnix >> BigInt(32)) & BigInt(0xFFFFFFFF));
+  data.writeUInt32LE(dlLo, 32);
+  data.writeUInt32LE(dlHi, 36);
 
   return new TransactionInstruction({
     keys: [
