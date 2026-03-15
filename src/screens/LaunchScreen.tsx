@@ -33,6 +33,7 @@ import { AgentProgress } from '../components/AgentProgress';
 import { useAuthorization } from '../context/WalletContext';
 import WalletPickerModal from '../components/WalletPickerModal';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
+import { DEADLINE_OPTIONS, DEFAULT_DEADLINE, DeadlineTier } from '../constants/programs';
 import { PublicKey, Transaction } from '@solana/web3.js';
 
 // Design tokens
@@ -104,6 +105,7 @@ const LaunchScreen: React.FC = () => {
   const progressValue = useSharedValue(0);
   const swipeOffset = useSharedValue(0);
   const [currentHookIndex, setCurrentHookIndex] = useState(0);
+  const [selectedDeadline, setSelectedDeadline] = useState<DeadlineTier>(DEFAULT_DEADLINE);
 
   // Animate progress bar when step changes
   React.useEffect(() => {
@@ -222,6 +224,7 @@ const LaunchScreen: React.FC = () => {
         signedTransaction: 'MOCK_SIGNED_TX',
         thesis,
         walletAddress: account?.publicKey?.toBase58() || 'unknown',
+          deadline_days: selectedDeadline.days,
       });
 
       setPublishedNarrativeId(sendResponse.data.narrativeId);
@@ -614,6 +617,32 @@ const LaunchScreen: React.FC = () => {
               <Text style={styles.publishDetailLabel}>Network:</Text>
               <Text style={styles.publishDetailValue}>Solana Devnet</Text>
             </View>
+
+              <View style={styles.deadlineSection}>
+                <Text style={styles.deadlineLabel}>Deadline</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {DEADLINE_OPTIONS.map((option) => {
+                    const isSelected = selectedDeadline.tag === option.tag;
+                    return (
+                      <TouchableOpacity
+                        key={option.tag}
+                        style={[
+                          styles.deadlinePill,
+                          isSelected && { borderColor: option.color, backgroundColor: option.color + '22' },
+                        ]}
+                        onPress={() => setSelectedDeadline(option)}
+                      >
+                        <Text style={[styles.deadlinePillTag, isSelected && { color: option.color }]}>
+                          {option.tag}
+                        </Text>
+                        <Text style={[styles.deadlinePillDays, isSelected && { color: option.color }]}>
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
 
             {publishError && (
               <View style={styles.errorBanner}>
@@ -1206,6 +1235,11 @@ const styles = StyleSheet.create({
     color: COLORS.background,
     fontFamily: 'Syne-Bold',
   },
+  deadlineSection: { marginTop: 4, marginBottom: 8 },
+  deadlineLabel: { color: COLORS.muted, fontSize: 12, fontFamily: 'SpaceMono', letterSpacing: 1, marginBottom: 10, textTransform: 'uppercase' },
+  deadlinePill: { borderWidth: 1, borderColor: COLORS.cardBorder, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, alignItems: 'center' },
+  deadlinePillTag: { color: COLORS.text, fontSize: 11, fontFamily: 'SpaceMono', letterSpacing: 1 },
+  deadlinePillDays: { color: COLORS.muted, fontSize: 10, fontFamily: 'SpaceMono', marginTop: 2 },
 });
 
 export default LaunchScreen;
