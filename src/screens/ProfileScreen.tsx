@@ -235,16 +235,20 @@ const ProfileScreen: React.FC = () => {
     <View style={styles.walletCard}>
       <View style={styles.walletCardHeader}>
         <Text style={styles.walletCardLabel}>Connected Wallet</Text>
-        <View style={[styles.connectionStatus, styles.connectionStatusConnected]}>
-          <View style={styles.connectionDot} />
-          <Text style={styles.connectionText}>Connected</Text>
-        </View>
+        {isConnected ? (
+          <View style={[styles.connectionStatus, styles.connectionStatusConnected]}>
+            <View style={styles.connectionDot} />
+            <Text style={styles.connectionText}>Connected</Text>
+          </View>
+        ) : (
+          <View style={[styles.connectionStatus, { backgroundColor: `${COLORS.muted}20` }]}>
+            <View style={[styles.connectionDot, { backgroundColor: COLORS.muted }]} />
+            <Text style={[styles.connectionText, { color: COLORS.muted }]}>Disconnected</Text>
+          </View>
+        )}
       </View>
-      <Text style={styles.walletAddress} numberOfLines={1}>
-        {account ? account.address : 'Not connected'}
-      </Text>
       <Text style={styles.walletAddressShort}>
-        {account ? formatAddress(account.address) : 'Not connected'}
+        {isConnected && account ? formatAddress(account.address) : "Not connected"}
       </Text>
     </View>
   );
