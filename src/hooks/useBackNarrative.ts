@@ -125,8 +125,8 @@ async function deriveNarrativeStatePda(
  */
 function buildBackNarrativeInstruction(
   narrativeIdBytes: Uint8Array, // 16 bytes
-  amountLamports: bigint,
-  deadlineUnix: bigint,        // i64 Unix timestamp
+  amountLamports: number,
+  deadlineUnix: number,
   backerPubkey: PublicKey,
   backingRecordPda: PublicKey,
   vaultPda: PublicKey,
@@ -144,13 +144,13 @@ function buildBackNarrativeInstruction(
   DISCRIMINATOR.copy(data, 0);
   Buffer.from(narrativeIdBytes).copy(data, 8);
   // Write amountLamports as u64 LE (split into two u32)
-  const amtLo = Number(amountLamports & BigInt(0xFFFFFFFF));
-  const amtHi = Number((amountLamports >> BigInt(32)) & BigInt(0xFFFFFFFF));
+  const amtLo = amountLamports >>> 0;
+  const amtHi = Math.floor(amountLamports / 0x100000000) >>> 0;
   data.writeUInt32LE(amtLo, 24);
   data.writeUInt32LE(amtHi, 28);
   // Write deadlineUnix as i64 LE (split into two u32)
-  const dlLo = Number(deadlineUnix & BigInt(0xFFFFFFFF));
-  const dlHi = Number((deadlineUnix >> BigInt(32)) & BigInt(0xFFFFFFFF));
+  const dlLo = deadlineUnix >>> 0;
+  const dlHi = Math.floor(deadlineUnix / 0x100000000) >>> 0;
   data.writeUInt32LE(dlLo, 32);
   data.writeUInt32LE(dlHi, 36);
 
@@ -219,7 +219,7 @@ export function useBackNarrative(): UseBackNarrativeReturn {
         const programId = new PublicKey(MAGMA_PROGRAMS.BACKING_VAULT);
         console.log("[useBackNarrative] account.address:", JSON.stringify(account.address));
         const backerPubkey = new PublicKey(account.address);
-        const amountLamports = BigInt(Math.round(amountSol * LAMPORTS_PER_SOL));
+        const amountLamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
         // ── Derive PDAs ────────────────────────────────────────────────────
         const narrativeIdBytes = uuidToNarrativeIdBytes(narrativeId);
@@ -270,7 +270,7 @@ export function useBackNarrative(): UseBackNarrativeReturn {
             authorizedPubkey,
             backingRecordPda,
             vaultPda,
-            BigInt(Math.floor(Date.now() / 1000) + 7 * 86400), // deadline: 7 days from now fallback
+            Math.floor(Date.now() / 1000) + 7 * 86400, // deadline: 7 days fallback
             narrativeStatePda,
             programId
           );
