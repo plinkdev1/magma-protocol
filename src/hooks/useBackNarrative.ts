@@ -135,7 +135,7 @@ function buildBackNarrativeInstruction(
   // Anchor discriminator for back_narrative
   // Computed as: sha256("global:back_narrative").slice(0, 8)
   // To verify: node -e "const {sha256} = require('@noble/hashes/sha256'); console.log(Buffer.from(sha256('global:back_narrative')).slice(0,8))"
-  const DISCRIMINATOR = Buffer.from([75, 53, 44, 206, 68, 168, 58, 124]);
+  const DISCRIMINATOR = Buffer.from([75, 87, 9, 26, 36, 72, 2, 16]);
 
   // Serialize args (Borsh layout matching Anchor)
   const data = Buffer.allocUnsafe(8 + 16 + 8);
@@ -203,8 +203,10 @@ export function useBackNarrative(): UseBackNarrativeReturn {
       setTxSignature(null);
 
       try {
-        const connection = new Connection(ACTIVE_NETWORK, "confirmed");
+        const rpcUrl = process.env.EXPO_PUBLIC_HELIUS_RPC_URL || ACTIVE_NETWORK;
+        const connection = new Connection(rpcUrl, "confirmed");
         const programId = new PublicKey(MAGMA_PROGRAMS.BACKING_VAULT);
+        console.log("[useBackNarrative] account.address:", JSON.stringify(account.address));
         const backerPubkey = new PublicKey(account.address);
         const amountLamports = BigInt(Math.round(amountSol * LAMPORTS_PER_SOL));
 
@@ -242,6 +244,7 @@ export function useBackNarrative(): UseBackNarrativeReturn {
           // Fetch fresh blockhash
           const { blockhash, lastValidBlockHeight } =
             await connection.getLatestBlockhash();
+          const minSlot = await connection.getSlot();
 
           // Build transaction
           const transaction = new Transaction({
@@ -264,50 +267,28 @@ export function useBackNarrative(): UseBackNarrativeReturn {
           // Sign and send via MWA (wallet handles signing + broadcast)
           const [txSig] = await wallet.signAndSendTransactions({
             transactions: [transaction],
+            minContextSlot: minSlot,
           });
 
           console.log("[useBackNarrative] TX signed and sent:", txSig);
           return txSig;
         });
 
-        // ── Confirm transaction ────────────────────────────────────────────
-        // Wait for confirmation before recording in backend
-        const { blockhash, lastValidBlockHeight } =
-          await connection.getLatestBlockhash();
-        await connection.confirmTransaction(
-          { signature: sig, blockhash, lastValidBlockHeight },
-          "confirmed"
-        );
+        // MWA already confirms on-chain;
 
-        console.log("[useBackNarrative] TX confirmed:", sig);
-
-        // ── Record in backend (Supabase via API) ───────────────────────────
-        const backResponse = await fetch(
-          `${API_URL}/v1/narratives/${narrativeId}/back`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              wallet_address: account.address,
-              amount_sol: amountSol,
-              amount_skr: 0,
-              tx_signature: sig,
-              token_type: tokenType,
-            }),
-          }
-        );
-
-        if (!backResponse.ok) {
-          // TX is confirmed on-chain — backend failure is non-fatal
-          // Log the error but don't throw (the backing is real regardless)
-          const backError = await backResponse.text();
-          console.warn(
-            "[useBackNarrative] Backend record failed (non-fatal):",
-            backError
-          );
-        }
-
-        // ── Success ────────────────────────────────────────────────────────
+        // Record in backend (non-fatal)
+        fetch(`${API_URL}/v1/narratives/${narrativeId}/back`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            wallet_address: account.address,
+            amount_sol: amountSol,
+            amount_skr: 0,
+            tx_signature: sig,
+            token_type: tokenType,
+          }),
+        }).catch(e => console.warn("[useBackNarrative] Backend non-fatal:", e));
+        
         setTxSignature(sig);
 
         const result: BackNarrativeResult = {

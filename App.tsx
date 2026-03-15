@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import React from 'react';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
