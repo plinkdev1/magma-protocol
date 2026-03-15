@@ -16,6 +16,8 @@ import { useState, useCallback } from "react";
 import { transact } from "@solana-mobile/mobile-wallet-adapter-protocol-web3js";
 import {
   Connection,
+  TransactionMessage,
+  VersionedTransaction,
   PublicKey,
   Transaction,
   SystemProgram,
@@ -239,6 +241,10 @@ export function useBackNarrative(): UseBackNarrativeReturn {
         // ── Build + sign transaction via MWA ───────────────────────────────
         const sig = await transact(async (wallet) => {
           // Authorize (re-auth if needed — handles expired sessions)
+          const allMethods = []; let obj = wallet; while(obj) { allMethods.push(...Object.getOwnPropertyNames(obj)); obj = Object.getPrototypeOf(obj); if(obj === Object.prototype) break; }
+          console.log("[useBackNarrative] ALL wallet methods:", allMethods.join(", "));
+          console.log("[useBackNarrative] wallet proto:", Object.getOwnPropertyNames(Object.getPrototypeOf(wallet)).join(", "));
+          console.log("[useBackNarrative] calling wallet.authorize...");
           const authResult = await wallet.authorize({
             cluster: "devnet",
             identity: {
@@ -248,41 +254,45 @@ export function useBackNarrative(): UseBackNarrativeReturn {
             },
           });
 
+          console.log("[useBackNarrative] authorize done, building pubkey...");
           const authorizedPubkey = new PublicKey(
             (() => { const r = authResult.accounts[0].address; return typeof r === "string" ? Buffer.from(r, "base64") : r; })()
           );
 
           // Fetch fresh blockhash
-          const { blockhash, lastValidBlockHeight } =
-            await connection.getLatestBlockhash();
-          const minSlot = await connection.getSlot();
+          console.log("[useBackNarrative] fetching blockhash...");
+          const { blockhash } = await connection.getLatestBlockhash();
+          const minContextSlot = await connection.getSlot();
 
-          // Build transaction
-          const transaction = new Transaction({
-            feePayer: authorizedPubkey,
-            recentBlockhash: blockhash,
-          });
-
-          // Add back_narrative instruction
+          // Build instruction first
+          console.log("[useBackNarrative] building instruction...");
           const backIx = buildBackNarrativeInstruction(
             narrativeIdBytes,
             amountLamports,
+            Math.floor(Date.now() / 1000) + 7 * 86400,
             authorizedPubkey,
             backingRecordPda,
             vaultPda,
-            Math.floor(Date.now() / 1000) + 7 * 86400, // deadline: 7 days fallback
             narrativeStatePda,
             programId
           );
-          transaction.add(backIx);
 
-          // Sign and send via MWA (wallet handles signing + broadcast)
-          const [txSig] = await wallet.signAndSendTransactions({
+          // Build VersionedTransaction (required by MWA v2)
+          const message = new TransactionMessage({
+            payerKey: authorizedPubkey,
+            recentBlockhash: blockhash,
+            instructions: [backIx],
+          }).compileToV0Message();
+          const transaction = new VersionedTransaction(message);
+
+          // Sign and send via MWA v2
+          console.log("[useBackNarrative] calling signAndSendTransactions...");
+          const txSigs = await wallet.signAndSendTransactions({
             transactions: [transaction],
-            minContextSlot: minSlot,
+            minContextSlot,
           });
-
-          console.log("[useBackNarrative] TX signed and sent:", txSig);
+          const txSig = txSigs[0];
+          console.log("[useBackNarrative] broadcast done:", txSig);
           return txSig;
         });
 
