@@ -27,3 +27,21 @@ export const DEADLINE_OPTIONS = [
 
 export type DeadlineTier = typeof DEADLINE_OPTIONS[number];
 export const DEFAULT_DEADLINE = DEADLINE_OPTIONS[1]; // SHORT 7d
+
+
+export const ACTIVE_NETWORK = process.env.EXPO_PUBLIC_HELIUS_RPC_URL || "https://api.devnet.solana.com";
+export const MIN_BACKING_SOL = 0.001;
+export const MAX_BACKING_SOL = 10.0;
+
+/**
+ * Convert a UUID string to a 16-byte Uint8Array for on-chain use.
+ * Pads with zeros if the narrative ID is not a standard UUID.
+ */
+export function uuidToNarrativeIdBytes(narrativeId: string): Uint8Array {
+  const hex = narrativeId.replace(/-/g, "");
+  const bytes = new Uint8Array(16);
+  for (let i = 0; i < 16; i++) {
+    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2) || "00", 16);
+  }
+  return bytes;
+}

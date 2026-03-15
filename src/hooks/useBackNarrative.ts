@@ -126,6 +126,7 @@ async function deriveNarrativeStatePda(
 function buildBackNarrativeInstruction(
   narrativeIdBytes: Uint8Array, // 16 bytes
   amountLamports: bigint,
+  deadlineUnix: bigint,        // i64 Unix timestamp
   backerPubkey: PublicKey,
   backingRecordPda: PublicKey,
   vaultPda: PublicKey,
@@ -138,10 +139,11 @@ function buildBackNarrativeInstruction(
   const DISCRIMINATOR = Buffer.from([75, 87, 9, 26, 36, 72, 2, 16]);
 
   // Serialize args (Borsh layout matching Anchor)
-  const data = Buffer.allocUnsafe(8 + 16 + 8);
+  const data = Buffer.allocUnsafe(8 + 16 + 8 + 8); // discriminator + id + amount + deadline
   DISCRIMINATOR.copy(data, 0);
   Buffer.from(narrativeIdBytes).copy(data, 8); // [u8; 16]
   data.writeBigUInt64LE(amountLamports, 24); // u64 LE
+  data.writeBigInt64LE(deadlineUnix, 32);     // i64 LE deadline
 
   return new TransactionInstruction({
     keys: [
@@ -259,6 +261,7 @@ export function useBackNarrative(): UseBackNarrativeReturn {
             authorizedPubkey,
             backingRecordPda,
             vaultPda,
+            BigInt(Math.floor(Date.now() / 1000) + 7 * 86400), // deadline: 7 days from now fallback
             narrativeStatePda,
             programId
           );
