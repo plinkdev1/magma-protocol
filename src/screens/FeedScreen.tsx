@@ -19,6 +19,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 import NarrativeCard, { NarrativeCardProps } from '../components/NarrativeCard';
+import { getDaysRemaining } from '../utils/narrative';
 import { usePythPriceFeed } from '../hooks/usePythPriceFeed';
 
 // Design tokens
@@ -44,6 +45,7 @@ interface Narrative {
   solBacked: number;
   backers: number;
   daysRemaining: number;
+  deadline_at?: string;
 }
 
 const FILTERS: FilterType[] = ['All', 'Trending', 'New', 'Backed'];
@@ -67,7 +69,7 @@ return raw.map((n: any) => ({
   ...n,
   solBacked: n.sol_backed ?? 0,
   stage: (n.status || 'active').toUpperCase(),
-  daysRemaining: n.days_remaining ?? 0,
+  daysRemaining: getDaysRemaining(n.deadline_at),
   score: n.score ?? 0,
   backers: n.backers ?? 0,
 }));
