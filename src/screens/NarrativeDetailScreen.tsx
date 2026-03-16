@@ -470,7 +470,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 <Text style={styles.oracleConfidence}>Confidence: {narrative.confidence}%</Text>
               )}
               {narrative.sources_used && Array.isArray(narrative.sources_used) && (
-                <Text style={styles.oracleSources}>Sources: {narrative.sources_used.join(' · ')}</Text>
+                <Text style={styles.oracleSources}>Sources: {narrative.sources_used.join(' - ')}</Text>
               )}
               {narrative.resolved_at && (
                 <Text style={styles.oracleResolvedAt}>Resolved: {formatDate(narrative.resolved_at)}</Text>
