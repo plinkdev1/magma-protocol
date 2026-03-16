@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Clipboard,
   Linking,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,6 +18,7 @@ import { ArrowLeft, Copy, ExternalLink, ChevronDown, ChevronUp } from 'lucide-re
 import { useNarrative } from '../hooks/useNarrative';
 import { useWallet } from '../context/WalletContext';
 import { useBackNarrative } from '../hooks/useBackNarrative';
+import { API_URL } from '../config';
 import { RootStackParamList } from '../../App';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -101,6 +103,84 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const [backAmount, setBackAmount] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const { backNarrative, backing, txSignature, error: backError } = useBackNarrative();
+  // -- Task 12: challenge state --
+  const [challengeModalVisible, setChallengeModalVisible] = useState(false);
+  const [challengeEvidence, setChallengeEvidence] = useState('');
+  const [challengeSubmitting, setChallengeSubmitting] = useState(false);
+  const [challengeSubmitted, setChallengeSubmitted] = useState(false);
+  const [challengeError, setChallengeError] = useState('');
+  const [challengeFee, setChallengeFee] = useState(0.05);
+  const [countdown, setCountdown] = useState('');
+  const [earlyResolutionRequested, setEarlyResolutionRequested] = useState(false);
+
+  // countdown timer for challenge window
+  useEffect(() => {
+    if (!narrative?.challenge_window_closes_at) return;
+    const update = () => {
+      const diff = new Date(narrative.challenge_window_closes_at).getTime() - Date.now();
+      if (diff <= 0) { setCountdown('Closed'); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setCountdown(h + 'h ' + m + 'm remaining');
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, [narrative?.challenge_window_closes_at]);
+
+  // compute challenge fee from backing amount
+  useEffect(() => {
+    if (!narrative || !account) return;
+    const fetchFee = async () => {
+      try {
+        const res = await fetch(API_URL + '/v1/narratives/' + narrativeId + '/challenges');
+        // fee is computed server-side on submit; show estimate here
+        setChallengeFee(0.05);
+      } catch {}
+    };
+    fetchFee();
+  }, [narrativeId, account]);
+
+  const handleSubmitChallenge = useCallback(async () => {
+    if (!account || !challengeEvidence.trim()) return;
+    setChallengeSubmitting(true);
+    setChallengeError('');
+    try {
+      const res = await fetch(API_URL + '/v1/narratives/' + narrativeId + '/challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challenger_wallet: account.publicKey.toString(),
+          evidence_text: challengeEvidence.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setChallengeError(data.message || data.error || 'Failed to submit challenge');
+        return;
+      }
+      setChallengeSubmitted(true);
+      setChallengeModalVisible(false);
+      refetch();
+    } catch (e: any) {
+      setChallengeError('Network error. Please try again.');
+    } finally {
+      setChallengeSubmitting(false);
+    }
+  }, [account, challengeEvidence, narrativeId, refetch]);
+
+  const handleRequestEarlyResolution = useCallback(async () => {
+    if (!account) return;
+    try {
+      await fetch(API_URL + '/v1/narratives/' + narrativeId + '/request-early-resolution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creator_wallet: account.publicKey.toString() }),
+      });
+      setEarlyResolutionRequested(true);
+    } catch {}
+  }, [account, narrativeId]);
+
   const handleBackNarrative = useCallback(async () => {
     if (!narrativeId) return;
     const amount = parseFloat(backAmount);
@@ -148,10 +228,28 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
   // ── Oracle badge ──
   const oracleStatus = narrative.oracle_status ?? 'pending';
+  const isResolved = ['resolved_true','resolved_false','under_review'].includes(oracleStatus);
+  const isTrue = oracleStatus === 'resolved_true';
+  const isFalse = oracleStatus === 'resolved_false';
+  const isUnderReview = oracleStatus === 'under_review';
+  const isFinal = narrative.is_final ?? false;
+  const windowOpen = !isFinal &&
+    narrative.challenge_window_closes_at &&
+    new Date() < new Date(narrative.challenge_window_closes_at);
+  const walletKey = account?.publicKey?.toString();
+  const isCreator = walletKey && narrative.wallet_address === walletKey;
   const oracleBadgeColor =
-    oracleStatus === 'resolved' ? C.success :
+    isTrue ? C.success :
+    isFalse ? '#ff4444' :
+    isUnderReview ? C.accent :
     oracleStatus === 'running' ? C.accent :
     C.muted;
+  const oracleLabel =
+    isTrue ? (isFinal ? 'RESOLVED — TRUE  [FINAL]' : 'RESOLVED — TRUE') :
+    isFalse ? (isFinal ? 'RESOLVED — FALSE  [FINAL]' : 'RESOLVED — FALSE') :
+    isUnderReview ? 'UNDER REVIEW' :
+    oracleStatus === 'running' ? 'SCORING...' :
+    'PENDING';
 
   // ── Estimated yield (stub for Phase D) ──
   const estimatedYield = backAmount
@@ -352,39 +450,71 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.oracleCard}>
           <View style={styles.oracleStatusRow}>
             <View style={[styles.oracleDot, { backgroundColor: oracleBadgeColor }]} />
-            <Text style={[styles.oracleStatusText, { color: oracleBadgeColor }]}>
-              {oracleStatus.toUpperCase()}
-            </Text>
+            <Text style={[styles.oracleStatusText, { color: oracleBadgeColor }]}>{oracleLabel}</Text>
           </View>
-
-          {oracleStatus === 'resolved' && narrative.resolution && (
-            <View style={styles.oracleResolution}>
-              <Text style={styles.oracleResolutionLabel}>Resolution</Text>
-              <Text style={[
-                styles.oracleResolutionValue,
-                { color: narrative.resolution === 'true' ? C.success : '#ff4444' }
-              ]}>
-                {narrative.resolution === 'true' ? 'TRUE ✓' : 'FALSE ✗'}
-              </Text>
-            </View>
-          )}
 
           {oracleStatus === 'pending' && (
             <Text style={styles.oraclePendingText}>
-              Oracle resolution will begin after the narrative deadline passes. Scoring uses Grok + Tavily.
+              Oracle resolution will begin after the narrative deadline passes.
             </Text>
           )}
-
           {oracleStatus === 'running' && (
             <View style={styles.oracleRunning}>
               <ActivityIndicator size="small" color={C.accent} />
               <Text style={styles.oracleRunningText}>AI agents are scoring this narrative...</Text>
             </View>
           )}
+          {(isTrue || isFalse) && (
+            <View style={styles.oracleSourcesBlock}>
+              {narrative.confidence != null && (
+                <Text style={styles.oracleConfidence}>Confidence: {narrative.confidence}%</Text>
+              )}
+              {narrative.sources_used && Array.isArray(narrative.sources_used) && (
+                <Text style={styles.oracleSources}>Sources: {narrative.sources_used.join(' · ')}</Text>
+              )}
+              {narrative.resolved_at && (
+                <Text style={styles.oracleResolvedAt}>Resolved: {formatDate(narrative.resolved_at)}</Text>
+              )}
+            </View>
+          )}
+          {isUnderReview && (
+            <Text style={styles.oraclePendingText}>
+              {challengeSubmitted
+                ? 'You submitted a challenge. Pending admin review (24-48 hours).'
+                : 'This resolution is under admin review.'}
+            </Text>
+          )}
+          {(isTrue || isFalse) && windowOpen && !isFinal && (
+            <Text style={styles.challengeCountdown}>Challenge window: {countdown}</Text>
+          )}
+          {(isTrue || isFalse) && windowOpen && !isFinal && walletKey && !challengeSubmitted && (
+            <TouchableOpacity
+              style={styles.challengeBtn}
+              activeOpacity={0.8}
+              onPress={() => setChallengeModalVisible(true)}
+            >
+              <Text style={styles.challengeBtnText}>CHALLENGE THIS RESOLUTION</Text>
+            </TouchableOpacity>
+          )}
+          {isFinal && (
+            <Text style={styles.finalLabel}>Resolution is permanent.</Text>
+          )}
         </View>
 
-        {/* ── Section 5: Payout (only when resolved) ── */}
-        {oracleStatus === 'resolved' && (
+        {oracleStatus === 'pending' && isCreator && !earlyResolutionRequested && (
+          <TouchableOpacity
+            style={styles.earlyResolutionBtn}
+            activeOpacity={0.8}
+            onPress={handleRequestEarlyResolution}
+          >
+            <Text style={styles.earlyResolutionBtnText}>Request Early Resolution</Text>
+          </TouchableOpacity>
+        )}
+        {earlyResolutionRequested && (
+          <Text style={styles.earlyResolutionSent}>Early resolution requested.</Text>
+        )}
+
+        {(isTrue || isFalse) && (
           <>
             <SectionHeader title="PAYOUT" />
             <View style={styles.payoutCard}>
@@ -392,11 +522,54 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 Payout available after oracle resolution. Claim coming in Phase D.
               </Text>
               <TouchableOpacity style={[styles.claimBtn, styles.claimBtnDisabled]} disabled>
-                <Text style={styles.claimBtnText}>CLAIM PAYOUT — COMING SOON</Text>
+                <Text style={styles.claimBtnText}>CLAIM PAYOUT - COMING SOON</Text>
               </TouchableOpacity>
             </View>
           </>
         )}
+
+        <Modal
+          visible={challengeModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setChallengeModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Challenge Resolution</Text>
+              <Text style={styles.modalBody}>Resolution: {isTrue ? 'TRUE' : 'FALSE'}</Text>
+              <Text style={styles.modalBody}>
+                Challenge fee: {challengeFee} SOL{'\n'}(Refunded + 0.025 SOL bonus if upheld)
+              </Text>
+              <TextInput
+                style={styles.modalInput}
+                multiline
+                numberOfLines={4}
+                placeholder="Paste links, explain why resolution is wrong..."
+                placeholderTextColor={C.muted}
+                value={challengeEvidence}
+                onChangeText={setChallengeEvidence}
+              />
+              {challengeError ? <Text style={styles.modalError}>{challengeError}</Text> : null}
+              <TouchableOpacity
+                style={[styles.modalSubmitBtn, (!challengeEvidence.trim() || challengeSubmitting) && styles.backNarrativeBtnDisabled]}
+                activeOpacity={0.8}
+                disabled={challengeSubmitting || !challengeEvidence.trim()}
+                onPress={handleSubmitChallenge}
+              >
+                {challengeSubmitting
+                  ? <ActivityIndicator color="#fff5ee" size="small" />
+                  : <Text style={styles.modalSubmitBtnText}>SUBMIT CHALLENGE</Text>}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setChallengeModalVisible(false)}
+              >
+                <Text style={styles.modalCancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         {/* ── Section 6: Backing History ── */}
         <SectionHeader title="BACKING HISTORY" />
@@ -978,6 +1151,144 @@ const styles = StyleSheet.create({
   },
   copyBtn: {
     padding: 2,
+  },
+
+  // -- Task 12: oracle + challenge styles --
+  oracleSourcesBlock: {
+    marginTop: 8,
+    gap: 4,
+  },
+  oracleConfidence: {
+    color: '#fff5ee',
+    fontSize: 13,
+    fontFamily: 'SpaceMono',
+  },
+  oracleSources: {
+    color: '#7a4a30',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+    marginTop: 2,
+  },
+  oracleResolvedAt: {
+    color: '#7a4a30',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+    marginTop: 2,
+  },
+  oracleUnderReview: {
+    marginTop: 8,
+  },
+  challengeCountdown: {
+    color: '#ffb347',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+    marginTop: 10,
+  },
+  challengeBtn: {
+    marginTop: 12,
+    backgroundColor: '#3d2a1f',
+    borderWidth: 1,
+    borderColor: '#ff6b35',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  challengeBtnText: {
+    color: '#ff6b35',
+    fontSize: 13,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.5,
+  },
+  finalLabel: {
+    color: '#7a4a30',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+    marginTop: 8,
+  },
+  earlyResolutionBtn: {
+    marginTop: 8,
+    marginBottom: 4,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3d2a1f',
+    borderRadius: 8,
+  },
+  earlyResolutionBtnText: {
+    color: '#7a4a30',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+  },
+  earlyResolutionSent: {
+    color: '#7a4a30',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    backgroundColor: '#1a0f0a',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 24,
+    gap: 12,
+    borderTopWidth: 1,
+    borderColor: '#3d2a1f',
+  },
+  modalTitle: {
+    color: '#fff5ee',
+    fontSize: 16,
+    fontFamily: 'Syne-Bold',
+    marginBottom: 4,
+  },
+  modalBody: {
+    color: '#7a4a30',
+    fontSize: 13,
+    fontFamily: 'SpaceMono',
+    lineHeight: 20,
+  },
+  modalInput: {
+    backgroundColor: '#080400',
+    borderWidth: 1,
+    borderColor: '#3d2a1f',
+    borderRadius: 8,
+    padding: 12,
+    color: '#fff5ee',
+    fontSize: 13,
+    fontFamily: 'SpaceMono',
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  modalError: {
+    color: '#ff4444',
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+  },
+  modalSubmitBtn: {
+    backgroundColor: '#ff6b35',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  modalSubmitBtnText: {
+    color: '#fff5ee',
+    fontSize: 13,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.5,
+  },
+  modalCancelBtn: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  modalCancelBtnText: {
+    color: '#7a4a30',
+    fontSize: 13,
+    fontFamily: 'SpaceMono',
   },
 });
 
