@@ -43,6 +43,7 @@ const FeedScreen: React.FC = () => {
   const { theme } = useTheme();
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [refreshing, setRefreshing] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -88,7 +89,7 @@ const FeedScreen: React.FC = () => {
   }, [navigation]);
 
   const handleDismiss = useCallback((narrativeId: string) => {
-    console.log('[FeedScreen] Dismissing narrative:', narrativeId);
+    setDismissedIds(prev => new Set([...prev, narrativeId]));
   }, []);
 
   const styles = makeStyles(theme);
@@ -198,7 +199,7 @@ const FeedScreen: React.FC = () => {
         </View>
       ) : narratives && narratives.length > 0 ? (
         <FlatList
-          data={narratives}
+          data={narratives.filter(n => !dismissedIds.has(n.id))}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           style={styles.list}
