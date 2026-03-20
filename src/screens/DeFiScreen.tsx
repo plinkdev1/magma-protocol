@@ -28,9 +28,11 @@ import { radius, spacing, fontSize } from '../theme/tokens';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const PROTOCOL_LOGOS: Record<string, any> = {
-  meteora: require('../../assets/logos/protocols/meteora.jpg'),
-  kamino:  require('../../assets/logos/protocols/kamino.jpg'),
-  save:    require('../../assets/logos/protocols/save.jpg'),
+  meteora:      require('../../assets/logos/protocols/meteora.jpg'),
+  kamino:       require('../../assets/logos/protocols/kamino.jpg'),
+  save:         require('../../assets/logos/protocols/save.jpg'),
+  jupiter_lend: require('../../assets/logos/protocols/jupiter.jpg'),
+  skr_guardian: require('../../assets/logos/wallets/seeker.jpg'),
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -84,7 +86,7 @@ const PROTOCOLS: Protocol[] = [
     subtitle:    'Money market protocol',
     apy:         4.8,
     tvl:         1_650_000_000,
-    logoEmoji:   '🟣',
+    logoKey:     'jupiter_lend',
     buttonLabel: 'Deposit',
   },
   {
@@ -93,7 +95,7 @@ const PROTOCOLS: Protocol[] = [
     subtitle:    'SKR native staking',
     apy:         10.0,
     tvl:         0,
-    logoEmoji:   '🔮',
+    logoKey:     'skr_guardian',
     stakedLabel: 'Your staked',
     stakedValue: '0 SKR',
     buttonLabel: 'Stake SKR',
@@ -352,37 +354,38 @@ const DeFiScreen: React.FC = () => {
     </View>
   );
 
+  const VAULT_SEGMENTS = [
+    { label: 'Meteora DLMM', pct: vaultAllocation.meteora, color: '#00ff88' },
+    { label: 'Kamino',       pct: vaultAllocation.kamino,  color: theme.amber },
+    { label: 'Save.Finance', pct: vaultAllocation.save,    color: theme.orange },
+  ];
+
   const VaultAllocation = () => (
     <View style={[styles.vaultCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
       <Text style={[styles.vaultCardTitle, { color: theme.textPrimary }]}>Vault Allocation</Text>
-      <View style={styles.vaultContent}>
-        <View style={styles.donutContainer}>
-          <View style={styles.donut}>
-            {[
-              { pct: vaultAllocation.meteora, color: '#00ff88' },
-              { pct: vaultAllocation.kamino,  color: theme.amber },
-              { pct: vaultAllocation.save,    color: theme.orange },
-            ].map((seg, i) => (
-              <View key={i} style={[styles.donutSegment, { backgroundColor: seg.color, width: `${seg.pct}%` }]} />
-            ))}
+      {/* Segmented bar */}
+      <View style={styles.vaultBar}>
+        {VAULT_SEGMENTS.map((seg, i) => (
+          <View key={i} style={[styles.vaultBarSegment, {
+            backgroundColor: seg.color,
+            flex: seg.pct,
+            borderRadius: i === 0 ? 6 : i === VAULT_SEGMENTS.length - 1 ? 6 : 0,
+            borderTopLeftRadius: i === 0 ? 6 : 0,
+            borderBottomLeftRadius: i === 0 ? 6 : 0,
+            borderTopRightRadius: i === VAULT_SEGMENTS.length - 1 ? 6 : 0,
+            borderBottomRightRadius: i === VAULT_SEGMENTS.length - 1 ? 6 : 0,
+          }]} />
+        ))}
+      </View>
+      {/* Legend */}
+      <View style={styles.allocationList}>
+        {VAULT_SEGMENTS.map((seg, i) => (
+          <View key={i} style={styles.allocationItem}>
+            <View style={[styles.allocationDot, { backgroundColor: seg.color }]} />
+            <Text style={[styles.allocationName, { color: theme.textPrimary }]}>{seg.label}</Text>
+            <Text style={[styles.allocationPct, { color: theme.textSecondary }]}>{seg.pct}%</Text>
           </View>
-          <View style={[styles.donutHole, { backgroundColor: theme.cardBg }]}>
-            <Text style={[styles.donutHoleText, { color: theme.textPrimary }]}>100%</Text>
-          </View>
-        </View>
-        <View style={styles.allocationList}>
-          {PROTOCOLS.slice(0, 3).map((protocol, i) => (
-            <View key={protocol.id} style={styles.allocationItem}>
-              <View style={[styles.allocationDot, {
-                backgroundColor: i === 0 ? '#00ff88' : i === 1 ? theme.amber : theme.orange,
-              }]} />
-              <Text style={[styles.allocationName, { color: theme.textPrimary }]}>{protocol.name}</Text>
-              <Text style={[styles.allocationPct, { color: theme.textSecondary }]}>
-                {vaultAllocation[protocol.id as keyof typeof vaultAllocation]}%
-              </Text>
-            </View>
-          ))}
-        </View>
+        ))}
       </View>
     </View>
   );
@@ -650,6 +653,16 @@ const styles = StyleSheet.create({
     color:      '#FFFFFF',
   },
   // Vault allocation
+  vaultBar: {
+    flexDirection: 'row',
+    height:        12,
+    borderRadius:  6,
+    overflow:      'hidden',
+    marginBottom:  spacing.lg,
+  },
+  vaultBarSegment: {
+    height: 12,
+  },
   vaultCard: {
     borderRadius: radius.lg,
     padding:      spacing.xl,
