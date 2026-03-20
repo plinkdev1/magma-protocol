@@ -314,7 +314,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingVertical: 16,
-    flexGrow: 1,
+    gap: 16,
+    paddingBottom: 32,
   },
   skeletonContainer: {
     padding: 16,
