@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
-import { PanGestureHandler, GestureHandlerStateChange } from 'react-native-gesture-handler';
+import { PanGestureHandler, GestureEvent, HandlerStateChangeEvent, PanGestureHandlerEventPayload } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,16 +11,8 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-
-const COLORS = {
-  background: '#080400',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
-  cardBorder: '#3d2a1f',
-};
+import { useTheme } from '../theme/ThemeContext';
+import { radius, spacing, fontSize } from '../theme/tokens';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 32;
@@ -33,6 +25,8 @@ export interface NarrativeCardProps {
   solBacked: number;
   backers: number;
   daysRemaining: number;
+  category?: string;
+  discoveryLabel?: string;
   onBack: () => void;
   onDismiss: () => void;
   onPress?: () => void;
@@ -45,10 +39,13 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
   solBacked,
   backers,
   daysRemaining,
+  category,
+  discoveryLabel,
   onBack,
   onDismiss,
   onPress,
 }) => {
+  const { theme } = useTheme();
   const translationX = useSharedValue(0);
   const scoreWidth = useSharedValue(0);
   const isGestureActive = useRef(false);
@@ -57,26 +54,24 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
     scoreWidth.value = withTiming(score, { duration: 800 });
   }, [score]);
 
-  const handleGestureEvent = (event: GestureHandlerStateChange) => {
-    translationX.value = event.translationX;
+  const handleGestureEvent = (event: GestureEvent<PanGestureHandlerEventPayload>) => {
+    translationX.value = event.nativeEvent.translationX;
   };
 
-  const handleGestureStateChange = (event: GestureHandlerStateChange) => {
-    if (event.state === 2) {
+  const handleGestureStateChange = (event: HandlerStateChangeEvent<PanGestureHandlerEventPayload>) => {
+    const tx = event.nativeEvent.translationX ?? 0;
+    const state = event.nativeEvent.state ?? 0;
+    if (state === 2) {
       isGestureActive.current = true;
       Haptics.selectionAsync();
     }
-    if (event.state === 4 || event.state === 5) {
+    if (state === 4 || state === 5) {
       isGestureActive.current = false;
-      if (event.translationX > SWIPE_THRESHOLD) {
-        translationX.value = withSpring(SCREEN_WIDTH, { velocity: 2 }, () => {
-          runOnJS(onBack)();
-        });
+      if (tx > SWIPE_THRESHOLD) {
+        translationX.value = withSpring(SCREEN_WIDTH, { velocity: 2 }, () => runOnJS(onBack)());
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } else if (event.translationX < -SWIPE_THRESHOLD) {
-        translationX.value = withSpring(-SCREEN_WIDTH, { velocity: 2 }, () => {
-          runOnJS(onDismiss)();
-        });
+      } else if (tx < -SWIPE_THRESHOLD) {
+        translationX.value = withSpring(-SCREEN_WIDTH, { velocity: 2 }, () => runOnJS(onDismiss)());
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } else {
         translationX.value = withSpring(0);
@@ -99,9 +94,9 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
   }));
 
   const getScoreColor = (s: number) => {
-    if (s >= 75) return COLORS.primary;
-    if (s >= 50) return COLORS.accent;
-    return COLORS.muted;
+    if (s >= 75) return theme.orange;
+    if (s >= 50) return theme.amber;
+    return theme.textTertiary;
   };
 
   const formatNumber = (num: number) => {
@@ -117,57 +112,83 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
       activeOffsetX={[-10, 10]}
       failOffsetY={[-50, 50]}
     >
-      <Animated.View style={[styles.card, cardAnimatedStyle]}>
+      <Animated.View style={[
+        styles.card,
+        {
+          backgroundColor: theme.cardBg,
+          borderColor:     theme.cardBorder,
+          shadowColor:     theme.orange,
+        },
+        cardAnimatedStyle,
+      ]}>
+
+        {/* Badges row */}
+        {(category || discoveryLabel) && (
+          <View style={styles.badgeRow}>
+            {category && (
+              <View style={[styles.badge, { backgroundColor: theme.bgGlass, borderColor: theme.borderSubtle }]}>
+                <Text style={[styles.badgeText, { color: theme.textSecondary }]}>{category.toUpperCase()}</Text>
+              </View>
+            )}
+            {discoveryLabel && (
+              <View style={[styles.badge, { backgroundColor: 'rgba(34,197,94,0.10)', borderColor: 'rgba(34,197,94,0.30)' }]}>
+                <Text style={[styles.badgeText, { color: theme.green }]}>{discoveryLabel}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Score bar */}
         <View style={styles.scoreContainer}>
-          <View style={styles.scoreBarBackground}>
+          <View style={[styles.scoreBarBackground, { backgroundColor: theme.bgElevated }]}>
             <Animated.View
               style={[styles.scoreBar, scoreBarStyle, { backgroundColor: getScoreColor(score) }]}
             />
           </View>
-          <Text style={styles.scoreText}>{score}</Text>
+          <Text style={[styles.scoreText, { color: theme.textPrimary }]}>{score}</Text>
         </View>
 
+        {/* Content */}
         <TouchableOpacity style={styles.content} onPress={onPress || onBack} activeOpacity={0.7}>
-          <Text style={styles.title} numberOfLines={2}>{title}</Text>
-          <Text style={styles.thesis} numberOfLines={3}>{thesis}</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]} numberOfLines={2}>{title}</Text>
+          <Text style={[styles.thesis, { color: theme.textSecondary }]} numberOfLines={3}>{thesis}</Text>
         </TouchableOpacity>
 
-        <View style={styles.metrics}>
+        {/* Metrics */}
+        <View style={[styles.metrics, { borderTopColor: theme.borderSubtle, borderBottomColor: theme.borderSubtle }]}>
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{(solBacked ?? 0).toFixed(2)}</Text>
-            <Text style={styles.metricLabel}>SOL Backed</Text>
+            <Text style={[styles.metricValue, { color: theme.orange }]}>{(solBacked ?? 0).toFixed(2)}</Text>
+            <Text style={[styles.metricLabel, { color: theme.textTertiary }]}>SOL Backed</Text>
           </View>
-          <View style={styles.metricDivider} />
+          <View style={[styles.metricDivider, { backgroundColor: theme.borderSubtle }]} />
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{formatNumber(backers ?? 0)}</Text>
-            <Text style={styles.metricLabel}>Backers</Text>
+            <Text style={[styles.metricValue, { color: theme.orange }]}>{formatNumber(backers ?? 0)}</Text>
+            <Text style={[styles.metricLabel, { color: theme.textTertiary }]}>Backers</Text>
           </View>
-          <View style={styles.metricDivider} />
+          <View style={[styles.metricDivider, { backgroundColor: theme.borderSubtle }]} />
           <View style={styles.metric}>
-            <Text style={styles.metricValue}>{daysRemaining ?? 0}</Text>
-            <Text style={styles.metricLabel}>Days Left</Text>
+            <Text style={[styles.metricValue, { color: theme.orange }]}>{daysRemaining ?? 0}</Text>
+            <Text style={[styles.metricLabel, { color: theme.textTertiary }]}>Days Left</Text>
           </View>
         </View>
 
+        {/* Swipe hints */}
         <View style={styles.hintContainer}>
-          <Animated.View
-            style={[styles.hintArrow, { left: 16,
-              opacity: interpolate(translationX.value, [0, 50], [0, 1], Extrapolation.CLAMP),
-              transform: [{ translateX: interpolate(translationX.value, [0, 50], [-10, 0], Extrapolation.CLAMP) }],
-            }]}
-          >
-            <Text style={styles.hintText}>→</Text>
+          <Animated.View style={[styles.hintArrow, { left: 16,
+            opacity: interpolate(translationX.value, [0, 50], [0, 1], Extrapolation.CLAMP),
+            transform: [{ translateX: interpolate(translationX.value, [0, 50], [-10, 0], Extrapolation.CLAMP) }],
+          }]}>
+            <Text style={[styles.hintText, { color: theme.amber }]}>→</Text>
           </Animated.View>
-          <Text style={styles.hintLabel}>Swipe to decide</Text>
-          <Animated.View
-            style={[styles.hintArrow, { right: 16,
-              opacity: interpolate(translationX.value, [0, -50], [0, 1], Extrapolation.CLAMP),
-              transform: [{ translateX: interpolate(translationX.value, [0, -50], [10, 0], Extrapolation.CLAMP) }],
-            }]}
-          >
-            <Text style={styles.hintText}>←</Text>
+          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>Swipe to decide</Text>
+          <Animated.View style={[styles.hintArrow, { right: 16,
+            opacity: interpolate(translationX.value, [0, -50], [0, 1], Extrapolation.CLAMP),
+            transform: [{ translateX: interpolate(translationX.value, [0, -50], [10, 0], Extrapolation.CLAMP) }],
+          }]}>
+            <Text style={[styles.hintText, { color: theme.amber }]}>←</Text>
           </Animated.View>
         </View>
+
       </Animated.View>
     </PanGestureHandler>
   );
@@ -175,111 +196,114 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    width: CARD_WIDTH,
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    padding: 16,
-    marginHorizontal: 16,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    width:           CARD_WIDTH,
+    borderRadius:    radius.xl,
+    borderWidth:     1,
+    padding:         spacing.xl,
+    marginHorizontal: spacing.lg,
+    shadowOffset:    { width: 0, height: 4 },
+    shadowOpacity:   0.15,
+    shadowRadius:    12,
+    elevation:       8,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap:           spacing.sm,
+    marginBottom:  spacing.md,
+  },
+  badge: {
+    borderRadius:      radius.full,
+    borderWidth:       1,
+    paddingVertical:   3,
+    paddingHorizontal: spacing.md,
+  },
+  badgeText: {
+    fontSize:    fontSize.xs,
+    fontWeight:  '600',
+    letterSpacing: 0.5,
   },
   scoreContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems:    'center',
+    marginBottom:  spacing.md,
   },
   scoreBarBackground: {
-    flex: 1,
-    height: 6,
-    backgroundColor: COLORS.muted,
+    flex:         1,
+    height:       6,
     borderRadius: 3,
-    overflow: 'hidden',
-    marginRight: 12,
+    overflow:     'hidden',
+    marginRight:  spacing.md,
   },
   scoreBar: {
-    height: '100%',
+    height:       '100%',
     borderRadius: 3,
   },
   scoreText: {
-    fontSize: 18,
+    fontSize:   18,
     fontWeight: '700',
-    color: COLORS.text,
-    width: 32,
-    textAlign: 'right',
+    width:      32,
+    textAlign:  'right',
   },
   content: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 8,
+    fontSize:     20,
+    fontWeight:   '700',
+    marginBottom: spacing.sm,
+    lineHeight:   26,
   },
   thesis: {
-    fontSize: 14,
-    color: COLORS.muted,
-    lineHeight: 20,
+    fontSize:   14,
+    lineHeight: 22,
   },
   metrics: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection:  'row',
+    alignItems:     'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
+    paddingVertical: spacing.md,
+    borderTopWidth:    1,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder,
   },
   metric: {
-    flex: 1,
-    alignItems: 'center',
+    flex:        1,
+    alignItems:  'center',
   },
   metricDivider: {
-    width: 1,
+    width:  1,
     height: 32,
-    backgroundColor: COLORS.cardBorder,
   },
   metricValue: {
-    fontSize: 16,
+    fontSize:   16,
     fontWeight: '700',
-    color: COLORS.primary,
   },
   metricLabel: {
-    fontSize: 11,
-    color: COLORS.muted,
+    fontSize:  11,
     marginTop: 2,
   },
   hintContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection:  'row',
+    alignItems:     'center',
     justifyContent: 'center',
-    marginTop: 12,
-    paddingHorizontal: 16,
-    width: '100%',
-    position: 'relative',
+    marginTop:      spacing.md,
+    paddingHorizontal: spacing.lg,
+    width:          '100%',
+    position:       'relative',
   },
   hintArrow: {
-    width: 24,
+    width:      24,
     alignItems: 'center',
-    position: 'absolute',
+    position:   'absolute',
   },
   hintText: {
-    fontSize: 20,
-    color: COLORS.accent,
+    fontSize:   20,
     fontWeight: '700',
   },
   hintLabel: {
-    fontSize: 12,
-    color: COLORS.muted,
-    marginHorizontal: 12,
-    flexShrink: 1,
-    textAlign: 'center',
+    fontSize:        12,
+    marginHorizontal: spacing.md,
+    flexShrink:      1,
+    textAlign:       'center',
   },
 });
 
