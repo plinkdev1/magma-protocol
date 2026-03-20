@@ -204,7 +204,7 @@ const DeFiScreen: React.FC = () => {
   const [magmaAmount, setMagmaAmount] = useState('');
   const [isSwapping, setIsSwapping]   = useState(false);
   const [yieldEarned, setYieldEarned] = useState(0.0234);
-  const [vaultAllocation]             = useState({ meteora: 45, kamino: 35, save: 20 });
+  const [vaultAllocation]             = useState({ meteora: 35, kamino: 25, save: 20, jupiter_lend: 12, skr_guardian: 8 });
 
   const { price, lastUpdated, isStale } = usePythPriceFeed();
   const { swap } = useJupiterSwap();
@@ -355,9 +355,11 @@ const DeFiScreen: React.FC = () => {
   );
 
   const VAULT_SEGMENTS = [
-    { label: 'Meteora DLMM', pct: vaultAllocation.meteora, color: '#00ff88' },
-    { label: 'Kamino',       pct: vaultAllocation.kamino,  color: theme.amber },
-    { label: 'Save.Finance', pct: vaultAllocation.save,    color: theme.orange },
+    { label: 'Meteora DLMM',  pct: vaultAllocation.meteora,      color: '#00ff88' },
+    { label: 'Kamino',        pct: vaultAllocation.kamino,       color: theme.amber },
+    { label: 'Save.Finance',  pct: vaultAllocation.save,         color: theme.orange },
+    { label: 'Jupiter Lend',  pct: vaultAllocation.jupiter_lend, color: '#9B8FFF' },
+    { label: 'SKR Guardian',  pct: vaultAllocation.skr_guardian, color: '#FF6B9D' },
   ];
 
   const VaultAllocation = () => (
