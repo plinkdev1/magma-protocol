@@ -17,6 +17,7 @@ import { ThemeProvider } from './src/theme/ThemeContext';
 import FeedScreen from './src/screens/FeedScreen';
 import LaunchScreen from './src/screens/LaunchScreen';
 import DeFiScreen from './src/screens/DeFiScreen';
+import DeFiTabsScreen from './src/screens/DeFiTabsScreen';
 import PortfolioScreen from './src/screens/PortfolioScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import NarrativeDetailScreen from './src/screens/NarrativeDetailScreen';
@@ -79,7 +80,7 @@ function AppTabs() {
     >
       <Tab.Screen name="Feed" component={FeedScreen} options={{ tabBarLabel: 'Feed' }} />
       <Tab.Screen name="Launch" component={LaunchScreen} options={{ tabBarLabel: 'Launch' }} />
-      <Tab.Screen name="DeFi" component={DeFiScreen} options={{ tabBarLabel: 'DeFi' }} />
+      <Tab.Screen name="DeFi" component={DeFiTabsScreen} options={{ tabBarLabel: 'DeFi' }} />
       <Tab.Screen name="Portfolio" component={PortfolioScreen} options={{ tabBarLabel: 'Portfolio' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
