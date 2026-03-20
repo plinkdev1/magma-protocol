@@ -12,6 +12,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
 import { WalletProvider } from './src/context/WalletContext';
+import { ThemeProvider } from './src/theme/ThemeContext';
 
 import FeedScreen from './src/screens/FeedScreen';
 import LaunchScreen from './src/screens/LaunchScreen';
@@ -109,7 +110,8 @@ export default function App() {
   }, []);
 
   return (
-    <WalletProvider>
+    <ThemeProvider>
+      <WalletProvider>
       {appState === 'loading' && <LoadingScreen onLoadComplete={handleLoadComplete} />}
       {appState === 'onboarding' && <OnboardingScreen onComplete={handleOnboardingComplete} />}
       {appState === 'main' && (
@@ -143,6 +145,7 @@ export default function App() {
           </GestureHandlerRootView>
         </>
       )}
-    </WalletProvider>
+      </WalletProvider>
+    </ThemeProvider>
   );
 }
