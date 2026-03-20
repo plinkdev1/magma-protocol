@@ -206,6 +206,8 @@ const FeedScreen: React.FC = () => {
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={renderSeparator}
           showsVerticalScrollIndicator={false}
+          overScrollMode="never"
+          bounces={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
