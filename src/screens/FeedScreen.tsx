@@ -274,6 +274,7 @@ const makeStyles = (theme: ReturnType<typeof useTheme>['theme']) =>
     priceMeta: {
       fontSize: 11,
       color: theme.textTertiary,
+      flexShrink: 0,
     },
     // --- Filter bar ---
     filterBar: {
