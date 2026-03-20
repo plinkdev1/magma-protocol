@@ -1,5 +1,5 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,27 +16,14 @@ import Animated, {
   useSharedValue,
   withTiming,
   withRepeat,
-  interpolateColor,
   FadeIn,
-  FadeOut,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 import { usePythPriceFeed } from '../hooks/usePythPriceFeed';
-import { EcosystemGrid } from '../components/EcosystemGrid';
 import { useJupiterSwap } from '../hooks/useMagmaTransactions';
-
-// Design tokens
-const COLORS = {
-  background: '#080400',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
-  cardBorder: '#3d2a1f',
-  success: '#00ff88',
-};
+import { useTheme } from '../theme/ThemeContext';
+import { radius, spacing, fontSize } from '../theme/tokens';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -46,111 +33,219 @@ const PROTOCOL_LOGOS: Record<string, any> = {
   save:    require('../../assets/logos/protocols/save.jpg'),
 };
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-// Protocol data
 interface Protocol {
-  id: string;
-  name: string;
-  apy: number;
-  tvl: number;
-  description: string;
-  color: string;
+  id:          string;
+  name:        string;
+  subtitle:    string;
+  apy:         number;
+  tvl:         number;
+  logoKey?:    string;      // key into PROTOCOL_LOGOS
+  logoEmoji?:  string;      // fallback emoji for protocols without image
+  stakedLabel?: string;     // for SKR Guardian — shows "Your staked"
+  stakedValue?: string;
+  buttonLabel: string;
 }
 
+// ─── Static protocol data (APYs will come from Redis in Phase G+) ─────────────
+
 const PROTOCOLS: Protocol[] = [
-  { id: 'meteora', name: 'Meteora DLMM', apy: 18.4, tvl: 45000000, description: 'Dynamic Liquidity Market Maker', color: '#00ff88' },
-  { id: 'kamino', name: 'Kamino', apy: 9.2, tvl: 120000000, description: 'Automated liquidity vaults', color: '#ffb347' },
-  { id: 'save', name: 'Save.Finance', apy: 7.1, tvl: 85000000, description: 'Lending protocol', color: '#ff6b35' },
+  {
+    id:          'meteora',
+    name:        'Meteora DLMM',
+    subtitle:    'Dynamic Liquidity Market Maker',
+    apy:         18.4,
+    tvl:         45_000_000,
+    logoKey:     'meteora',
+    buttonLabel: 'Deposit',
+  },
+  {
+    id:          'kamino',
+    name:        'Kamino',
+    subtitle:    'Automated liquidity vaults',
+    apy:         9.2,
+    tvl:         120_000_000,
+    logoKey:     'kamino',
+    buttonLabel: 'Deposit',
+  },
+  {
+    id:          'save',
+    name:        'Save.Finance',
+    subtitle:    'Lending protocol',
+    apy:         7.1,
+    tvl:         85_000_000,
+    logoKey:     'save',
+    buttonLabel: 'Deposit',
+  },
+  {
+    id:          'jupiter_lend',
+    name:        'Jupiter Lend',
+    subtitle:    'Money market protocol',
+    apy:         4.8,
+    tvl:         1_650_000_000,
+    logoEmoji:   '🟣',
+    buttonLabel: 'Deposit',
+  },
+  {
+    id:          'skr_guardian',
+    name:        'SKR Guardian',
+    subtitle:    'SKR native staking',
+    apy:         10.0,
+    tvl:         0,
+    logoEmoji:   '🔮',
+    stakedLabel: 'Your staked',
+    stakedValue: '0 SKR',
+    buttonLabel: 'Stake SKR',
+  },
 ];
 
-// Format large numbers
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const formatTVL = (tvl: number) => {
-  if (tvl >= 1000000000) return `$${(tvl / 1000000000).toFixed(1)}B`;
-  if (tvl >= 1000000) return `$${(tvl / 1000000).toFixed(1)}M`;
-  if (tvl >= 1000) return `$${(tvl / 1000).toFixed(1)}K`;
-  return `$${tvl}`;
+  if (tvl >= 1_000_000_000) return `$${(tvl / 1_000_000_000).toFixed(1)}B`;
+  if (tvl >= 1_000_000)     return `$${(tvl / 1_000_000).toFixed(1)}M`;
+  if (tvl >= 1_000)         return `$${(tvl / 1_000).toFixed(1)}K`;
+  return tvl > 0 ? `$${tvl}` : '—';
 };
 
-const formatNumber = (num: number) => {
-  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatNumber = (num: number) =>
+  num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ─── APY Card ─────────────────────────────────────────────────────────────────
+
+const APYCard: React.FC<{ protocol: Protocol; index: number }> = ({ protocol, index }) => {
+  const { theme } = useTheme();
+  const cardProgress = useSharedValue(0);
+
+  useEffect(() => {
+    cardProgress.value = withTiming(1, { duration: 400 + index * 100 });
+  }, []);
+
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity:   cardProgress.value,
+    transform: [{ translateY: (1 - cardProgress.value) * 20 }],
+  }));
+
+  return (
+    <Animated.View style={[
+      styles.apyCard,
+      { backgroundColor: theme.cardBg, borderColor: theme.cardBorder },
+      cardStyle,
+    ]}>
+      {/* Header */}
+      <View style={styles.apyCardHeader}>
+        <View style={[styles.apyCardIconWrap, { backgroundColor: theme.bgElevated }]}>
+          {protocol.logoKey ? (
+            <Image
+              source={PROTOCOL_LOGOS[protocol.logoKey]}
+              style={{ width: 32, height: 32, borderRadius: 8 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={styles.apyCardEmoji}>{protocol.logoEmoji}</Text>
+          )}
+        </View>
+        <View style={styles.apyCardInfo}>
+          <Text style={[styles.apyCardName, { color: theme.textPrimary }]}>{protocol.name}</Text>
+          <Text style={[styles.apyCardSub,  { color: theme.textSecondary }]}>{protocol.subtitle}</Text>
+        </View>
+      </View>
+
+      {/* Metrics */}
+      <View style={[styles.apyCardMetrics, { borderColor: theme.borderSubtle }]}>
+        <View style={styles.apyMetric}>
+          <Text style={[styles.apyMetricValue, { color: theme.orange }]}>
+            {protocol.apy.toFixed(1)}%
+          </Text>
+          <Text style={[styles.apyMetricLabel, { color: theme.textTertiary }]}>APY</Text>
+        </View>
+        <View style={[styles.apyMetricDivider, { backgroundColor: theme.borderSubtle }]} />
+        {protocol.stakedLabel ? (
+          <View style={styles.apyMetric}>
+            <Text style={[styles.apyMetricValue, { color: theme.textPrimary }]}>
+              {protocol.stakedValue}
+            </Text>
+            <Text style={[styles.apyMetricLabel, { color: theme.textTertiary }]}>
+              {protocol.stakedLabel}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.apyMetric}>
+            <Text style={[styles.apyMetricValue, { color: theme.textPrimary }]}>
+              {formatTVL(protocol.tvl)}
+            </Text>
+            <Text style={[styles.apyMetricLabel, { color: theme.textTertiary }]}>TVL</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Deposit / Stake button — orange pill */}
+      <TouchableOpacity
+        style={[styles.depositButton, { backgroundColor: theme.orange }]}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.depositButtonText}>{protocol.buttonLabel}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
 };
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 const DeFiScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const [refreshing, setRefreshing] = useState(false);
-  const [protocols, setProtocols] = useState<Protocol[]>(PROTOCOLS);
-  const [solAmount, setSolAmount] = useState('');
+  const { theme } = useTheme();
+  const [refreshing, setRefreshing]   = useState(false);
+  const [protocols, setProtocols]     = useState<Protocol[]>(PROTOCOLS);
+  const [solAmount, setSolAmount]     = useState('');
   const [magmaAmount, setMagmaAmount] = useState('');
-  const [isSwapping, setIsSwapping] = useState(false);
+  const [isSwapping, setIsSwapping]   = useState(false);
   const [yieldEarned, setYieldEarned] = useState(0.0234);
-  const [vaultAllocation, setVaultAllocation] = useState({
-    meteora: 45,
-    kamino: 35,
-    save: 20,
-  });
+  const [vaultAllocation]             = useState({ meteora: 45, kamino: 35, save: 20 });
 
-  const { price, confidence, lastUpdated, isStale } = usePythPriceFeed();
+  const { price, lastUpdated, isStale } = usePythPriceFeed();
   const { swap } = useJupiterSwap();
-  const yieldValue = useSharedValue(0);
-  const pulseValue = useSharedValue(0);
 
-  // Animate yield counter every second
+  const yieldValue  = useSharedValue(0);
+  const pulseValue  = useSharedValue(0);
+
+  // Yield counter tick
   useEffect(() => {
-    const interval = setInterval(() => {
-      setYieldEarned((prev) => {
-        const increment = 0.0001 + Math.random() * 0.0002;
-        return prev + increment;
-      });
+    const id = setInterval(() => {
+      setYieldEarned(prev => prev + 0.0001 + Math.random() * 0.0002);
       yieldValue.value = withTiming(1, { duration: 300 }, () => {
         yieldValue.value = withTiming(0, { duration: 300 });
       });
     }, 8000);
-
-    return () => clearInterval(interval);
+    return () => clearInterval(id);
   }, []);
 
-  // Pulse animation for price
+  // Pulse for price card
   useEffect(() => {
-    pulseValue.value = withRepeat(
-      withTiming(1, { duration: 2000 }),
-      -1,
-      true
-    );
+    pulseValue.value = withRepeat(withTiming(1, { duration: 2000 }), -1, true);
   }, []);
 
-  // Handle refresh
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate APY update
-    setProtocols((prev) =>
-      prev.map((p) => ({
-        ...p,
-        apy: p.apy + (Math.random() - 0.5) * 0.5,
-      }))
-    );
+    setProtocols(prev => prev.map(p => ({ ...p, apy: p.apy + (Math.random() - 0.5) * 0.5 })));
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(false);
   }, []);
 
-  // Calculate swap output
   const calculateSwap = useCallback((input: string) => {
     const sol = parseFloat(input) || 0;
-    // Mock rate: 1 SOL = 100 MAGMA (replace with actual Jupiter quote)
-    const magma = sol * 100;
-    setMagmaAmount(magma > 0 ? magma.toFixed(2) : '');
+    setMagmaAmount(sol > 0 ? (sol * 100).toFixed(2) : '');
   }, []);
 
-  // Handle swap
   const handleSwap = useCallback(async () => {
     const amount = parseFloat(solAmount);
     if (!amount || amount <= 0) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
-
     setIsSwapping(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
     try {
       const result = await swap(amount, 50);
       if (result.success) {
@@ -160,241 +255,47 @@ const DeFiScreen: React.FC = () => {
       } else {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
-    } catch (error) {
+    } catch {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsSwapping(false);
     }
   }, [solAmount, swap]);
 
-  // Animated price style
-  const priceStyle = useAnimatedStyle(() => {
-    const opacity = 0.7 + pulseValue.value * 0.3;
-    return { opacity };
-  });
+  const priceStyle = useAnimatedStyle(() => ({ opacity: 0.7 + pulseValue.value * 0.3 }));
+  const yieldStyle = useAnimatedStyle(() => ({ transform: [{ scale: 1 + yieldValue.value * 0.05 }] }));
 
-  // Animated yield style
-  const yieldStyle = useAnimatedStyle(() => {
-    const scale = 1 + yieldValue.value * 0.05;
-    return { transform: [{ scale }] };
-  });
+  // ── Sub-components ────────────────────────────────────────────────────────
 
-  // Donut chart segments
-  const renderDonutSegment = (percentage: number, color: string, startAngle: number) => {
-    const size = 120;
-    const strokeWidth = 20;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDasharray = (percentage / 100) * circumference;
-
-    return {
-      percentage,
-      color,
-      strokeDasharray,
-      circumference,
-    };
-  };
-
-  // APY Card component
-  const APYCard = ({ protocol, index }: { protocol: Protocol; index: number }) => {
-    const cardProgress = useSharedValue(0);
-
-    useEffect(() => {
-      cardProgress.value = withTiming(1, { duration: 400, delay: index * 100 });
-    }, []);
-
-    const cardStyle = useAnimatedStyle(() => ({
-      opacity: cardProgress.value,
-      transform: [{ translateY: (1 - cardProgress.value) * 20 }],
-    }));
-
-    return (
-      <Animated.View style={[styles.apyCard, cardStyle]}>
-        <View style={styles.apyCardHeader}>
-          <View style={styles.apyCardIcon}>
-            <Image source={PROTOCOL_LOGOS[protocol.id]} style={{ width: 32, height: 32, borderRadius: 8 }} resizeMode="contain" />
-          </View>
-          <View style={styles.apyCardInfo}>
-            <Text style={styles.apyCardName}>{protocol.name}</Text>
-            <Text style={styles.apyCardDescription}>{protocol.description}</Text>
-          </View>
-        </View>
-
-        <View style={styles.apyCardMetrics}>
-          <View style={styles.apyMetric}>
-            <Text style={styles.apyMetricValue}>
-              {protocol.apy.toFixed(1)}%
-            </Text>
-            <Text style={styles.apyMetricLabel}>APY</Text>
-          </View>
-          <View style={styles.apyMetricDivider} />
-          <View style={styles.apyMetric}>
-            <Text style={styles.apyMetricValue}>{formatTVL(protocol.tvl)}</Text>
-            <Text style={styles.apyMetricLabel}>TVL</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.depositButton, { borderColor: protocol.color }]}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.depositButtonText, { color: protocol.color }]}>
-            Deposit
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
-  // Price Card component
   const PriceCard = () => (
-    <Animated.View style={[styles.priceCard, priceStyle]}>
+    <Animated.View style={[styles.priceCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }, priceStyle]}>
       <View style={styles.priceCardHeader}>
-        <Text style={styles.priceCardLabel}>SOL/USD</Text>
+        <Text style={[styles.priceCardLabel, { color: theme.textSecondary }]}>SOL/USD</Text>
         {isStale && (
-          <View style={styles.staleBadge}>
-            <Text style={styles.staleText}>STALE</Text>
+          <View style={[styles.staleBadge, { backgroundColor: theme.textTertiary }]}>
+            <Text style={[styles.staleText, { color: theme.bgBase }]}>STALE</Text>
           </View>
         )}
       </View>
-      <Text style={styles.priceCardValue}>${formatNumber(price)}</Text>
-      <Text style={styles.priceCardMeta}>
+      <Text style={[styles.priceCardValue, { color: theme.orange }]}>${formatNumber(price)}</Text>
+      <Text style={[styles.priceCardMeta, { color: theme.textSecondary }]}>
         Pyth • {lastUpdated ? lastUpdated.toLocaleTimeString() : '--:--'}
       </Text>
     </Animated.View>
   );
 
-  // Swap Widget component
-  const SwapWidget = () => (
-    <View style={styles.swapWidget}>
-      <Text style={styles.swapWidgetTitle}>Swap SOL → $MAGMA</Text>
-
-      <View style={styles.swapInputContainer}>
-        <Text style={styles.swapInputLabel}>You Pay</Text>
-        <View style={styles.swapInput}>
-          <TextInput
-            style={styles.swapTextInput}
-            placeholder="0.00"
-            placeholderTextColor={COLORS.muted}
-            value={solAmount}
-            onChangeText={(text) => {
-              setSolAmount(text);
-              calculateSwap(text);
-            }}
-            keyboardType="decimal-pad"
-          />
-          <View style={styles.swapTokenBadge}>
-            <Text style={styles.swapTokenBadgeText}>SOL</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.swapArrow}>
-        <Text style={styles.swapArrowText}>↓</Text>
-      </View>
-
-      <View style={styles.swapInputContainer}>
-        <Text style={styles.swapInputLabel}>You Receive</Text>
-        <View style={[styles.swapInput, styles.swapOutput]}>
-          <TextInput
-            style={[styles.swapTextInput, styles.swapOutputText]}
-            placeholder="0.00"
-            placeholderTextColor={COLORS.muted}
-            value={magmaAmount}
-            editable={false}
-          />
-          <View style={[styles.swapTokenBadge, styles.swapTokenBadgeMagma]}>
-            <Text style={styles.swapTokenBadgeText}>$MAGMA</Text>
-          </View>
-        </View>
-      </View>
-
-      <TouchableOpacity
-        style={[
-          styles.swapButton,
-          (!solAmount || isSwapping) && styles.swapButtonDisabled,
-        ]}
-        onPress={handleSwap}
-        disabled={!solAmount || isSwapping}
-        activeOpacity={0.7}
-      >
-        {isSwapping ? (
-          <Text style={styles.swapButtonText}>Swapping...</Text>
-        ) : (
-          <Text style={styles.swapButtonText}>Swap</Text>
-        )}
-      </TouchableOpacity>
-    </View>
-  );
-
-  // Vault Allocation component
-  const VaultAllocation = () => {
-    const segments = [
-      renderDonutSegment(vaultAllocation.meteora, PROTOCOLS[0].color, 0),
-      renderDonutSegment(vaultAllocation.kamino, PROTOCOLS[1].color, vaultAllocation.meteora),
-      renderDonutSegment(vaultAllocation.save, PROTOCOLS[2].color, vaultAllocation.meteora + vaultAllocation.kamino),
-    ];
-
-    return (
-      <View style={styles.vaultCard}>
-        <Text style={styles.vaultCardTitle}>Vault Allocation</Text>
-        <View style={styles.vaultContent}>
-          <View style={styles.donutContainer}>
-            <View style={styles.donut}>
-              {segments.map((segment, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.donutSegment,
-                    {
-                      backgroundColor: segment.color,
-                      width: `${segment.percentage}%`,
-                    },
-                  ]}
-                />
-              ))}
-            </View>
-            <View style={styles.donutHole}>
-              <Text style={styles.donutHoleText}>100%</Text>
-            </View>
-          </View>
-
-          <View style={styles.allocationList}>
-            {PROTOCOLS.map((protocol) => (
-              <View key={protocol.id} style={styles.allocationItem}>
-                <View style={styles.allocationIndicator}>
-                  <View
-                    style={[
-                      styles.allocationDot,
-                      { backgroundColor: protocol.color },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.allocationName}>{protocol.name}</Text>
-                <Text style={styles.allocationPercentage}>
-                  {vaultAllocation[protocol.id as keyof typeof vaultAllocation]}%
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  // Yield Counter component
   const YieldCounter = () => (
-    <Animated.View style={[styles.yieldCard, yieldStyle]}>
+    <Animated.View style={[styles.yieldCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }, yieldStyle]}>
       <View style={styles.yieldHeader}>
-        <Text style={styles.yieldLabel}>Yield Earned Today</Text>
+        <Text style={[styles.yieldLabel, { color: theme.textSecondary }]}>Yield Earned Today</Text>
         <Text style={styles.yieldIcon}>📈</Text>
       </View>
-      <Text style={styles.yieldValue}>${formatNumber(yieldEarned)}</Text>
-      <View style={styles.yieldBreakdown}>
-        {PROTOCOLS.map((protocol) => (
+      <Text style={[styles.yieldValue, { color: theme.green }]}>${formatNumber(yieldEarned)}</Text>
+      <View style={[styles.yieldBreakdown, { borderTopColor: theme.borderSubtle }]}>
+        {PROTOCOLS.slice(0, 3).map(protocol => (
           <View key={protocol.id} style={styles.yieldBreakdownItem}>
-            <Text style={styles.yieldBreakdownName}>{protocol.name}</Text>
-            <Text style={[styles.yieldBreakdownValue, { color: protocol.color }]}>
+            <Text style={[styles.yieldBreakdownName, { color: theme.textTertiary }]}>{protocol.name}</Text>
+            <Text style={[styles.yieldBreakdownValue, { color: theme.green }]}>
               +${(yieldEarned * (protocol.apy / 34.7)).toFixed(4)}
             </Text>
           </View>
@@ -403,401 +304,415 @@ const DeFiScreen: React.FC = () => {
     </Animated.View>
   );
 
+  const SwapWidget = () => (
+    <View style={[styles.swapWidget, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+      <Text style={[styles.swapWidgetTitle, { color: theme.textPrimary }]}>Quick Swap SOL → $MAGMA</Text>
+      <View style={styles.swapInputContainer}>
+        <Text style={[styles.swapInputLabel, { color: theme.textSecondary }]}>You Pay</Text>
+        <View style={[styles.swapInput, { backgroundColor: theme.bgBase, borderColor: theme.cardBorder }]}>
+          <TextInput
+            style={[styles.swapTextInput, { color: theme.textPrimary }]}
+            placeholder="0.00"
+            placeholderTextColor={theme.textTertiary}
+            value={solAmount}
+            onChangeText={text => { setSolAmount(text); calculateSwap(text); }}
+            keyboardType="decimal-pad"
+          />
+          <View style={[styles.swapTokenBadge, { backgroundColor: theme.orange }]}>
+            <Text style={styles.swapTokenBadgeText}>SOL</Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.swapArrow}>
+        <Text style={[styles.swapArrowText, { color: theme.textTertiary }]}>↓</Text>
+      </View>
+      <View style={styles.swapInputContainer}>
+        <Text style={[styles.swapInputLabel, { color: theme.textSecondary }]}>You Receive</Text>
+        <View style={[styles.swapInput, { backgroundColor: theme.bgElevated, borderColor: theme.cardBorder }]}>
+          <TextInput
+            style={[styles.swapTextInput, { color: theme.textSecondary }]}
+            placeholder="0.00"
+            placeholderTextColor={theme.textTertiary}
+            value={magmaAmount}
+            editable={false}
+          />
+          <View style={[styles.swapTokenBadge, { backgroundColor: theme.amber }]}>
+            <Text style={styles.swapTokenBadgeText}>$MAGMA</Text>
+          </View>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={[styles.swapButton, { backgroundColor: theme.orange }, (!solAmount || isSwapping) && styles.swapButtonDisabled]}
+        onPress={handleSwap}
+        disabled={!solAmount || isSwapping}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.swapButtonText}>{isSwapping ? 'Swapping...' : 'Swap'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const VaultAllocation = () => (
+    <View style={[styles.vaultCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+      <Text style={[styles.vaultCardTitle, { color: theme.textPrimary }]}>Vault Allocation</Text>
+      <View style={styles.vaultContent}>
+        <View style={styles.donutContainer}>
+          <View style={styles.donut}>
+            {[
+              { pct: vaultAllocation.meteora, color: '#00ff88' },
+              { pct: vaultAllocation.kamino,  color: theme.amber },
+              { pct: vaultAllocation.save,    color: theme.orange },
+            ].map((seg, i) => (
+              <View key={i} style={[styles.donutSegment, { backgroundColor: seg.color, width: `${seg.pct}%` }]} />
+            ))}
+          </View>
+          <View style={[styles.donutHole, { backgroundColor: theme.cardBg }]}>
+            <Text style={[styles.donutHoleText, { color: theme.textPrimary }]}>100%</Text>
+          </View>
+        </View>
+        <View style={styles.allocationList}>
+          {PROTOCOLS.slice(0, 3).map((protocol, i) => (
+            <View key={protocol.id} style={styles.allocationItem}>
+              <View style={[styles.allocationDot, {
+                backgroundColor: i === 0 ? '#00ff88' : i === 1 ? theme.amber : theme.orange,
+              }]} />
+              <Text style={[styles.allocationName, { color: theme.textPrimary }]}>{protocol.name}</Text>
+              <Text style={[styles.allocationPct, { color: theme.textSecondary }]}>
+                {vaultAllocation[protocol.id as keyof typeof vaultAllocation]}%
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <ScrollView
-      style={[styles.container, { paddingTop: insets.top }]}
+      style={[styles.container, { backgroundColor: theme.bgBase }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      overScrollMode="never"
+      bounces={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          tintColor={COLORS.primary}
-          colors={[COLORS.primary]}
+          tintColor={theme.orange}
+          colors={[theme.orange]}
         />
       }
     >
-      {/* Price Card */}
       <PriceCard />
-
-      {/* Yield Counter */}
       <YieldCounter />
 
-      {/* APY Cards */}
-      <Text style={styles.sectionTitle}>Live APYs</Text>
+      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Live APYs</Text>
       <View style={styles.apyCardsContainer}>
         {protocols.map((protocol, index) => (
           <APYCard key={protocol.id} protocol={protocol} index={index} />
         ))}
       </View>
 
-      {/* Swap Widget */}
-      <Text style={styles.sectionTitle}>Quick Swap</Text>
+      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Quick Swap</Text>
       <SwapWidget />
 
-      {/* Vault Allocation */}
-      <Text style={styles.sectionTitle}>Your Vaults</Text>
+      <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Your Vaults</Text>
       <VaultAllocation />
-      <EcosystemGrid />
     </ScrollView>
   );
 };
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    paddingTop: 0,
   },
   content: {
-    padding: 16,
+    padding:       spacing.lg,
     paddingBottom: 32,
   },
+  // Price card
   priceCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginBottom: 16,
+    borderRadius:  radius.lg,
+    padding:       spacing.xl,
+    borderWidth:   1,
+    marginBottom:  spacing.md,
   },
   priceCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection:  'row',
+    alignItems:     'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom:   spacing.sm,
   },
   priceCardLabel: {
-    fontSize: 14,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
+    fontSize: fontSize.sm,
   },
   staleBadge: {
-    backgroundColor: COLORS.muted,
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingVertical:   3,
+    borderRadius:      radius.sm,
   },
   staleText: {
-    fontSize: 10,
+    fontSize:   10,
     fontWeight: '700',
-    color: COLORS.background,
-    fontFamily: 'Syne-Bold',
   },
   priceCardValue: {
-    fontSize: 32,
+    fontSize:   32,
     fontWeight: '700',
-    color: COLORS.primary,
-    fontFamily: 'Syne-Bold',
   },
   priceCardMeta: {
-    fontSize: 12,
-    color: COLORS.muted,
+    fontSize:  12,
     marginTop: 4,
-    fontFamily: 'Syne-Regular',
   },
+  // Yield card
   yieldCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginBottom: 16,
+    borderRadius: radius.lg,
+    padding:      spacing.xl,
+    borderWidth:  1,
+    marginBottom: spacing.md,
   },
   yieldHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection:  'row',
+    alignItems:     'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom:   spacing.sm,
   },
   yieldLabel: {
-    fontSize: 14,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
+    fontSize: fontSize.sm,
   },
   yieldIcon: {
     fontSize: 20,
   },
   yieldValue: {
-    fontSize: 28,
+    fontSize:   28,
     fontWeight: '700',
-    color: COLORS.success,
-    fontFamily: 'Syne-Bold',
   },
   yieldBreakdown: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop:    spacing.md,
+    paddingTop:   spacing.md,
     borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
   },
   yieldBreakdownItem: {
-    flexDirection: 'row',
+    flexDirection:  'row',
     justifyContent: 'space-between',
-    marginTop: 6,
+    marginTop:      6,
   },
   yieldBreakdownName: {
     fontSize: 12,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
   },
   yieldBreakdownValue: {
-    fontSize: 12,
+    fontSize:   12,
     fontWeight: '600',
-    fontFamily: 'Syne-Bold',
   },
+  // Section title
   sectionTitle: {
-    fontSize: 18,
+    fontSize:   18,
     fontWeight: '700',
-    color: COLORS.text,
-    marginTop: 8,
-    marginBottom: 12,
-    fontFamily: 'Syne-Bold',
+    marginTop:  spacing.sm,
+    marginBottom: spacing.md,
   },
+  // APY cards
   apyCardsContainer: {
-    gap: 12,
-    marginBottom: 16,
+    gap:          spacing.md,
+    marginBottom: spacing.md,
   },
   apyCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderRadius: radius.lg,
+    padding:      spacing.lg,
+    borderWidth:  1,
   },
   apyCardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems:    'center',
+    marginBottom:  spacing.md,
   },
-  apyCardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.cardBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+  apyCardIconWrap: {
+    width:         44,
+    height:        44,
+    borderRadius:  22,
+    alignItems:    'center',
+    justifyContent:'center',
+    marginRight:   spacing.md,
   },
-  apyCardIconText: {
+  apyCardEmoji: {
     fontSize: 22,
   },
   apyCardInfo: {
     flex: 1,
   },
   apyCardName: {
-    fontSize: 16,
+    fontSize:   16,
     fontWeight: '700',
-    color: COLORS.text,
-    fontFamily: 'Syne-Bold',
   },
-  apyCardDescription: {
-    fontSize: 12,
-    color: COLORS.muted,
+  apyCardSub: {
+    fontSize:  12,
     marginTop: 2,
-    fontFamily: 'Syne-Regular',
   },
   apyCardMetrics: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems:    'center',
+    marginBottom:  spacing.md,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
   },
   apyMetric: {
-    flex: 1,
+    flex:       1,
     alignItems: 'center',
   },
   apyMetricValue: {
-    fontSize: 20,
+    fontSize:   20,
     fontWeight: '700',
-    color: COLORS.primary,
-    fontFamily: 'Syne-Bold',
   },
   apyMetricLabel: {
-    fontSize: 11,
-    color: COLORS.muted,
+    fontSize:  11,
     marginTop: 2,
-    fontFamily: 'Syne-Regular',
   },
   apyMetricDivider: {
-    width: 1,
-    height: 36,
-    backgroundColor: COLORS.cardBorder,
-    marginHorizontal: 12,
+    width:            1,
+    height:           36,
+    marginHorizontal: spacing.md,
   },
+  // Deposit button — orange pill
   depositButton: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
+    borderRadius:  radius.full,
+    paddingVertical: 12,
+    alignItems:    'center',
   },
   depositButtonText: {
-    fontSize: 14,
+    fontSize:   14,
     fontWeight: '700',
-    fontFamily: 'Syne-Bold',
+    color:      '#FFFFFF',
   },
+  // Swap widget
   swapWidget: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginBottom: 16,
+    borderRadius: radius.lg,
+    padding:      spacing.xl,
+    borderWidth:  1,
+    marginBottom: spacing.md,
   },
   swapWidgetTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 16,
-    fontFamily: 'Syne-Bold',
+    fontSize:     16,
+    fontWeight:   '700',
+    marginBottom: spacing.lg,
   },
   swapInputContainer: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   swapInputLabel: {
-    fontSize: 12,
-    color: COLORS.muted,
+    fontSize:     12,
     marginBottom: 6,
-    fontFamily: 'Syne-Regular',
   },
   swapInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    paddingHorizontal: 16,
+    flexDirection:   'row',
+    alignItems:      'center',
+    borderRadius:    radius.md,
+    borderWidth:     1,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
   },
-  swapOutput: {
-    backgroundColor: COLORS.cardBorder,
-  },
   swapTextInput: {
-    flex: 1,
+    flex:     1,
     fontSize: 18,
-    color: COLORS.text,
-    fontFamily: 'Syne-Regular',
-  },
-  swapOutputText: {
-    color: COLORS.muted,
   },
   swapTokenBadge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  swapTokenBadgeMagma: {
-    backgroundColor: COLORS.accent,
+    paddingHorizontal: spacing.md,
+    paddingVertical:   6,
+    borderRadius:      radius.full,
   },
   swapTokenBadgeText: {
-    fontSize: 13,
+    fontSize:   13,
     fontWeight: '700',
-    color: COLORS.background,
-    fontFamily: 'Syne-Bold',
+    color:      '#FFFFFF',
   },
   swapArrow: {
-    alignItems: 'center',
+    alignItems:    'center',
     marginVertical: -6,
   },
   swapArrowText: {
     fontSize: 20,
-    color: COLORS.muted,
   },
   swapButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius:    radius.full,
     paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
+    alignItems:      'center',
+    marginTop:       spacing.sm,
   },
   swapButtonDisabled: {
     opacity: 0.5,
   },
   swapButtonText: {
-    fontSize: 16,
+    fontSize:   16,
     fontWeight: '700',
-    color: COLORS.background,
-    fontFamily: 'Syne-Bold',
+    color:      '#FFFFFF',
   },
+  // Vault allocation
   vaultCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderRadius: radius.lg,
+    padding:      spacing.xl,
+    borderWidth:  1,
   },
   vaultCardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 16,
-    fontFamily: 'Syne-Bold',
+    fontSize:     16,
+    fontWeight:   '700',
+    marginBottom: spacing.lg,
   },
   vaultContent: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems:    'center',
   },
   donutContainer: {
-    position: 'relative',
-    marginRight: 20,
+    position:    'relative',
+    marginRight: spacing.xl,
   },
   donut: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width:         120,
+    height:        120,
+    borderRadius:  60,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    overflow: 'hidden',
+    overflow:      'hidden',
   },
   donutSegment: {
     height: 120,
   },
   donutHole: {
-    position: 'absolute',
-    top: 30,
-    left: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.card,
-    alignItems: 'center',
+    position:       'absolute',
+    top:            30,
+    left:           30,
+    width:          60,
+    height:         60,
+    borderRadius:   30,
+    alignItems:     'center',
     justifyContent: 'center',
   },
   donutHoleText: {
-    fontSize: 12,
+    fontSize:   12,
     fontWeight: '700',
-    color: COLORS.text,
-    fontFamily: 'Syne-Bold',
   },
   allocationList: {
     flex: 1,
   },
   allocationItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  allocationIndicator: {
-    width: 12,
-    marginRight: 8,
+    alignItems:    'center',
+    marginBottom:  spacing.sm,
   },
   allocationDot: {
-    width: 10,
-    height: 10,
+    width:        10,
+    height:       10,
     borderRadius: 5,
+    marginRight:  spacing.sm,
   },
   allocationName: {
-    flex: 1,
+    flex:     1,
     fontSize: 13,
-    color: COLORS.text,
-    fontFamily: 'Syne-Regular',
   },
-  allocationPercentage: {
-    fontSize: 13,
+  allocationPct: {
+    fontSize:   13,
     fontWeight: '700',
-    color: COLORS.muted,
-    fontFamily: 'Syne-Bold',
   },
 });
 
