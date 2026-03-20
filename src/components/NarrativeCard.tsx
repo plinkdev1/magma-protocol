@@ -68,10 +68,10 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
     if (state === 4 || state === 5) {
       isGestureActive.current = false;
       if (tx > SWIPE_THRESHOLD) {
-        translationX.value = withSpring(SCREEN_WIDTH, { velocity: 2 }, () => runOnJS(onBack)());
+        translationX.value = withTiming(0, { duration: 100 }, () => runOnJS(onBack)());
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else if (tx < -SWIPE_THRESHOLD) {
-        translationX.value = withSpring(-SCREEN_WIDTH, { velocity: 2 }, () => runOnJS(onDismiss)());
+        translationX.value = withTiming(-SCREEN_WIDTH, { duration: 200 }, () => runOnJS(onDismiss)());
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } else {
         translationX.value = withSpring(0);
