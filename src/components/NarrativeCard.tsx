@@ -174,21 +174,10 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
 
         {/* Swipe hints */}
         <View style={styles.hintContainer}>
-          <Animated.View style={[styles.hintArrow, { left: 16,
-            opacity: interpolate(translationX.value, [0, 50], [0, 1], Extrapolation.CLAMP),
-            transform: [{ translateX: interpolate(translationX.value, [0, 50], [-10, 0], Extrapolation.CLAMP) }],
-          }]}>
-            <Text style={[styles.hintText, { color: theme.amber }]}>→</Text>
-          </Animated.View>
-          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>Swipe to decide</Text>
-          <Animated.View style={[styles.hintArrow, { right: 16,
-            opacity: interpolate(translationX.value, [0, -50], [0, 1], Extrapolation.CLAMP),
-            transform: [{ translateX: interpolate(translationX.value, [0, -50], [10, 0], Extrapolation.CLAMP) }],
-          }]}>
-            <Text style={[styles.hintText, { color: theme.amber }]}>←</Text>
-          </Animated.View>
+          <Text style={[styles.hintArrowText, { color: theme.amber }]}>{'←'}</Text>
+          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>← Swipe to decide →</Text>
+          <Text style={[styles.hintArrowText, { color: theme.amber }]}>{'→'}</Text>
         </View>
-
       </Animated.View>
     </PanGestureHandler>
   );
@@ -290,13 +279,8 @@ const styles = StyleSheet.create({
     width:          '100%',
     position:       'relative',
   },
-  hintArrow: {
-    width:      24,
-    alignItems: 'center',
-    position:   'absolute',
-  },
-  hintText: {
-    fontSize:   20,
+  hintArrowText: {
+    fontSize:   18,
     fontWeight: '700',
   },
   hintLabel: {
