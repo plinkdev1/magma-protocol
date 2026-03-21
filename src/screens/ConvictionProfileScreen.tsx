@@ -176,7 +176,7 @@ const ConvictionProfileScreen: React.FC = () => {
     );
   }
 
-  const p           = profile!;
+  const p           = profile ?? { conviction_score: 0, creator_score: 0, total_backings: 0, correct_backings: 0, total_backed_sol: 0, echo_pool_share: 0, echo_pool_amount: 0, current_streak: 0, best_streak: 0 };
   const tierConfig  = getTierFromScore(p.conviction_score);
   const nextTier    = TIERS.find(t => t.minScore > p.conviction_score);
   const accuracy    = p.total_backings > 0
