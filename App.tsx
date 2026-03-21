@@ -26,12 +26,13 @@ import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
 const COLORS = {
-  background: '#080400',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
+  background: '#09080C',
+  primary:    '#FF6B35',
+  accent:     '#FFB347',
+  text:       '#F2EEF8',
+  muted:      '#9B95A8',
+  card:       '#111018',
+  border:     'rgba(255,255,255,0.06)',
 };
 
 export type RootTabParamList = {
@@ -63,7 +64,7 @@ function AppTabs() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: COLORS.background,
-          borderTopColor: COLORS.muted,
+          borderTopColor: COLORS.border,
           borderTopWidth: 1,
           height: 64 + insets.bottom,
           paddingBottom: insets.bottom + 8,
@@ -132,7 +133,7 @@ export default function App() {
                       background: COLORS.background,
                       card: COLORS.card,
                       text: COLORS.text,
-                      border: COLORS.muted,
+                      border: COLORS.border,
                       notification: COLORS.accent,
                     },
                   }}
