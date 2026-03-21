@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { AppDrawer, AppHeader } from './AppDrawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
 import { WalletProvider } from './src/context/WalletContext';
@@ -138,10 +139,13 @@ export default function App() {
                     },
                   }}
                 >
-                  <Stack.Navigator screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="Main" component={AppTabs} />
-                    <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
-                  </Stack.Navigator>
+                  <AppDrawer>
+                    <AppHeader />
+                    <Stack.Navigator screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="Main" component={AppTabs} />
+                      <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
+                    </Stack.Navigator>
+                  </AppDrawer>
                 </NavigationContainer>
               </SafeAreaProvider>
             </QueryClientProvider>
