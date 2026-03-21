@@ -36,7 +36,7 @@ import { API_URL } from "../config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type TokenType = "SOL" | "SKR";
+export type TokenType = "SOL" | "SKR" | "USDC" | "BONK" | "RAY" | "JUP" | "WIF" | "JTO" | "PYTH" | "KMNO" | "MET" | "DRIFT" | "VIRTUAL" | "PENGU" | "PUMP" | "CAKE";
 
 export interface BackNarrativeResult {
   txSignature: string;

@@ -18,6 +18,7 @@ import { ArrowLeft, Copy, ExternalLink, ChevronDown, ChevronUp } from 'lucide-re
 import { useNarrative } from '../hooks/useNarrative';
 import { useWallet } from '../context/WalletContext';
 import { useBackNarrative } from '../hooks/useBackNarrative';
+import TokenSelectorModal, { BackingToken } from '../components/TokenSelectorModal';
 import { API_URL } from '../config';
 import { RootStackParamList } from '../../App';
 
@@ -29,7 +30,7 @@ type Props = {
 };
 
 type KitTab = 'Hooks' | 'Article' | 'Thread';
-type Token = 'SOL' | 'SKR';
+type Token = BackingToken;
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -100,6 +101,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [activeKitTab, setActiveKitTab] = useState<KitTab>('Hooks');
   const [selectedToken, setSelectedToken] = useState<Token>('SOL');
+  const [tokenSelectorVisible, setTokenSelectorVisible] = useState(false);
   const [backAmount, setBackAmount] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const { backNarrative, backing, txSignature, error: backError } = useBackNarrative();
@@ -388,21 +390,22 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Token toggle */}
-        <View style={styles.tokenToggle}>
-          {(['SOL', 'SKR'] as Token[]).map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.tokenBtn, selectedToken === t && styles.tokenBtnActive]}
-              onPress={() => setSelectedToken(t)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tokenBtnText, selectedToken === t && styles.tokenBtnTextActive]}>
-                {t}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Token selector */}
+        <TouchableOpacity
+          style={[styles.tokenSelectorBtn, { borderColor: C.primary }]}
+          onPress={() => setTokenSelectorVisible(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tokenSelectorText, { color: C.primary }]}>
+            {selectedToken} ▾
+          </Text>
+        </TouchableOpacity>
+        <TokenSelectorModal
+          visible={tokenSelectorVisible}
+          selected={selectedToken}
+          onSelect={(t) => setSelectedToken(t)}
+          onClose={() => setTokenSelectorVisible(false)}
+        />
 
         {/* Amount input */}
         <View style={styles.amountRow}>
@@ -912,6 +915,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: C.muted,
     marginTop: 2,
+  },
+  tokenSelectorBtn: {
+    borderWidth: 1,
+    borderRadius: 9999,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  tokenSelectorText: {
+    fontSize: 15,
+    fontWeight: '700',
   },
   tokenToggle: {
     flexDirection: 'row',
