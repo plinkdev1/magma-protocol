@@ -19,6 +19,7 @@ import { useNarrative } from '../hooks/useNarrative';
 import { useWallet } from '../context/WalletContext';
 import { useBackNarrative } from '../hooks/useBackNarrative';
 import TokenSelectorModal, { BackingToken } from '../components/TokenSelectorModal';
+import SideShiftWidget from '../components/SideShiftWidget';
 import { API_URL } from '../config';
 import { RootStackParamList } from '../../App';
 
@@ -102,6 +103,8 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const [activeKitTab, setActiveKitTab] = useState<KitTab>('Hooks');
   const [selectedToken, setSelectedToken] = useState<Token>('SOL');
   const [tokenSelectorVisible, setTokenSelectorVisible] = useState(false);
+  const [showSideShift, setShowSideShift] = useState(false);
+  const [sideShiftTo, setSideShiftTo] = useState<string>('SOL');
   const [backAmount, setBackAmount] = useState('');
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const { backNarrative, backing, txSignature, error: backError } = useBackNarrative();
@@ -422,6 +425,37 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           )}
         </View>
 
+        {/* SideShift shortcut — shown when amount entered */}
+        {backAmount && parseFloat(backAmount) > 0 && !txSignature && (
+          <View style={styles.convertRow}>
+            <Text style={[styles.convertLabel, { color: C.muted }]}>Need {selectedToken}?</Text>
+            <TouchableOpacity
+              style={[styles.convertBtn, { borderColor: C.primary }]}
+              onPress={() => { setSideShiftTo(selectedToken); setShowSideShift(true); }}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.convertBtnText, { color: C.primary }]}>
+                Get {selectedToken} via Swap
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {/* SideShift modal */}
+        {showSideShift && (
+          <View style={styles.sideShiftModal}>
+            <TouchableOpacity
+              style={styles.sideShiftClose}
+              onPress={() => setShowSideShift(false)}
+            >
+              <Text style={{ color: C.muted, fontSize: 14 }}>✕ Close</Text>
+            </TouchableOpacity>
+            <SideShiftWidget
+              settleAddress={account?.publicKey?.toString() ?? ''}
+              defaultFrom="USDC"
+              defaultTo={sideShiftTo}
+            />
+          </View>
+        )}
         {backError ? <Text style={styles.backErrorText}>{backError}</Text> : null}
         {txSignature ? (
           <TouchableOpacity onPress={() => Linking.openURL(`https://solscan.io/tx/${txSignature}?cluster=devnet`)}>
@@ -915,6 +949,33 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: C.muted,
     marginTop: 2,
+  },
+  convertRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingVertical: 8,
+  },
+  convertLabel: {
+    fontSize: 13,
+  },
+  convertBtn: {
+    borderWidth: 1,
+    borderRadius: 9999,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+  },
+  convertBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  sideShiftModal: {
+    marginBottom: 16,
+  },
+  sideShiftClose: {
+    alignItems: 'flex-end',
+    marginBottom: 8,
   },
   tokenSelectorBtn: {
     borderWidth: 1,
