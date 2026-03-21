@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
+import { useWallet } from '../context/WalletContext';
 import { radius, spacing, fontSize } from '../theme/tokens';
 import { EcosystemGrid } from '../components/EcosystemGrid';
 import SideShiftWidget from '../components/SideShiftWidget';
@@ -34,38 +35,18 @@ const QuickActionButton: React.FC<QuickActionProps> = ({ label, subtitle, onPres
   );
 };
 
-// ─── SideShift Placeholder ────────────────────────────────────────────────────
-
-const SideShiftPlaceholder: React.FC = () => {
-  const { theme } = useTheme();
-  return (
-    <View style={[styles.placeholderCard, { backgroundColor: theme.cardBg, borderColor: theme.borderMedium }]}>
-      <Text style={[styles.placeholderTitle, { color: theme.textPrimary }]}>⚡ Swap Any Token</Text>
-      <Text style={[styles.placeholderSub, { color: theme.textSecondary }]}>
-        200+ assets · Non-custodial · No KYC
-      </Text>
-      <View style={[styles.placeholderBadge, { backgroundColor: 'rgba(255,107,53,0.10)', borderColor: theme.borderMedium }]}>
-        <Text style={[styles.placeholderBadgeText, { color: theme.orange }]}>SideShift widget — Phase H6</Text>
-      </View>
-    </View>
-  );
-};
-
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 const ControlMissionScreen: React.FC = () => {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { account } = useWallet();
+  const [swapTo, setSwapTo] = React.useState<string>('SOL');
+  const walletAddress = account?.publicKey?.toString() ?? '';
 
-  const handleGetSOL = () => {
-    // Phase H6 — open SideShift pre-filled TO=SOL
-    console.log('[ControlMission] Get SOL tapped');
-  };
+  const handleGetSOL = () => { setSwapTo('SOL'); };
 
-  const handleGetSKR = () => {
-    // Phase H6 — open SideShift pre-filled TO=SKR
-    console.log('[ControlMission] Get SKR tapped');
-  };
+  const handleGetSKR = () => { setSwapTo('SKR'); };
 
   return (
     <ScrollView
@@ -97,9 +78,9 @@ const ControlMissionScreen: React.FC = () => {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>SWAP</Text>
         <SideShiftWidget
-          settleAddress=""
+          settleAddress={walletAddress}
           defaultFrom="USDC"
-          defaultTo="SOL"
+          defaultTo={swapTo}
         />
       </View>
 
