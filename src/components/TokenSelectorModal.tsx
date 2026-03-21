@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
+import TokenAvatar from './ui/TokenAvatar';
 import { radius, spacing, fontSize } from '../theme/tokens';
 
 // ─── Yield route data (mirrors MAGMA_YIELD_ROUTER_SPEC.md) ───────────────────
