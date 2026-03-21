@@ -20,6 +20,7 @@ import DeFiScreen from './src/screens/DeFiScreen';
 import DeFiTabsScreen from './src/screens/DeFiTabsScreen';
 import PortfolioScreen from './src/screens/PortfolioScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import ConvictionProfileScreen from './src/screens/ConvictionProfileScreen';
 import NarrativeDetailScreen from './src/screens/NarrativeDetailScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -82,7 +83,7 @@ function AppTabs() {
       <Tab.Screen name="Launch" component={LaunchScreen} options={{ tabBarLabel: 'Launch' }} />
       <Tab.Screen name="DeFi" component={DeFiTabsScreen} options={{ tabBarLabel: 'DeFi' }} />
       <Tab.Screen name="Portfolio" component={PortfolioScreen} options={{ tabBarLabel: 'Portfolio' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
+      <Tab.Screen name="Profile" component={ConvictionProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );
 }
