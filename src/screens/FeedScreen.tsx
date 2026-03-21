@@ -34,9 +34,25 @@ interface Narrative {
   backers: number;
   daysRemaining: number;
   deadline_at?: string;
+  category?: string;
+  narrative_type?: string;
+  created_at?: string;
 }
 
 const FILTERS: FilterType[] = ['All', 'Trending', 'New', 'Backed'];
+
+function getDiscoveryLabel(daysRemaining: number, deadlineAt?: string, createdAt?: string): string {
+  if (!deadlineAt) return '';
+  const total = createdAt
+    ? (new Date(deadlineAt).getTime() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    : 30;
+  const elapsed = total - daysRemaining;
+  const pct = elapsed / total;
+  if (daysRemaining <= 0) return '⏰ CLOSED';
+  if (pct < 0.25) return '🟢 EARLY · 2.0× Discovery';
+  if (pct < 0.50) return '🟡 MID · 1.2× Discovery';
+  return '🔴 LATE · 1.0× Discovery';
+}
 
 const FeedScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -169,6 +185,8 @@ const FeedScreen: React.FC = () => {
       solBacked={item.solBacked}
       backers={item.backers}
       daysRemaining={item.daysRemaining}
+      category={item.category || item.narrative_type || undefined}
+      discoveryLabel={getDiscoveryLabel(item.daysRemaining, item.deadline_at, item.created_at)}
       onBack={() => handleBack(item.id)}
       onPress={() => handleBack(item.id)}
       onDismiss={() => handleDismiss(item.id)}
