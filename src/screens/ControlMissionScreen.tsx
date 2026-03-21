@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { radius, spacing, fontSize } from '../theme/tokens';
 import { EcosystemGrid } from '../components/EcosystemGrid';
+import SideShiftWidget from '../components/SideShiftWidget';
 
 // ─── Quick Action Button ───────────────────────────────────────────────────────
 
@@ -95,7 +96,11 @@ const ControlMissionScreen: React.FC = () => {
       {/* ── Section: Swap ── */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>SWAP</Text>
-        <SideShiftPlaceholder />
+        <SideShiftWidget
+          settleAddress=""
+          defaultFrom="USDC"
+          defaultTo="SOL"
+        />
       </View>
 
       {/* ── Section: Solana Ecosystem ── */}
