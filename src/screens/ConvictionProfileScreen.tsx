@@ -8,6 +8,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Switch, Alert } from 'react-native';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as Notifications from 'expo-notifications';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -93,6 +96,10 @@ const ConvictionProfileScreen: React.FC = () => {
   const [profile, setProfile]   = useState<ProfileData | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
+  const [biometricEnabled, setBiometricEnabled]       = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [hasBiometric, setHasBiometric]               = useState(false);
+  const [isDisconnecting, setIsDisconnecting]         = useState(false);
 
   const scoreProgress = useSharedValue(0);
   const cardScale     = useSharedValue(0.95);
@@ -146,6 +153,27 @@ const ConvictionProfileScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    LocalAuthentication.hasHardwareAsync().then(h =>
+      LocalAuthentication.isEnrolledAsync().then(e => setHasBiometric(h && e))
+    ).catch(() => {});
+    Notifications.getPermissionsAsync().then(({ status }) =>
+      setNotificationsEnabled(status === 'granted')
+    ).catch(() => {});
+  }, []);
+
+  const handleDisconnect = () => {
+    Alert.alert('Disconnect Wallet', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Disconnect', style: 'destructive', onPress: async () => {
+        setIsDisconnecting(true);
+        try { /* disconnect() — wire when MWA fully integrated */ }
+        catch { Alert.alert('Error', 'Failed to disconnect'); }
+        finally { setIsDisconnecting(false); }
+      }},
+    ]);
   };
 
   const cardAnimStyle = useAnimatedStyle(() => ({
@@ -338,6 +366,70 @@ const ConvictionProfileScreen: React.FC = () => {
           );
         })}
       </View>
+
+      {/* ── Wallet Card ── */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>WALLET</Text>
+        <View style={[styles.walletCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+          <View style={styles.walletRow}>
+            <Text style={[styles.walletLabel, { color: theme.textSecondary }]}>Connected Wallet</Text>
+            <View style={[styles.connectedBadge, { backgroundColor: 'rgba(34,197,94,0.10)', borderColor: 'rgba(34,197,94,0.30)' }]}>
+              <Text style={[styles.connectedText, { color: theme.green }]}>● Connected</Text>
+            </View>
+          </View>
+          <Text style={[styles.walletAddress, { color: theme.textPrimary }]}>
+            {account?.publicKey ? account.publicKey.toString().slice(0,4) + '...' + account.publicKey.toString().slice(-4) : 'Not connected'}
+          </Text>
+          <TouchableOpacity
+            style={[styles.disconnectBtn, { borderColor: theme.red }]}
+            onPress={handleDisconnect}
+            disabled={isDisconnecting}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.disconnectText, { color: theme.red }]}>
+              {isDisconnecting ? 'Disconnecting...' : 'Disconnect Wallet'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* ── Settings ── */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>SETTINGS</Text>
+        <View style={[styles.settingsCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>🔒 Biometric Lock</Text>
+              <Text style={[styles.settingDesc, { color: theme.textSecondary }]}>
+                {hasBiometric ? 'Use fingerprint or face to unlock' : 'Not available on this device'}
+              </Text>
+            </View>
+            <Switch
+              value={biometricEnabled}
+              onValueChange={setBiometricEnabled}
+              disabled={!hasBiometric}
+              trackColor={{ false: theme.cardBorder, true: theme.orange }}
+              thumbColor={theme.bgBase}
+            />
+          </View>
+          <View style={[styles.settingDivider, { backgroundColor: theme.borderSubtle }]} />
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>🔔 Push Notifications</Text>
+              <Text style={[styles.settingDesc, { color: theme.textSecondary }]}>Alerts for resolutions and payouts</Text>
+            </View>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              trackColor={{ false: theme.cardBorder, true: theme.orange }}
+              thumbColor={theme.bgBase}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* ── App info ── */}
+      <Text style={[styles.appVersion, { color: theme.textTertiary }]}>MAGMA Protocol v1.0.0-alpha</Text>
 
     </ScrollView>
   );
@@ -559,6 +651,34 @@ const styles = StyleSheet.create({
   tierRowFee: {
     fontSize: 11,
   },
+  walletCard: {
+    borderRadius: 16, borderWidth: 1, padding: 20, marginBottom: 0,
+  },
+  walletRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8,
+  },
+  walletLabel: { fontSize: 13 },
+  connectedBadge: {
+    borderRadius: 9999, borderWidth: 1, paddingVertical: 3, paddingHorizontal: 10,
+  },
+  connectedText: { fontSize: 11, fontWeight: '700' },
+  walletAddress: { fontSize: 16, fontWeight: '700', marginBottom: 16 },
+  disconnectBtn: {
+    borderRadius: 9999, borderWidth: 1, paddingVertical: 10, alignItems: 'center',
+  },
+  disconnectText: { fontSize: 14, fontWeight: '700' },
+  settingsCard: {
+    borderRadius: 16, borderWidth: 1, overflow: 'hidden',
+  },
+  settingRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    padding: 16,
+  },
+  settingInfo: { flex: 1, marginRight: 12 },
+  settingTitle: { fontSize: 14, fontWeight: '600', marginBottom: 3 },
+  settingDesc: { fontSize: 12 },
+  settingDivider: { height: 1, marginHorizontal: 16 },
+  appVersion: { fontSize: 11, textAlign: 'center', marginTop: 8, marginBottom: 8 },
 });
 
 export default ConvictionProfileScreen;
