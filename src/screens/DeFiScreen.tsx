@@ -223,7 +223,8 @@ const DeFiScreen: React.FC = () => {
   const [magmaAmount, setMagmaAmount] = useState('');
   const [isSwapping, setIsSwapping]   = useState(false);
   const [yieldEarned, setYieldEarned] = useState(0.0234);
-  const [vaultAllocation]             = useState({ meteora: 35, kamino: 25, save: 20, jupiter_lend: 12, skr_guardian: 8 });
+  const [vaultAllocation, setVaultAllocation] = useState({ meteora: 35, kamino: 25, save: 20, jupiter_lend: 12, skr_guardian: 8 });
+  const [allocationEmpty, setAllocationEmpty] = useState(false);
 
   const { price, lastUpdated, isStale } = usePythPriceFeed();
   const { swap } = useJupiterSwap();
@@ -244,6 +245,31 @@ const DeFiScreen: React.FC = () => {
     fetchApys();
     const id = setInterval(fetchApys, 60_000); // refresh every 60s
     return () => clearInterval(id);
+  }, []);
+
+  // Fetch real vault allocation
+  useEffect(() => {
+    const fetchAllocation = async () => {
+      try {
+        const walletAddr = ''; // Phase H — wire wallet address when MWA fully integrated
+        if (!walletAddr) return; // skip if no wallet — show sample data
+        const res = await fetch(`${API_URL}/v1/defi/allocation/${walletAddr}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.empty || !data.allocation?.length) {
+          setAllocationEmpty(true);
+          return;
+        }
+        const alloc: Record<string, number> = {};
+        for (const a of data.allocation) {
+          const key = a.protocol.replace('_lend', '').replace('_dlmm', '').replace('_finance', '');
+          alloc[key] = a.percentage;
+        }
+        setVaultAllocation(prev => ({ ...prev, ...alloc }));
+        setAllocationEmpty(false);
+      } catch { /* keep defaults */ }
+    };
+    fetchAllocation();
   }, []);
 
   // Yield counter tick
