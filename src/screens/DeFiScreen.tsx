@@ -22,6 +22,7 @@ import * as Haptics from 'expo-haptics';
 
 import { usePythPriceFeed } from '../hooks/usePythPriceFeed';
 import { useJupiterSwap } from '../hooks/useMagmaTransactions';
+import { API_URL } from '../config';
 import { useTheme } from '../theme/ThemeContext';
 import { radius, spacing, fontSize } from '../theme/tokens';
 
@@ -199,7 +200,25 @@ const DeFiScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const [refreshing, setRefreshing]   = useState(false);
+  const [liveApys, setLiveApys]         = useState<Record<string,number>>({});
   const [protocols, setProtocols]     = useState<Protocol[]>(PROTOCOLS);
+
+  // Update protocol APYs when live data arrives
+  useEffect(() => {
+    if (Object.keys(liveApys).length === 0) return;
+    setProtocols(PROTOCOLS.map(p => {
+      const apyKey: Record<string,string> = {
+        meteora:      'meteora',
+        kamino:       'kamino',
+        save:         'save',
+        jupiter_lend: 'jupiter_lend',
+        skr_guardian: 'skr_guardian',
+      };
+      const key = apyKey[p.id];
+      const live = key ? liveApys[key] : null;
+      return live ? { ...p, apy: live } : p;
+    }));
+  }, [liveApys]);
   const [solAmount, setSolAmount]     = useState('');
   const [magmaAmount, setMagmaAmount] = useState('');
   const [isSwapping, setIsSwapping]   = useState(false);
@@ -211,6 +230,21 @@ const DeFiScreen: React.FC = () => {
 
   const yieldValue  = useSharedValue(0);
   const pulseValue  = useSharedValue(0);
+
+  // Fetch live APYs from backend
+  useEffect(() => {
+    const fetchApys = async () => {
+      try {
+        const res = await fetch(`${API_URL}/v1/defi/apys`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.apys) setLiveApys(data.apys);
+      } catch { /* keep defaults */ }
+    };
+    fetchApys();
+    const id = setInterval(fetchApys, 60_000); // refresh every 60s
+    return () => clearInterval(id);
+  }, []);
 
   // Yield counter tick
   useEffect(() => {
