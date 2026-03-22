@@ -36,14 +36,14 @@ type Token = BackingToken;
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const C = {
-  bg: '#080400',
-  primary: '#ff6b35',
+  bg: '#09080C',
+  primary: '#FF6B35',
   accent: '#ffb347',
   text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
+  muted: '#9B95A8',
+  card: '#111018',
   border: '#3d2a1f',
-  success: '#00ff88',
+  success: '#22C55E',
   info: '#00c4ff',
 };
 
