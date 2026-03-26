@@ -10,6 +10,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AppDrawer, AppHeader } from './AppDrawer';
+import OfflineBanner from './src/components/ui/OfflineBanner';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
 import { WalletProvider } from './src/context/WalletContext';
@@ -142,6 +143,7 @@ export default function App() {
                   }}
                 >
                   <AppDrawer>
+                    <OfflineBanner />
                     <AppHeader />
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="Main" component={AppTabs} />
