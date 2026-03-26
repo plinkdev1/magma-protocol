@@ -138,13 +138,16 @@ export const DrawerContent: React.FC<any> = (props) => {
 
   const go = (screen: string) => {
     navigation.closeDrawer();
-    // Navigate inside the tab navigator
-    navigation.navigate('MainTabs', { screen });
+    setTimeout(() => {
+      navigation.getParent()?.navigate('Main', { screen });
+    }, 300);
   };
 
   const goStack = (screen: string) => {
     navigation.closeDrawer();
-    navigation.getParent()?.navigate(screen);
+    setTimeout(() => {
+      navigation.getParent()?.navigate(screen);
+    }, 300);
   };
 
   return (
