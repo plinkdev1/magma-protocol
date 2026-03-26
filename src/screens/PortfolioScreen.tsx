@@ -149,10 +149,10 @@ const PortfolioScreen: React.FC = () => {
         axios.get(`${API_BASE_URL}/v1/users/${account.address}/balance`),
       ]);
 
-      setNarratives(narrativesRes.data);
-      setBackedNarratives(backedRes.data);
-      setPayouts(payoutsRes.data);
-      setMagmaBalance(balanceRes.data.magma);
+      setNarratives(narrativesRes.data.narratives ?? []);
+      setBackedNarratives(backedRes.data.backed ?? []);
+      setPayouts(payoutsRes.data.payouts ?? []);
+      setMagmaBalance(balanceRes.data.conviction_score ?? 0);
       setIsLoading(false);
     } catch (error) {
       console.error('[PortfolioScreen] Fetch failed:', error);
