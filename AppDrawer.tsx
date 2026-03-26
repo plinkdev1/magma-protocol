@@ -6,11 +6,14 @@ import {
   StyleSheet,
   ScrollView,
   Switch,
+  Image,
 } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from './src/theme/ThemeContext';
+import { useWallet } from './src/context/WalletContext';
+import WalletPickerModal from './src/components/WalletPickerModal';
 import { radius, spacing } from './src/theme/tokens';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -61,7 +64,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
       <View style={styles.headerRight}>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => navigation.navigate('Search')}
+          onPress={() => navigation.getParent()?.navigate('Search')}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
@@ -69,7 +72,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => navigation.navigate('History')}
+          onPress={() => navigation.getParent()?.navigate('History')}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
@@ -77,7 +80,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.walletPill, { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: theme.borderMedium }]}
-          onPress={() => navigation.navigate('Profile')}
+          onPress={() => { navigation.closeDrawer(); navigation.navigate('MainTabs', { screen: 'Profile' }); }}
           activeOpacity={0.7}
         >
           <Text style={[styles.walletPillText, { color: theme.orange }]}>⬡</Text>
@@ -129,18 +132,29 @@ const DrawerSection: React.FC<{ title: string; children: React.ReactNode }> = ({
 export const DrawerContent: React.FC<any> = (props) => {
   const { theme, colorScheme, setColorScheme } = useTheme();
   const navigation = props.navigation;
+  const { account, isConnected, disconnect } = useWallet();
+  const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const insets = useSafeAreaInsets();
 
   const go = (screen: string) => {
     navigation.closeDrawer();
-    navigation.navigate(screen);
+    // Navigate inside the tab navigator
+    navigation.navigate('MainTabs', { screen });
+  };
+
+  const goStack = (screen: string) => {
+    navigation.closeDrawer();
+    navigation.getParent()?.navigate(screen);
   };
 
   return (
     <View style={[styles.drawerContainer, { backgroundColor: theme.bgElevated }]}>
       {/* Logo area */}
       <View style={[styles.drawerHeader, { paddingTop: insets.top + 16, borderBottomColor: theme.cardBorder }]}>
-        <Text style={[styles.drawerLogo, { color: theme.orange }]}>🌋 MAGMA</Text>
+        <View style={styles.drawerLogoRow}>
+          <Image source={require('./assets/magma-icon-circle.png')} style={styles.drawerLogoImg} />
+          <Text style={[styles.drawerLogo, { color: theme.orange }]}>MAGMA</Text>
+        </View>
         <Text style={[styles.drawerSubtitle, { color: theme.textTertiary }]}>Conviction Capital Markets</Text>
       </View>
 
@@ -164,6 +178,32 @@ export const DrawerContent: React.FC<any> = (props) => {
           <DrawerItem emoji="🌐" label="ORIGIN"  onPress={() => {}} muted badge="Soon" />
         </DrawerSection>
 
+        <DrawerSection title="WALLET">
+          {isConnected && account ? (
+            <View style={styles.drawerItem}>
+              <Text style={styles.drawerItemEmoji}>👛</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.drawerItemLabel, { color: theme.textPrimary }]}>
+                  {account.address ? account.address.slice(0,4) + '...' + account.address.slice(-4) : 'Connected'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => disconnect()}
+                style={[styles.drawerBadge, { backgroundColor: 'rgba(239,68,68,0.10)', borderColor: 'rgba(239,68,68,0.30)' }]}
+              >
+                <Text style={[styles.drawerBadgeText, { color: '#EF4444' }]}>Disconnect</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <DrawerItem
+              emoji="🔗"
+              label="Connect Wallet"
+              onPress={() => setShowWalletPicker(true)}
+            />
+          )}
+          <WalletPickerModal visible={showWalletPicker} onClose={() => setShowWalletPicker(false)} />
+        </DrawerSection>
+
         <DrawerSection title="SETTINGS">
           {/* Theme toggle */}
           <View style={[styles.drawerItem, styles.drawerThemeRow]}>
@@ -176,7 +216,7 @@ export const DrawerContent: React.FC<any> = (props) => {
               thumbColor={theme.bgBase}
             />
           </View>
-          <DrawerItem emoji="📜" label="Terms & Conditions" onPress={() => go('Terms')} />
+          <DrawerItem emoji="📜" label="Terms & Conditions" onPress={() => goStack('Terms')} />
           <DrawerItem emoji="ℹ️"  label="About MAGMA"        onPress={() => {}} />
         </DrawerSection>
 
@@ -287,6 +327,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingBottom:     spacing.xl,
     borderBottomWidth: 1,
+  },
+  drawerLogoRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4,
+  },
+  drawerLogoImg: {
+    width: 32, height: 32, borderRadius: 16,
   },
   drawerLogo: {
     fontSize:      22,

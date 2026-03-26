@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '../theme/ThemeContext';
 import { useWallet } from '../context/WalletContext';
+import WalletPickerModal from '../components/WalletPickerModal';
 import { radius, spacing, fontSize } from '../theme/tokens';
 import { API_URL } from '../config';
 
@@ -96,6 +97,7 @@ const ConvictionProfileScreen: React.FC = () => {
   const [profile, setProfile]   = useState<ProfileData | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
+  const [showWalletPicker, setShowWalletPicker]       = useState(false);
   const [biometricEnabled, setBiometricEnabled]       = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [hasBiometric, setHasBiometric]               = useState(false);
@@ -198,8 +200,19 @@ const ConvictionProfileScreen: React.FC = () => {
         <Text style={styles.noWalletIcon}>🔥</Text>
         <Text style={[styles.noWalletTitle, { color: theme.textPrimary }]}>Connect Your Wallet</Text>
         <Text style={[styles.noWalletSub, { color: theme.textSecondary }]}>
-          Connect to view your Conviction Profile
+          Connect to view your Conviction Profile and start backing narratives
         </Text>
+        <TouchableOpacity
+          style={[styles.connectBtn, { backgroundColor: theme.orange }]}
+          onPress={() => setShowWalletPicker(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.connectBtnText}>Connect Wallet</Text>
+        </TouchableOpacity>
+        <WalletPickerModal
+          visible={showWalletPicker}
+          onClose={() => setShowWalletPicker(false)}
+        />
       </View>
     );
   }
@@ -453,6 +466,10 @@ const styles = StyleSheet.create({
   noWalletIcon: {
     fontSize: 64,
   },
+  connectBtn: {
+    borderRadius: 9999, paddingVertical: 14, paddingHorizontal: 32, marginTop: 8,
+  },
+  connectBtnText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
   noWalletTitle: {
     fontSize:   20,
     fontWeight: '700',
