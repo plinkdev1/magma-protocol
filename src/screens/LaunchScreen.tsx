@@ -24,7 +24,7 @@ import Animated, {
   FadeInLeft,
   FadeOutRight,
 } from 'react-native-reanimated';
-import { PanGestureHandler, GestureHandlerStateChange } from 'react-native-gesture-handler';
+import { PanGestureHandler, GestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import axios from 'axios';
 
@@ -73,12 +73,7 @@ const LaunchScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   // Reset when user navigates back to Launch tab
-  useFocusEffect(useCallback(() => {
-    // Reset flow when user comes back to Launch tab after publishing
-    if (publishedNarrativeId) {
-      handleReset();
-    }
-  }, [publishedNarrativeId, handleReset]));
+
 
   // Navigate to Feed after successful publish
   React.useEffect(() => {
@@ -185,8 +180,6 @@ const LaunchScreen: React.FC = () => {
         }
       });
     }, 4000);
-  }, [handlePipelineComplete]);
-
   // Step 3: Handle pipeline complete
   const handlePipelineComplete = useCallback((result: any) => {
     setTimeout(() => {
@@ -195,6 +188,10 @@ const LaunchScreen: React.FC = () => {
       Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
     }, 3000);
   }, []);
+
+  }, [handlePipelineComplete]);
+
+
 
   // Step 4: Swipe to next hook
   const handleHookSwipe = useCallback((direction: 'left' | 'right') => {

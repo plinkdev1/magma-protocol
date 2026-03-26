@@ -139,7 +139,7 @@ const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
         {/* Icon */}
         <Animated.View style={[s.iconWrap, bobStyle]}>
           <View style={s.iconShine} />
-          <Text style={s.iconEmoji}>🌋</Text>
+          <Image source={require('../../assets/magma-icon-orange.png')} style={s.iconImage} resizeMode="contain" />
         </Animated.View>
 
         {/* Gradient wordmark */}
