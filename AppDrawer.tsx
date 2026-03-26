@@ -64,7 +64,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
       <View style={styles.headerRight}>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => navigation.getParent()?.navigate('Search')}
+          onPress={() => { setTimeout(() => navigation.getParent()?.navigate('Search'), 0); }}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
@@ -72,7 +72,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => navigation.getParent()?.navigate('History')}
+          onPress={() => { setTimeout(() => navigation.getParent()?.navigate('History'), 0); }}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
