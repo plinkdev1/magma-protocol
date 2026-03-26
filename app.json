@@ -7,12 +7,12 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#080400",
+    "backgroundColor": "#09080C",
     "owner": "plinkdev",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#080400"
+      "backgroundColor": "#09080C"
     },
     "assetBundlePatterns": [
       "**/*"
