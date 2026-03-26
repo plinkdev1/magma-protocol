@@ -168,7 +168,7 @@ const ProfileScreen: React.FC = () => {
 
       if (finalStatus === 'granted') {
         setNotificationsEnabled(true);
-        await Notifications.setBadgeCounterAsync(0);
+        await Notifications.setBadgeCountAsync(0);
       } else {
         Alert.alert('Permission Denied', 'Notification permission was not granted', [{ text: 'OK' }]);
       }

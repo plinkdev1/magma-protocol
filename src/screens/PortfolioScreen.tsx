@@ -120,7 +120,7 @@ const PortfolioScreen: React.FC = () => {
 
       if (finalStatus === 'granted') {
         setNotificationsEnabled(true);
-        await Notifications.setBadgeCounterAsync(0);
+        await Notifications.setBadgeCountAsync(0);
       }
     } catch (error) {
       console.error('[PortfolioScreen] Notification permission failed:', error);
