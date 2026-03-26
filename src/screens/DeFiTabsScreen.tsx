@@ -20,8 +20,8 @@ const DeFiTabsScreen: React.FC = () => {
           elevation:        0,
           shadowOpacity:    0,
           borderBottomWidth: 1,
-          borderBottomColor: 'rgba(255,255,255,0.06)',
-          marginTop:        insets.top,
+          borderBottomColor: theme.cardBorder,
+          marginTop:        0,
         },
         tabBarIndicatorStyle: {
           backgroundColor: '#FF6B35',

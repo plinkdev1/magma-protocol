@@ -233,7 +233,7 @@ const PortfolioScreen: React.FC = () => {
     const cardProgress = useSharedValue(0);
 
     useEffect(() => {
-      cardProgress.value = withTiming(1, { duration: 400, delay: index * 100 });
+      cardProgress.value = withTiming(1, { duration: 400 + index * 100 });
     }, []);
 
     const cardStyle = useAnimatedStyle(() => ({
@@ -285,7 +285,7 @@ const PortfolioScreen: React.FC = () => {
     const cardProgress = useSharedValue(0);
 
     useEffect(() => {
-      cardProgress.value = withTiming(1, { duration: 400, delay: index * 100 });
+      cardProgress.value = withTiming(1, { duration: 400 + index * 100 });
     }, []);
 
     const cardStyle = useAnimatedStyle(() => ({
@@ -325,7 +325,7 @@ const PortfolioScreen: React.FC = () => {
     const cardProgress = useSharedValue(0);
 
     useEffect(() => {
-      cardProgress.value = withTiming(1, { duration: 400, delay: index * 100 });
+      cardProgress.value = withTiming(1, { duration: 400 + index * 100 });
     }, []);
 
     const cardStyle = useAnimatedStyle(() => ({
