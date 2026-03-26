@@ -161,6 +161,15 @@ const LaunchScreen: React.FC = () => {
     Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Light);
   }, [originalityResult]);
 
+  // Step 3: Handle pipeline complete
+  const handlePipelineComplete = useCallback((result: any) => {
+    setTimeout(() => {
+      setKitPreview(result.kitPreview);
+      setCurrentStep(4);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
+    }, 3000);
+  }, []);
+
   // Step 3: Start agent pipeline (MOCKED FOR DEMO)
   const handlePipelineStart = useCallback(() => {
     const mockJobId = 'demo-job-' + Date.now();
@@ -180,16 +189,9 @@ const LaunchScreen: React.FC = () => {
         }
       });
     }, 4000);
-  // Step 3: Handle pipeline complete
-  const handlePipelineComplete = useCallback((result: any) => {
-    setTimeout(() => {
-      setKitPreview(result.kitPreview);
-      setCurrentStep(4);
-      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
-    }, 3000);
-  }, []);
 
   }, [handlePipelineComplete]);
+
 
 
 
