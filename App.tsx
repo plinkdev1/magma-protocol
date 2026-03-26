@@ -23,6 +23,7 @@ import PortfolioScreen from './src/screens/PortfolioScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ConvictionProfileScreen from './src/screens/ConvictionProfileScreen';
 import NarrativeDetailScreen from './src/screens/NarrativeDetailScreen';
+import TransactionHistoryScreen from './src/screens/TransactionHistoryScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -47,6 +48,7 @@ export type RootTabParamList = {
 export type RootStackParamList = {
   Main: undefined;
   NarrativeDetail: { narrativeId: string };
+  History: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -144,6 +146,7 @@ export default function App() {
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="Main" component={AppTabs} />
                       <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
+                      <Stack.Screen name="History" component={TransactionHistoryScreen} />
                     </Stack.Navigator>
                   </AppDrawer>
                 </NavigationContainer>
