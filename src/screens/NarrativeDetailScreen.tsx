@@ -110,6 +110,8 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { backNarrative, backing, txSignature, error: backError } = useBackNarrative();
   // -- Task 12: challenge state --
   const [challengeModalVisible, setChallengeModalVisible] = useState(false);
+  const [verifyModalVisible, setVerifyModalVisible] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [challengeEvidence, setChallengeEvidence] = useState('');
   const [challengeSubmitting, setChallengeSubmitting] = useState(false);
   const [challengeSubmitted, setChallengeSubmitted] = useState(false);
