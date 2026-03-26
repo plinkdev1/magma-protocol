@@ -194,7 +194,7 @@ export function useBackNarrative(): UseBackNarrativeReturn {
         throw new Error("No wallet connected. Please connect a wallet first.");
       }
 
-      if (MAGMA_PROGRAMS.BACKING_VAULT === "REPLACE_WITH_PROGRAM_ID_AFTER_DEPLOY") {
+      if ((MAGMA_PROGRAMS.BACKING_VAULT as string) === "REPLACE_WITH_PROGRAM_ID_AFTER_DEPLOY") {
         throw new Error(
           "Contract not yet deployed. Run: anchor deploy --provider.cluster devnet"
         );

@@ -124,7 +124,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   useEffect(() => {
     if (!narrative?.challenge_window_closes_at) return;
     const update = () => {
-      const diff = new Date(narrative.challenge_window_closes_at).getTime() - Date.now();
+      const diff = new Date(narrative.challenge_window_closes_at!).getTime() - Date.now();
       if (diff <= 0) { setCountdown('Closed'); return; }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
@@ -1292,31 +1292,6 @@ const styles = StyleSheet.create({
   },
   oracleSourceLabel: { fontSize: 12, color: '#9B95A8' },
   oracleSourceValue: { fontSize: 12, fontWeight: '700' },
-  claimBtn: {
-    borderRadius: 9999, paddingVertical: 14,
-    alignItems: 'center', marginTop: 12,
-  },
-  claimBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
-  finalBadge: {
-    borderRadius: 9999, borderWidth: 1,
-    paddingVertical: 2, paddingHorizontal: 8, marginLeft: 8,
-  },
-  finalBadgeText: { fontSize: 10, fontWeight: '700' },
-  oracleResultBanner: {
-    borderRadius: 12, borderWidth: 1, padding: 12, marginBottom: 12,
-  },
-  oracleResultText: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
-  oracleSourceRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  oracleSourceLabel: { fontSize: 12, color: '#9B95A8' },
-  oracleSourceValue: { fontSize: 12, fontWeight: '700' },
-  claimBtn: {
-    borderRadius: 9999, paddingVertical: 14,
-    alignItems: 'center', marginTop: 12,
-  },
-  claimBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   finalLabel: {
     color: '#7a4a30',
     fontSize: 12,

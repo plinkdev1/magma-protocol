@@ -83,17 +83,13 @@ export const useMintNarrative = () => {
 
         const result = await transact(async (wallet) => {
           // Get authorization
-          const authorization = await wallet.authorize({
-            authorizationParams: {
-              chainId: 'solana:devnet',
-            },
-          });
+          const authorization = await wallet.authorize({ cluster: 'devnet', identity: { name: 'MAGMA Protocol', uri: 'https://magmaprotocol.xyz', icon: 'favicon.ico' } });
 
           // Fetch mint instruction from backend
           const response = await axios.post('http://localhost:3000/v1/narratives/mint-cnft', {
             narrativeId,
             metadata,
-            ownerAddress: account.toBase58(),
+            ownerAddress: account.publicKey.toBase58(),
           });
 
           const { instructions: instructionData } = response.data;
@@ -114,16 +110,15 @@ export const useMintNarrative = () => {
 
           // Create and sign transaction
           const transaction = new Transaction().add(...instructions);
-          const { feePayer, recentBlockhash } = await connection.getLatestBlockhash();
-          transaction.feePayer = account;
+          const { blockhash: recentBlockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+          transaction.feePayer = account.publicKey;
           transaction.recentBlockhash = recentBlockhash;
 
           const signed = await wallet.signTransactions({
             transactions: [transaction],
-            authToken: authorization.authToken,
           });
 
-          const signedTx = signed.signedTransactions[0];
+          const signedTx = signed[0];
 
           // Send transaction
           const signature = await connection.sendRawTransaction(signedTx.serialize());
@@ -185,17 +180,13 @@ export const useStakeOnNarrative = () => {
 
         const result = await transact(async (wallet) => {
           // Get authorization
-          const authorization = await wallet.authorize({
-            authorizationParams: {
-              chainId: 'solana:devnet',
-            },
-          });
+          const authorization = await wallet.authorize({ cluster: 'devnet', identity: { name: 'MAGMA Protocol', uri: 'https://magmaprotocol.xyz', icon: 'favicon.ico' } });
 
           // Fetch stake instruction from backend
           const response = await axios.post('http://localhost:3000/v1/narratives/stake', {
             narrativeId,
             amountLamports: Math.floor(amountSol * LAMPORTS_PER_SOL),
-            stakerAddress: account.toBase58(),
+            stakerAddress: account.publicKey.toBase58(),
           });
 
           const { instructions: instructionData } = response.data;
@@ -216,16 +207,15 @@ export const useStakeOnNarrative = () => {
 
           // Create and sign transaction
           const transaction = new Transaction().add(...instructions);
-          const { feePayer, recentBlockhash } = await connection.getLatestBlockhash();
-          transaction.feePayer = account;
+          const { blockhash: recentBlockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+          transaction.feePayer = account.publicKey;
           transaction.recentBlockhash = recentBlockhash;
 
           const signed = await wallet.signTransactions({
             transactions: [transaction],
-            authToken: authorization.authToken,
           });
 
-          const signedTx = signed.signedTransactions[0];
+          const signedTx = signed[0];
 
           // Send transaction
           const signature = await connection.sendRawTransaction(signedTx.serialize());
@@ -280,17 +270,13 @@ export const useCommunityVote = () => {
 
         const result = await transact(async (wallet) => {
           // Get authorization
-          const authorization = await wallet.authorize({
-            authorizationParams: {
-              chainId: 'solana:devnet',
-            },
-          });
+          const authorization = await wallet.authorize({ cluster: 'devnet', identity: { name: 'MAGMA Protocol', uri: 'https://magmaprotocol.xyz', icon: 'favicon.ico' } });
 
           // Fetch vote instruction from backend
           const response = await axios.post('http://localhost:3000/v1/narratives/vote', {
             narrativeId,
             vote,
-            voterAddress: account.toBase58(),
+            voterAddress: account.publicKey.toBase58(),
           });
 
           const { instructions: instructionData } = response.data;
@@ -311,16 +297,15 @@ export const useCommunityVote = () => {
 
           // Create and sign transaction
           const transaction = new Transaction().add(...instructions);
-          const { feePayer, recentBlockhash } = await connection.getLatestBlockhash();
-          transaction.feePayer = account;
+          const { blockhash: recentBlockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+          transaction.feePayer = account.publicKey;
           transaction.recentBlockhash = recentBlockhash;
 
           const signed = await wallet.signTransactions({
             transactions: [transaction],
-            authToken: authorization.authToken,
           });
 
-          const signedTx = signed.signedTransactions[0];
+          const signedTx = signed[0];
 
           // Send transaction
           const signature = await connection.sendRawTransaction(signedTx.serialize());
@@ -382,11 +367,7 @@ export const useJupiterSwap = () => {
 
         const result = await transact(async (wallet) => {
           // Get authorization
-          const authorization = await wallet.authorize({
-            authorizationParams: {
-              chainId: 'solana:devnet',
-            },
-          });
+          const authorization = await wallet.authorize({ cluster: 'devnet', identity: { name: 'MAGMA Protocol', uri: 'https://magmaprotocol.xyz', icon: 'favicon.ico' } });
 
           // Get quote from Jupiter
           const quoteResponse = await axios.get(`${JUPITER_API_URL}/quote`, {
@@ -402,7 +383,7 @@ export const useJupiterSwap = () => {
           // Get swap transaction
           const swapResponse = await axios.post(`${JUPITER_API_URL}/swap`, {
             quoteResponse: quoteResponse.data,
-            userPublicKey: account.toBase58(),
+            userPublicKey: account.publicKey.toBase58(),
             wrapAndUnwrapSol: true,
             dynamicComputeUnitLimit: true,
             prioritizationFeeLamports: 'auto',
@@ -415,10 +396,9 @@ export const useJupiterSwap = () => {
           // Sign transaction with MWA
           const signed = await wallet.signTransactions({
             transactions: [transaction],
-            authToken: authorization.authToken,
           });
 
-          const signedTx = signed.signedTransactions[0] as VersionedTransaction;
+          const signedTx = signed[0] as VersionedTransaction;
 
           // Send transaction
           const signature = await connection.sendRawTransaction(signedTx.serialize(), {

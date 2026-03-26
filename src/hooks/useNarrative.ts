@@ -20,6 +20,11 @@ export interface Narrative {
   thesis: string;
   summary: string;
   status: string;
+  challenge_window_closes_at?: string;
+  is_final?: boolean;
+  confidence?: number;
+  sources_used?: string[];
+  resolved_at?: string;
   score: number;
   sol_backed: number;
   backers: number;

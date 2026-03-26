@@ -1,7 +1,7 @@
 // src/screens/LoadingScreen.tsx
 // Faithful RN translation of magma_app_loading.html
 import React, { useEffect, useState } from 'react';
-import {
+import { Image,
   View,
   Text,
   StyleSheet,

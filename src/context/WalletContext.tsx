@@ -67,7 +67,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       });
     } catch (err) {
       console.error('[WalletContext] Connect failed:', err);
-      setError(err?.message || 'Wallet connection failed');
+      setError((err as any)?.message || 'Wallet connection failed');
       setIsConnected(false);
       setAccount(null);
     } finally {
