@@ -14,7 +14,7 @@ import OfflineBanner from './src/components/ui/OfflineBanner';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
 import { WalletProvider } from './src/context/WalletContext';
-import { ThemeProvider } from './src/theme/ThemeContext';
+import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 
 import FeedScreen from './src/screens/FeedScreen';
 import LaunchScreen from './src/screens/LaunchScreen';
@@ -64,20 +64,21 @@ const TabBarIcon = ({ icon: Icon, focused }: { icon: React.ElementType; focused:
 
 function AppTabs() {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: COLORS.background,
-          borderTopColor: COLORS.border,
+          backgroundColor: theme.bgBase,
+          borderTopColor: theme.cardBorder,
           borderTopWidth: 1,
           height: 64 + insets.bottom,
           paddingBottom: insets.bottom + 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.muted,
+        tabBarActiveTintColor: theme.orange,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
         tabBarIcon: ({ focused }) => {
           const iconMap = { Feed: Home, Launch: Rocket, DeFi: LineChart, Portfolio: Wallet, Profile: User };

@@ -68,7 +68,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
     if (state === 4 || state === 5) {
       isGestureActive.current = false;
       if (tx > SWIPE_THRESHOLD) {
-        translationX.value = withTiming(0, { duration: 100 }, () => runOnJS(onBack)());
+        translationX.value = withSpring(SCREEN_WIDTH * 1.2, { velocity: 20, damping: 15 }, () => runOnJS(onBack)());
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else if (tx < -SWIPE_THRESHOLD) {
         translationX.value = withTiming(-SCREEN_WIDTH, { duration: 200 }, () => runOnJS(onDismiss)());
@@ -273,9 +273,8 @@ const styles = StyleSheet.create({
     alignItems:     'center',
     justifyContent: 'center',
     marginTop:      spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
     width:          '100%',
-    position:       'relative',
   },
   hintArrowText: {
     fontSize:   18,

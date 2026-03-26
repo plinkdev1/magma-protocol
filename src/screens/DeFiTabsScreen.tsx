@@ -2,19 +2,21 @@ import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeFiScreen from './DeFiScreen';
+import { useTheme } from '../theme/ThemeContext';
 import ControlMissionScreen from './ControlMissionScreen';
 
 const TopTab = createMaterialTopTabNavigator();
 
 const DeFiTabsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
 
   return (
     <TopTab.Navigator
       initialRouteName="DeFi"
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: '#09080C',
+          backgroundColor: theme.bgBase,
           elevation:        0,
           shadowOpacity:    0,
           borderBottomWidth: 1,
@@ -26,8 +28,8 @@ const DeFiTabsScreen: React.FC = () => {
           height:           2,
           borderRadius:     1,
         },
-        tabBarActiveTintColor:   '#FF6B35',
-        tabBarInactiveTintColor: '#9B95A8',
+        tabBarActiveTintColor:   theme.orange,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarLabelStyle: {
           fontSize:      13,
           fontWeight:    '700',
