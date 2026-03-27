@@ -138,7 +138,7 @@ const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
 
         {/* Icon */}
         <Animated.View style={[s.iconWrap, bobStyle]}>
-          <View style={s.iconShine} />
+
           <Image source={require('../../assets/magma-icon-orange.png')} style={s.iconImage} resizeMode="contain" />
         </Animated.View>
 
@@ -191,10 +191,10 @@ const s = StyleSheet.create({
   wave2:        { height: '45%', backgroundColor: 'rgba(255,107,53,0.09)' },
 
   content:      { alignItems: 'center', zIndex: 10 },
-  iconWrap:     { width: 100, height: 100, borderRadius: 24, backgroundColor: '#111018', borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 32, shadowColor: '#ff3200', shadowOpacity: 0.15, shadowRadius: 30, elevation: 8 },
+  iconWrap:     { width: 96, height: 96, borderRadius: 24, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 32, shadowColor: '#ff3200', shadowOpacity: 0.15, shadowRadius: 30, elevation: 8 },
   iconShine:    { position: 'absolute', top: 8, left: 12, width: 20, height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4 },
   iconEmoji:    { fontSize: 48 },
-  iconImage:    { width: 72, height: 72, borderRadius: 16 },
+  iconImage:    { width: 90, height: 90, borderRadius: 20 },
 
   appNameMask:  { fontFamily: 'SpaceMono', fontSize: 42, fontWeight: '700', letterSpacing: 6, color: '#ff6b35' },
   tagline:      { fontFamily: 'SpaceMono', fontSize: 9, letterSpacing: 5, color: 'rgba(255,107,53,0.4)', marginTop: 4, marginBottom: 40, textTransform: 'uppercase' },
