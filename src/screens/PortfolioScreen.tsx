@@ -233,7 +233,7 @@ const PortfolioScreen: React.FC = () => {
       transform: [{ translateX: (1 - cardProgress.value) * -20 }],
     }));
 
-    const scoreColor = narrative.score >= 75 ? COLORS.success : narrative.score >= 50 ? COLORS.accent : COLORS.muted;
+    const scoreColor = (narrative.score ?? 0) >= 75 ? COLORS.success : (narrative.score ?? 0) >= 50 ? COLORS.accent : COLORS.muted;
 
     return (
       <Animated.View style={[styles.narrativeCard, cardStyle]}>
