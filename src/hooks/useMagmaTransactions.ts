@@ -13,7 +13,7 @@ import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import * as Haptics from 'expo-haptics';
 import axios from 'axios';
 
-import { useAuthorization } from './useAuthorization';
+import { useAuthorization } from '../context/WalletContext';
 
 // Design tokens
 const COLORS = {
