@@ -12,6 +12,7 @@ import {
   Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../theme/ThemeContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { ArrowLeft, Copy, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react-native';
@@ -97,6 +98,15 @@ const CopyButton = ({ text }: { text: string }) => (
 const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { narrativeId } = route.params;
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
+  // Override C with theme values for light/dark support
+  const C = {
+    bg: theme.bgBase, card: theme.cardBg, cardBorder: theme.cardBorder,
+    text: theme.textPrimary, muted: theme.textSecondary, accent: theme.amber,
+    primary: theme.orange, success: theme.green, red: '#EF4444',
+    // Keep static values for compatibility
+    accentAlt: '#FFB347',
+  };
   const { account } = useWallet();
   const { narrative, backers, loading, error, refetch } = useNarrative(narrativeId);
 
