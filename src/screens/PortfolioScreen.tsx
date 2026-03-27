@@ -257,13 +257,13 @@ const PortfolioScreen: React.FC = () => {
 
         <View style={styles.narrativeCardMetrics}>
           <View style={styles.narrativeMetric}>
-            <Text style={styles.narrativeMetricValue}>{narrative.solBacked.toFixed(2)}</Text>
+            <Text style={styles.narrativeMetricValue}>{(narrative.solBacked ?? 0).toFixed(2)}</Text>
             <Text style={styles.narrativeMetricLabel}>SOL Backed</Text>
           </View>
           <View style={styles.narrativeMetricDivider} />
           <View style={styles.narrativeMetric}>
             <Text style={[styles.narrativeMetricValue, { color: COLORS.success }]}>
-              {narrative.yieldEarned.toFixed(4)}
+              {(narrative.yieldEarned ?? 0).toFixed(4)}
             </Text>
             <Text style={styles.narrativeMetricLabel}>Yield Earned</Text>
           </View>
@@ -300,7 +300,7 @@ const PortfolioScreen: React.FC = () => {
             </Text>
           </View>
           <View style={styles.backedCardAmount}>
-            <Text style={styles.backedCardValue}>{item.solAmount.toFixed(2)}</Text>
+            <Text style={styles.backedCardValue}>{(item.solAmount ?? 0).toFixed(2)}</Text>
             <Text style={styles.backedCardLabel}>SOL</Text>
           </View>
         </View>
