@@ -250,7 +250,7 @@ const PortfolioScreen: React.FC = () => {
               <Text style={styles.narrativeCardStatus}>{narrative.status}</Text>
             </View>
           </View>
-          {narrative.scoreHistory.length > 0 && (
+          {narrative.scoreHistory && narrative.scoreHistory.length > 0 && (
             <Sparkline data={narrative.scoreHistory} color={scoreColor} />
           )}
         </View>
