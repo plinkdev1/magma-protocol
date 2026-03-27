@@ -150,6 +150,13 @@ export const DrawerContent: React.FC<any> = (props) => {
     }, 300);
   };
 
+  const goTab = (tab: string) => {
+    navigation.closeDrawer();
+    setTimeout(() => {
+      navigation.getParent()?.navigate('Main', { screen: tab });
+    }, 300);
+  };
+
   return (
     <View style={[styles.drawerContainer, { backgroundColor: theme.bgElevated }]}>
       {/* Logo area */}
@@ -164,16 +171,16 @@ export const DrawerContent: React.FC<any> = (props) => {
       <ScrollView showsVerticalScrollIndicator={false} style={styles.drawerScroll}>
 
         <DrawerSection title="MAGMA CORE">
-          <DrawerItem emoji="🏠" label="Feed"              onPress={() => go('Feed')} />
-          <DrawerItem emoji="🚀" label="Submit Narrative"  onPress={() => go('Launch')} />
-          <DrawerItem emoji="💼" label="My Portfolio"      onPress={() => go('Portfolio')} />
-          <DrawerItem emoji="📊" label="DeFi / Control"    onPress={() => go('DeFi')} />
+          <DrawerItem emoji="🏠" label="Feed"              onPress={() => goTab('Feed')} />
+          <DrawerItem emoji="🚀" label="Submit Narrative"  onPress={() => goTab('Launch')} />
+          <DrawerItem emoji="💼" label="My Portfolio"      onPress={() => goTab('Portfolio')} />
+          <DrawerItem emoji="📊" label="DeFi / Control"    onPress={() => goTab('DeFi')} />
         </DrawerSection>
 
         <DrawerSection title="NOVA">
-          <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => go('Profile')} />
-          <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => go('Profile')} />
-          <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => go('Launch')} />
+          <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => goTab('Profile')} />
+          <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => goTab('Profile')} />
+          <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => goTab('Launch')} />
         </DrawerSection>
 
         <DrawerSection title="EXIDANTE ECOSYSTEM">

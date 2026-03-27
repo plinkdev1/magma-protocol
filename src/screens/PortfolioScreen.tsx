@@ -202,28 +202,20 @@ const PortfolioScreen: React.FC = () => {
 
   // Sparkline component
   const Sparkline = ({ data, color }: { data: number[]; color: string }) => {
+    if (!data || data.length === 0) return null;
     const max = Math.max(...data);
     const min = Math.min(...data);
     const range = max - min || 1;
     const width = 80;
     const height = 30;
-
-    const points = data.map((value, index) => {
-      const x = (index / (data.length - 1)) * width;
-      const y = height - ((value - min) / range) * height;
-      return `${x},${y}`;
-    }).join(' ');
-
     return (
-      <View style={styles.sparklineContainer}>
-        <svg height={height} width={width}>
-          <polyline
-            points={points}
-            fill="none"
-            stroke={color}
-            strokeWidth="2"
-          />
-        </svg>
+      <View style={[styles.sparklineContainer, { width, height, flexDirection: "row", alignItems: "flex-end" }]}>
+        {data.map((value, index) => {
+          const barHeight = Math.max(2, ((value - min) / range) * height);
+          return (
+            <View key={index} style={{ width: width / data.length - 1, height: barHeight, backgroundColor: color, marginRight: 1, borderRadius: 1, opacity: 0.8 }} />
+          );
+        })}
       </View>
     );
   };

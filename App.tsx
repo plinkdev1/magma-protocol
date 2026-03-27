@@ -145,16 +145,20 @@ export default function App() {
                     },
                   }}
                 >
-                  <AppDrawer>
-                    <OfflineBanner />
-                    <AppHeader />
-                    <Stack.Navigator screenOptions={{ headerShown: false }}>
-                      <Stack.Screen name="Main" component={AppTabs} />
+                  <Stack.Navigator screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="Main">
+                        {() => (
+                          <AppDrawer>
+                            <OfflineBanner />
+                            <AppHeader />
+                            <AppTabs />
+                          </AppDrawer>
+                        )}
+                      </Stack.Screen>
                       <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
                       <Stack.Screen name="History" component={TransactionHistoryScreen} />
                       <Stack.Screen name="Terms" component={TermsScreen} />
                     </Stack.Navigator>
-                  </AppDrawer>
                 </NavigationContainer>
               </SafeAreaProvider>
             </QueryClientProvider>
