@@ -26,6 +26,8 @@ import ConvictionProfileScreen from './src/screens/ConvictionProfileScreen';
 import NarrativeDetailScreen from './src/screens/NarrativeDetailScreen';
 import TransactionHistoryScreen from './src/screens/TransactionHistoryScreen';
 import TermsScreen from './src/screens/TermsScreen';
+import EchoPoolScreen from './src/screens/EchoPoolScreen';
+import CreatorStudioScreen from './src/screens/CreatorStudioScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -52,6 +54,8 @@ export type RootStackParamList = {
   NarrativeDetail: { narrativeId: string };
   History: undefined;
   Terms: undefined;
+  EchoPool: undefined;
+  CreatorStudio: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -158,6 +162,8 @@ export default function App() {
                       <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
                       <Stack.Screen name="History" component={TransactionHistoryScreen} />
                       <Stack.Screen name="Terms" component={TermsScreen} />
+                      <Stack.Screen name="EchoPool" component={EchoPoolScreen} />
+                      <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>

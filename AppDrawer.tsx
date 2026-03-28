@@ -179,8 +179,8 @@ export const DrawerContent: React.FC<any> = (props) => {
 
         <DrawerSection title="NOVA">
           <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => goTab('Profile')} />
-          <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => goTab('Profile')} />
-          <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => goTab('Launch')} />
+          <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => goStack('EchoPool')} />
+          <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => goStack('CreatorStudio')} />
         </DrawerSection>
 
         <DrawerSection title="EXIDANTE ECOSYSTEM">
