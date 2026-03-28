@@ -1,701 +1,385 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator,
+  TouchableOpacity, RefreshControl,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Switch, Alert } from 'react-native';
-import * as LocalAuthentication from 'expo-local-authentication';
-import * as Notifications from 'expo-notifications';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
-import { useTheme } from '../theme/ThemeContext';
 import { useWallet } from '../context/WalletContext';
-import WalletPickerModal from '../components/WalletPickerModal';
-import { radius, spacing, fontSize } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
 import { API_URL } from '../config';
 
-// ─── Tier config (mirrors backend conviction.ts) ──────────────────────────────
-
-type ConvictionTier = 'ember' | 'flare' | 'magma' | 'core' | 'volcanic';
-
-interface TierConfig {
-  tier:             ConvictionTier;
-  label:            string;
-  emoji:            string;
-  minScore:         number;
-  maxScore:         number;
-  yieldMultiplier:  number;
-  feePct:           number;
-  color:            string;
-  glowColor:        string;
+// --- Types ---
+interface ConvictionData {
+  conviction_score:           number;
+  conviction_tier:            string;
+  correct_backings:           number;
+  incorrect_backings:         number;
+  accuracy_rate:              number;
+  current_streak:             number;
+  longest_streak:             number;
+  conviction_multiplier:      number;
+  streak_multiplier:          number;
+  combined_multiplier:        number;
+  fee_pct:                    number;
+  nft_tier:                   string | null;
+  creator_score?:             number;
+  creator_tier?:              string;
+  total_creator_earnings_sol?: number;
 }
 
-const TIERS: TierConfig[] = [
-  { tier: 'ember',    label: 'Ember',         emoji: '⬡',  minScore: 0,    maxScore: 99,   yieldMultiplier: 1.0, feePct: 2.0, color: '#CC7722', glowColor: 'rgba(204,119,34,0.30)' },
-  { tier: 'flare',    label: 'Flare',         emoji: '⚡', minScore: 100,  maxScore: 299,  yieldMultiplier: 1.3, feePct: 1.5, color: '#FF6B35', glowColor: 'rgba(255,107,53,0.30)' },
-  { tier: 'magma',    label: 'Magma',         emoji: '🌋', minScore: 300,  maxScore: 599,  yieldMultiplier: 1.6, feePct: 1.5, color: '#FF3A1A', glowColor: 'rgba(255,58,26,0.30)'  },
-  { tier: 'core',     label: 'Core',          emoji: '💎', minScore: 600,  maxScore: 899,  yieldMultiplier: 2.0, feePct: 1.0, color: '#FF1E0A', glowColor: 'rgba(255,30,10,0.30)'  },
-  { tier: 'volcanic', label: 'Volcanic Core', emoji: '🔥', minScore: 900,  maxScore: 1000, yieldMultiplier: 2.5, feePct: 0.0, color: '#FF0000', glowColor: 'rgba(255,0,0,0.40)'    },
-];
-
-function getTierFromScore(score: number): TierConfig {
-  if (score >= 900) return TIERS[4];
-  if (score >= 600) return TIERS[3];
-  if (score >= 300) return TIERS[2];
-  if (score >= 100) return TIERS[1];
-  return TIERS[0];
+interface EchoPreview {
+  epoch_number:        number;
+  days_remaining:      number;
+  echo_pool_sol:       number;
+  estimated_share_sol: number;
+  last_epoch_amount:   number;
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface ProfileData {
-  conviction_score:   number;
-  creator_score:      number;
-  total_backings:     number;
-  correct_backings:   number;
-  total_backed_sol:   number;
-  echo_pool_share:    number;
-  echo_pool_amount:   number;
-  current_streak:     number;
-  best_streak:        number;
+interface CreatorData {
+  creator_score:              number;
+  creator_tier:               string;
+  creator_share_pct:          number;
+  narratives_submitted:       number;
+  total_creator_earnings_sol: number;
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
-const StatCard: React.FC<{
-  label:    string;
-  value:    string;
-  sub?:     string;
-  accent?:  string;
-}> = ({ label, value, sub, accent }) => {
-  const { theme } = useTheme();
-  return (
-    <View style={[styles.statCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-      <Text style={[styles.statValue, { color: accent || theme.orange }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</Text>
-      {sub && <Text style={[styles.statSub, { color: theme.textTertiary }]}>{sub}</Text>}
-    </View>
-  );
+// --- Constants ---
+const TIER_COLORS: Record<string, string> = {
+  ember:    '#CC7722',
+  flare:    '#FF6B35',
+  magma:    '#FF4500',
+  core:     '#CC0000',
+  volcanic: '#FF0000',
 };
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+const TIER_LABELS: Record<string, string> = {
+  ember:    'EMBER',
+  flare:    'FLARE',
+  magma:    'MAGMA',
+  core:     'CORE',
+  volcanic: 'VOLCANIC',
+};
 
-const ConvictionProfileScreen: React.FC = () => {
-  const insets = useSafeAreaInsets();
-  const { theme } = useTheme();
+const TIER_EMOJIS: Record<string, string> = {
+  ember:    'fire',
+  flare:    'zap',
+  magma:    'volcano',
+  core:     'gem',
+  volcanic: 'flame',
+};
+
+const TIER_NEXT_THRESHOLD: Record<string, number> = {
+  ember:    100,
+  flare:    300,
+  magma:    600,
+  core:     900,
+  volcanic: 1000,
+};
+
+function getNextTierPts(tier: string, score: number): string {
+  if (tier === 'volcanic') return 'MAX TIER';
+  const next = TIER_NEXT_THRESHOLD[tier] ?? 100;
+  return `${next - score} pts to next tier`;
+}
+
+// --- Screen ---
+export default function ConvictionProfileScreen() {
+  const navigation  = useNavigation<any>();
+  const insets      = useSafeAreaInsets();
+  const { theme }   = useTheme();
   const { account } = useWallet();
 
-  const [profile, setProfile]   = useState<ProfileData | null>(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState<string | null>(null);
-  const [showWalletPicker, setShowWalletPicker]       = useState(false);
-  const [biometricEnabled, setBiometricEnabled]       = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [hasBiometric, setHasBiometric]               = useState(false);
-  const [isDisconnecting, setIsDisconnecting]         = useState(false);
+  const wallet = account?.publicKey?.toString() ?? '';
 
-  const scoreProgress = useSharedValue(0);
-  const cardScale     = useSharedValue(0.95);
+  const [conviction,   setConviction]   = useState<ConvictionData | null>(null);
+  const [echoPreview,  setEchoPreview]  = useState<EchoPreview | null>(null);
+  const [creatorData,  setCreatorData]  = useState<CreatorData | null>(null);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);
+  const [error,        setError]        = useState(false);
 
-  useEffect(() => {
-    if (!account) { setLoading(false); return; }
-    fetchProfile();
-  }, [account]);
-
-  const fetchProfile = async () => {
-    if (!account) return;
-    setLoading(true);
-    setError(null);
+  const fetchAll = useCallback(async () => {
+    if (!wallet) { setLoading(false); return; }
+    setError(false);
     try {
-      const walletAddress = account.publicKey?.toString() ?? '';
-      const res = await fetch(`${API_URL}/v1/narratives?wallet=${walletAddress}&stats=true`);
-      const data = await res.json();
-
-      // Build profile from available data
-      // Full profile endpoint comes in Phase G+ — stub remaining fields
-      const p: ProfileData = {
-        conviction_score:  data.conviction_score  ?? 0,
-        creator_score:     data.creator_score     ?? 0,
-        total_backings:    data.total_backings     ?? 0,
-        correct_backings:  data.correct_backings   ?? 0,
-        total_backed_sol:  data.total_backed_sol   ?? 0,
-        echo_pool_share:   data.echo_pool_share    ?? 0,
-        echo_pool_amount:  data.echo_pool_amount   ?? 0,
-        current_streak:    data.current_streak     ?? 0,
-        best_streak:       data.best_streak        ?? 0,
-      };
-
-      setProfile(p);
-
-      const tierConfig = getTierFromScore(p.conviction_score);
-      const progressPct = (p.conviction_score - tierConfig.minScore) /
-        (tierConfig.maxScore - tierConfig.minScore);
-
-      scoreProgress.value = withTiming(Math.min(progressPct, 1), { duration: 1000 });
-      cardScale.value     = withSpring(1, { damping: 12 });
-    } catch (err) {
-      setError('Could not load profile');
-      // Show empty state with score 0
-      setProfile({
-        conviction_score: 0, creator_score: 0, total_backings: 0,
-        correct_backings: 0, total_backed_sol: 0, echo_pool_share: 0,
-        echo_pool_amount: 0, current_streak: 0, best_streak: 0,
-      });
-      scoreProgress.value = withTiming(0, { duration: 800 });
-      cardScale.value     = withSpring(1);
+      const [convRes, echoRes, creatorRes] = await Promise.all([
+        fetch(`${API_URL}/v1/conviction/${wallet}`),
+        fetch(`${API_URL}/v1/conviction/echo-pool/preview/${wallet}`),
+        fetch(`${API_URL}/v1/conviction/creator/${wallet}`),
+      ]);
+      if (convRes.ok)    setConviction(await convRes.json());
+      if (echoRes.ok)    setEchoPreview(await echoRes.json());
+      if (creatorRes.ok) setCreatorData(await creatorRes.json());
+    } catch (e) {
+      console.error('[ConvictionProfileScreen] fetch error:', e);
+      setError(true);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [wallet]);
 
-  useEffect(() => {
-    LocalAuthentication.hasHardwareAsync().then(h =>
-      LocalAuthentication.isEnrolledAsync().then(e => setHasBiometric(h && e))
-    ).catch(() => {});
-    Notifications.getPermissionsAsync().then(({ status }) =>
-      setNotificationsEnabled(status === 'granted')
-    ).catch(() => {});
-  }, []);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const handleDisconnect = () => {
-    Alert.alert('Disconnect Wallet', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Disconnect', style: 'destructive', onPress: async () => {
-        setIsDisconnecting(true);
-        try { /* disconnect() — wire when MWA fully integrated */ }
-        catch { Alert.alert('Error', 'Failed to disconnect'); }
-        finally { setIsDisconnecting(false); }
-      }},
-    ]);
-  };
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAll();
+  }, [fetchAll]);
 
-  const cardAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: cardScale.value }],
-  }));
+  const s = makeStyles(theme, insets);
 
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${scoreProgress.value * 100}%`,
-  }));
+  // --- Not connected ---
+  if (!wallet) {
+    return (
+      <View style={[s.container, s.centered]}>
+        <Text style={[s.emptyIcon]}>🔥</Text>
+        <Text style={[s.emptyTitle, { color: theme.textPrimary }]}>Wallet not connected</Text>
+        <Text style={[s.emptySubtitle, { color: theme.textSecondary }]}>
+          Connect your wallet to view your Conviction Score
+        </Text>
+      </View>
+    );
+  }
 
+  // --- Loading ---
   if (loading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.bgBase, paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={theme.orange} />
-      </View>
-    );
-  }
-
-  if (!account) {
-    return (
-      <View style={[styles.center, { backgroundColor: theme.bgBase, paddingTop: insets.top }]}>
-        <Text style={styles.noWalletIcon}>🔥</Text>
-        <Text style={[styles.noWalletTitle, { color: theme.textPrimary }]}>Connect Your Wallet</Text>
-        <Text style={[styles.noWalletSub, { color: theme.textSecondary }]}>
-          Connect to view your Conviction Profile and start backing narratives
+      <View style={[s.container, s.centered]}>
+        <ActivityIndicator color={theme.orange} size="large" />
+        <Text style={[s.loadingText, { color: theme.textSecondary }]}>
+          Loading conviction data...
         </Text>
-        <TouchableOpacity
-          style={[styles.connectBtn, { backgroundColor: theme.orange }]}
-          onPress={() => setShowWalletPicker(true)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.connectBtnText}>Connect Wallet</Text>
-        </TouchableOpacity>
-        <WalletPickerModal
-          visible={showWalletPicker}
-          onClose={() => setShowWalletPicker(false)}
-        />
       </View>
     );
   }
 
-  const p           = profile ?? { conviction_score: 0, creator_score: 0, total_backings: 0, correct_backings: 0, total_backed_sol: 0, echo_pool_share: 0, echo_pool_amount: 0, current_streak: 0, best_streak: 0 };
-  const tierConfig  = getTierFromScore(p.conviction_score);
-  const nextTier    = TIERS.find(t => t.minScore > p.conviction_score);
-  const accuracy    = p.total_backings > 0
-    ? Math.round((p.correct_backings / p.total_backings) * 100)
-    : 0;
-  const pointsToNext = nextTier ? nextTier.minScore - p.conviction_score : 0;
+  // --- Error ---
+  if (error || !conviction) {
+    return (
+      <View style={[s.container, s.centered]}>
+        <Text style={[s.emptyIcon]}>⚠️</Text>
+        <Text style={[s.emptyTitle, { color: theme.textPrimary }]}>Failed to load</Text>
+        <TouchableOpacity style={[s.retryBtn, { borderColor: theme.orange }]} onPress={fetchAll}>
+          <Text style={[s.retryText, { color: theme.orange }]}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const tierColor   = TIER_COLORS[conviction.conviction_tier] ?? theme.orange;
+  const tierLabel   = TIER_LABELS[conviction.conviction_tier] ?? conviction.conviction_tier.toUpperCase();
+  const totalBacks  = conviction.correct_backings + conviction.incorrect_backings;
+  const progressPct = Math.min(100, (conviction.conviction_score / 1000) * 100);
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: theme.bgBase }]}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 32 }]}
+      style={[s.container, { backgroundColor: theme.bgBase }]}
+      contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}
-      overScrollMode="never"
-      bounces={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={theme.orange}
+          colors={[theme.orange]}
+        />
+      }
     >
 
-      {/* ── Tier Badge Card ── */}
-      <Animated.View style={[
-        styles.tierCard,
-        { backgroundColor: theme.cardBg, borderColor: tierConfig.color + '40' },
-        cardAnimStyle,
-      ]}>
-        {/* Glow */}
-        <View style={[styles.tierGlow, { backgroundColor: tierConfig.glowColor }]} />
-
-        <Text style={[styles.tierEmoji]}>{tierConfig.emoji}</Text>
-        <Text style={[styles.tierLabel, { color: tierConfig.color }]}>{tierConfig.label} Tier</Text>
-        <Text style={[styles.tierScore, { color: theme.textPrimary }]}>{p.conviction_score}</Text>
-        <Text style={[styles.tierScoreLabel, { color: theme.textSecondary }]}>Conviction Score</Text>
-
-        {/* Progress to next tier */}
-        {nextTier && (
-          <View style={styles.progressSection}>
-            <View style={[styles.progressTrack, { backgroundColor: theme.bgElevated }]}>
-              <Animated.View style={[
-                styles.progressFill,
-                { backgroundColor: tierConfig.color },
-                progressStyle,
-              ]} />
-            </View>
-            <Text style={[styles.progressLabel, { color: theme.textTertiary }]}>
-              {pointsToNext} pts to {nextTier.label}
-            </Text>
-          </View>
-        )}
-
-        {tierConfig.tier === 'volcanic' && (
-          <View style={[styles.maxBadge, { backgroundColor: 'rgba(255,0,0,0.15)', borderColor: 'rgba(255,0,0,0.40)' }]}>
-            <Text style={[styles.maxBadgeText, { color: '#FF0000' }]}>MAX TIER · FEES WAIVED</Text>
-          </View>
-        )}
-      </Animated.View>
-
-      {/* ── Multipliers ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>YOUR ADVANTAGES</Text>
-        <View style={styles.advantagesRow}>
-          <View style={[styles.advantageCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.advantageValue, { color: theme.green }]}>{tierConfig.yieldMultiplier}×</Text>
-            <Text style={[styles.advantageLabel, { color: theme.textSecondary }]}>Yield Multiplier</Text>
-          </View>
-          <View style={[styles.advantageCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-            <Text style={[styles.advantageValue, { color: tierConfig.feePct === 0 ? theme.green : theme.orange }]}>
-              {tierConfig.feePct === 0 ? 'FREE' : `${tierConfig.feePct}%`}
-            </Text>
-            <Text style={[styles.advantageLabel, { color: theme.textSecondary }]}>Protocol Fee</Text>
-          </View>
+      {/* ── TIER BADGE ── */}
+      <View style={[s.tierCard, { backgroundColor: theme.bgSurface, borderColor: tierColor }]}>
+        <Text style={[s.tierLabel, { color: tierColor }]}>
+          🌋 {tierLabel}
+        </Text>
+        <Text style={[s.scoreDisplay, { color: theme.textPrimary }]}>
+          {conviction.conviction_score}
+          <Text style={[s.scoreMax, { color: theme.textSecondary }]}> / 1000</Text>
+        </Text>
+        <View style={[s.progressTrack, { backgroundColor: theme.cardBorder }]}>
+          <View style={[s.progressFill, { width: `${progressPct}%` as any, backgroundColor: tierColor }]} />
         </View>
+        <Text style={[s.nextTierHint, { color: theme.textSecondary }]}>
+          {getNextTierPts(conviction.conviction_tier, conviction.conviction_score)}
+        </Text>
       </View>
 
-      {/* ── Stats grid ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>BACKING STATS</Text>
-        <View style={styles.statsGrid}>
-          <StatCard
-            label="Accuracy"
-            value={`${accuracy}%`}
-            sub={`${p.correct_backings}/${p.total_backings} correct`}
-            accent={accuracy >= 60 ? theme.green : theme.amber}
-          />
-          <StatCard
-            label="SOL Backed"
-            value={`${p.total_backed_sol.toFixed(2)}`}
-            sub="total deployed"
-          />
-          <StatCard
-            label="Streak"
-            value={`${p.current_streak}`}
-            sub={`best: ${p.best_streak}`}
-            accent={theme.amber}
-          />
-          <StatCard
-            label="Creator Score"
-            value={`${p.creator_score}`}
-            sub="narrative submissions"
-            accent={theme.textPrimary}
-          />
-        </View>
+      {/* ── STATS GRID ── */}
+      <View style={[s.statsGrid, { backgroundColor: theme.bgSurface, borderColor: theme.cardBorder }]}>
+        {[
+          { label: 'Correct',     value: String(conviction.correct_backings) },
+          { label: 'Incorrect',   value: String(conviction.incorrect_backings) },
+          {
+            label: 'Accuracy',
+            value: `${conviction.accuracy_rate ?? 0}%`,
+            color: (conviction.accuracy_rate ?? 0) >= 60 ? '#22C55E'
+                 : (conviction.accuracy_rate ?? 0) >= 40 ? '#F59E0B'
+                 : '#EF4444',
+          },
+          {
+            label: 'Streak',
+            value: `${conviction.current_streak}${conviction.current_streak >= 3 ? ' 🔥' : ''}`,
+          },
+          { label: 'Best',  value: String(conviction.longest_streak) },
+          { label: 'Total', value: String(totalBacks) },
+        ].map((stat, i) => (
+          <View key={i} style={[s.statCell, { borderColor: theme.cardBorder }]}>
+            <Text style={[s.statValue, { color: stat.color ?? theme.textPrimary }]}>
+              {stat.value}
+            </Text>
+            <Text style={[s.statLabel, { color: theme.textTertiary }]}>{stat.label}</Text>
+          </View>
+        ))}
       </View>
 
-      {/* ── Echo Pool ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>ECHO POOL</Text>
-        <View style={[styles.echoCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-          <View style={styles.echoRow}>
-            <View style={styles.echoItem}>
-              <Text style={[styles.echoValue, { color: theme.green }]}>
-                {(p.echo_pool_share * 100).toFixed(2)}%
-              </Text>
-              <Text style={[styles.echoLabel, { color: theme.textSecondary }]}>Your Pool Share</Text>
-            </View>
-            <View style={[styles.echoDivider, { backgroundColor: theme.borderSubtle }]} />
-            <View style={styles.echoItem}>
-              <Text style={[styles.echoValue, { color: theme.green }]}>
-                {p.echo_pool_amount.toFixed(3)} SOL
-              </Text>
-              <Text style={[styles.echoLabel, { color: theme.textSecondary }]}>Est. Next Payout</Text>
-            </View>
+      {/* ── MULTIPLIERS ── */}
+      <View style={[s.section, { backgroundColor: theme.bgSurface, borderColor: theme.cardBorder }]}>
+        <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>YOUR MULTIPLIERS</Text>
+        {[
+          { label: 'Yield Multiplier',  value: `${conviction.conviction_multiplier}×` },
+          { label: 'Streak Bonus',      value: `${conviction.streak_multiplier}×` },
+          { label: 'Combined Yield',    value: `${conviction.combined_multiplier}×`, accent: true },
+          { label: 'Protocol Fee',      value: conviction.fee_pct === 0 ? 'WAIVED 🎉' : `${conviction.fee_pct}%` },
+          {
+            label: 'NFT Boost',
+            value: conviction.nft_tier
+              ? `${conviction.nft_tier.toUpperCase()} NFT Active`
+              : 'No NFT',
+          },
+        ].map((row, i) => (
+          <View key={i} style={[s.multRow, { borderBottomColor: theme.cardBorder }]}>
+            <Text style={[s.multLabel, { color: theme.textSecondary }]}>{row.label}</Text>
+            <Text style={[s.multValue, { color: row.accent ? theme.orange : theme.textPrimary }]}>
+              {row.value}
+            </Text>
           </View>
-          <Text style={[styles.echoNote, { color: theme.textTertiary }]}>
-            35% of all incorrect backers' capital redistributed monthly to correct backers
+        ))}
+      </View>
+
+      {/* ── NFT SECTION ── */}
+      <View style={[s.section, { backgroundColor: theme.bgSurface, borderColor: theme.cardBorder }]}>
+        <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>LAVA TIER NFT</Text>
+        <View style={s.multRow}>
+          <Text style={[s.multLabel, { color: theme.textSecondary }]}>Status</Text>
+          <Text style={[s.multValue, { color: theme.textPrimary }]}>
+            {conviction.nft_tier
+              ? `${conviction.nft_tier.toUpperCase()} · Active`
+              : 'No NFT · Mint opens post-TGE'}
+          </Text>
+        </View>
+        <Text style={[s.nftNote, { color: theme.textTertiary }]}>
+          NFT tier grants yield multiplier floor — system uses MAX of earned tier vs NFT tier
+        </Text>
+      </View>
+
+      {/* ── ECHO POOL PREVIEW ── */}
+      {echoPreview && (
+        <TouchableOpacity
+          style={[s.section, { backgroundColor: theme.bgSurface, borderColor: theme.cardBorder }]}
+          onPress={() => navigation.navigate('EchoPool')}
+          activeOpacity={0.85}
+        >
+          <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>ECHO POOL</Text>
+          {[
+            { label: 'Last distribution',   value: `${(echoPreview.last_epoch_amount ?? 0).toFixed(3)} SOL` },
+            { label: 'Next distribution',   value: `${echoPreview.days_remaining ?? 0} days` },
+            {
+              label: 'Estimated this epoch',
+              value: `~${(echoPreview.estimated_share_sol ?? 0).toFixed(3)} SOL`,
+              accent: true,
+            },
+            { label: 'Pool size',           value: `${(echoPreview.echo_pool_sol ?? 0).toFixed(2)} SOL` },
+          ].map((row, i) => (
+            <View key={i} style={[s.multRow, { borderBottomColor: theme.cardBorder }]}>
+              <Text style={[s.multLabel, { color: theme.textSecondary }]}>{row.label}</Text>
+              <Text style={[s.multValue, { color: row.accent ? '#22C55E' : theme.textPrimary }]}>
+                {row.value}
+              </Text>
+            </View>
+          ))}
+          <Text style={[s.cta, { color: theme.orange }]}>View Echo Pool →</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* ── CREATOR SCORE ── */}
+      {creatorData && (creatorData.narratives_submitted ?? 0) > 0 && (
+        <TouchableOpacity
+          style={[s.section, { backgroundColor: theme.bgSurface, borderColor: theme.cardBorder }]}
+          onPress={() => navigation.navigate('CreatorStudio')}
+          activeOpacity={0.85}
+        >
+          <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>CREATOR SCORE</Text>
+          {[
+            { label: 'Tier',          value: creatorData.creator_tier },
+            { label: 'Score',         value: `${creatorData.creator_score} / 1000` },
+            { label: 'Creator share', value: `${creatorData.creator_share_pct}% of pool` },
+            {
+              label: 'Total earned',
+              value: `${(creatorData.total_creator_earnings_sol ?? 0).toFixed(4)} SOL`,
+              accent: true,
+            },
+          ].map((row, i) => (
+            <View key={i} style={[s.multRow, { borderBottomColor: theme.cardBorder }]}>
+              <Text style={[s.multLabel, { color: theme.textSecondary }]}>{row.label}</Text>
+              <Text style={[s.multValue, { color: row.accent ? '#22C55E' : theme.textPrimary }]}>
+                {row.value}
+              </Text>
+            </View>
+          ))}
+          <Text style={[s.cta, { color: theme.orange }]}>View Creator Studio →</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* ── WALLET ── */}
+      <View style={[s.section, { backgroundColor: theme.bgSurface, borderColor: theme.cardBorder }]}>
+        <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>WALLET</Text>
+        <View style={s.multRow}>
+          <Text style={[s.multLabel, { color: theme.textSecondary }]}>Address</Text>
+          <Text style={[s.multValue, { color: theme.textPrimary }]}>
+            {wallet.slice(0, 4)}...{wallet.slice(-4)}
           </Text>
         </View>
       </View>
-
-      {/* ── Tier progression ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>TIER PROGRESSION</Text>
-        {TIERS.map((t, i) => {
-          const isActive  = t.tier === tierConfig.tier;
-          const isUnlocked = p.conviction_score >= t.minScore;
-          return (
-            <View
-              key={t.tier}
-              style={[
-                styles.tierRow,
-                { borderColor: isActive ? t.color + '60' : theme.cardBorder },
-                { backgroundColor: isActive ? t.color + '10' : theme.cardBg },
-              ]}
-            >
-              <Text style={[styles.tierRowEmoji, { opacity: isUnlocked ? 1 : 0.3 }]}>{t.emoji}</Text>
-              <View style={styles.tierRowInfo}>
-                <Text style={[styles.tierRowName, { color: isActive ? t.color : isUnlocked ? theme.textPrimary : theme.textTertiary }]}>
-                  {t.label} {isActive && '← YOU'}
-                </Text>
-                <Text style={[styles.tierRowRange, { color: theme.textTertiary }]}>
-                  Score {t.minScore}–{t.maxScore === 1000 ? '1000' : t.maxScore}
-                </Text>
-              </View>
-              <View style={styles.tierRowRight}>
-                <Text style={[styles.tierRowMultiplier, { color: isUnlocked ? theme.green : theme.textTertiary }]}>
-                  {t.yieldMultiplier}× yield
-                </Text>
-                <Text style={[styles.tierRowFee, { color: theme.textTertiary }]}>
-                  {t.feePct === 0 ? 'No fee' : `${t.feePct}% fee`}
-                </Text>
-              </View>
-            </View>
-          );
-        })}
-      </View>
-
-      {/* ── Wallet Card ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>WALLET</Text>
-        <View style={[styles.walletCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-          <View style={styles.walletRow}>
-            <Text style={[styles.walletLabel, { color: theme.textSecondary }]}>Connected Wallet</Text>
-            <View style={[styles.connectedBadge, { backgroundColor: 'rgba(34,197,94,0.10)', borderColor: 'rgba(34,197,94,0.30)' }]}>
-              <Text style={[styles.connectedText, { color: theme.green }]}>● Connected</Text>
-            </View>
-          </View>
-          <Text style={[styles.walletAddress, { color: theme.textPrimary }]}>
-            {account?.publicKey ? account.publicKey.toString().slice(0,4) + '...' + account.publicKey.toString().slice(-4) : 'Not connected'}
-          </Text>
-          <TouchableOpacity
-            style={[styles.disconnectBtn, { borderColor: theme.red }]}
-            onPress={handleDisconnect}
-            disabled={isDisconnecting}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.disconnectText, { color: theme.red }]}>
-              {isDisconnecting ? 'Disconnecting...' : 'Disconnect Wallet'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* ── Settings ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>SETTINGS</Text>
-        <View style={[styles.settingsCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>🔒 Biometric Lock</Text>
-              <Text style={[styles.settingDesc, { color: theme.textSecondary }]}>
-                {hasBiometric ? 'Use fingerprint or face to unlock' : 'Not available on this device'}
-              </Text>
-            </View>
-            <Switch
-              value={biometricEnabled}
-              onValueChange={setBiometricEnabled}
-              disabled={!hasBiometric}
-              trackColor={{ false: theme.cardBorder, true: theme.orange }}
-              thumbColor={theme.bgBase}
-            />
-          </View>
-          <View style={[styles.settingDivider, { backgroundColor: theme.borderSubtle }]} />
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>🔔 Push Notifications</Text>
-              <Text style={[styles.settingDesc, { color: theme.textSecondary }]}>Alerts for resolutions and payouts</Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: theme.cardBorder, true: theme.orange }}
-              thumbColor={theme.bgBase}
-            />
-          </View>
-        </View>
-      </View>
-
-      {/* ── App info ── */}
-      <Text style={[styles.appVersion, { color: theme.textTertiary }]}>MAGMA Protocol v1.0.0-alpha</Text>
 
     </ScrollView>
   );
-};
+}
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-  },
-  center: {
-    flex:           1,
-    alignItems:     'center',
-    justifyContent: 'center',
-    gap:            spacing.md,
-  },
-  noWalletIcon: {
-    fontSize: 64,
-  },
-  connectBtn: {
-    borderRadius: 9999, paddingVertical: 14, paddingHorizontal: 32, marginTop: 8,
-  },
-  connectBtnText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
-  noWalletTitle: {
-    fontSize:   20,
-    fontWeight: '700',
-  },
-  noWalletSub: {
-    fontSize:  14,
-    textAlign: 'center',
-  },
-  // Tier badge card
-  tierCard: {
-    borderRadius:   radius.xl,
-    borderWidth:    1,
-    padding:        spacing.xl,
-    alignItems:     'center',
-    marginBottom:   spacing.lg,
-    overflow:       'hidden',
-  },
-  tierGlow: {
-    position:     'absolute',
-    top:          -40,
-    width:        200,
-    height:       200,
-    borderRadius: 100,
-    opacity:      0.15,
-  },
-  tierEmoji: {
-    fontSize:     56,
-    marginBottom: spacing.sm,
-  },
-  tierLabel: {
-    fontSize:     14,
-    fontWeight:   '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom:  spacing.sm,
-  },
-  tierScore: {
-    fontSize:   48,
-    fontWeight: '700',
-    lineHeight: 56,
-  },
-  tierScoreLabel: {
-    fontSize:     12,
-    marginBottom: spacing.lg,
-  },
-  progressSection: {
-    width:        '100%',
-    alignItems:   'center',
-    gap:          spacing.sm,
-  },
-  progressTrack: {
-    width:        '100%',
-    height:       6,
-    borderRadius: 3,
-    overflow:     'hidden',
-  },
-  progressFill: {
-    height:       '100%',
-    borderRadius: 3,
-  },
-  progressLabel: {
-    fontSize: 11,
-  },
-  maxBadge: {
-    marginTop:         spacing.md,
-    borderRadius:      radius.full,
-    borderWidth:       1,
-    paddingVertical:   6,
-    paddingHorizontal: spacing.lg,
-  },
-  maxBadgeText: {
-    fontSize:   11,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  // Section
-  section: {
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    fontSize:      fontSize.xs,
-    fontWeight:    '700',
-    letterSpacing: 1.2,
-    marginBottom:  spacing.md,
-  },
-  // Advantages
-  advantagesRow: {
-    flexDirection: 'row',
-    gap:           spacing.md,
-  },
-  advantageCard: {
-    flex:           1,
-    borderRadius:   radius.lg,
-    borderWidth:    1,
-    padding:        spacing.lg,
-    alignItems:     'center',
-    gap:            spacing.sm,
-  },
-  advantageValue: {
-    fontSize:   28,
-    fontWeight: '700',
-  },
-  advantageLabel: {
-    fontSize:  12,
-    textAlign: 'center',
-  },
+const makeStyles = (theme: any, insets: any) => StyleSheet.create({
+  container:    { flex: 1 },
+  centered:     { justifyContent: 'center', alignItems: 'center', gap: 12, padding: 24 },
+  content:      { padding: 16, gap: 12, paddingBottom: insets.bottom + 32 },
+  loadingText:  { marginTop: 12, fontSize: 14 },
+  emptyIcon:    { fontSize: 32 },
+  emptyTitle:   { fontSize: 18, fontWeight: '700' },
+  emptySubtitle:{ fontSize: 14, textAlign: 'center' },
+  retryBtn:     { marginTop: 8, paddingHorizontal: 24, paddingVertical: 10,
+                  borderRadius: 9999, borderWidth: 1 },
+  retryText:    { fontSize: 14, fontWeight: '600' },
+  // Tier card
+  tierCard:     { borderRadius: 20, borderWidth: 1.5, padding: 24, alignItems: 'center', gap: 8 },
+  tierLabel:    { fontSize: 13, fontWeight: '800', letterSpacing: 3, textTransform: 'uppercase' },
+  scoreDisplay: { fontSize: 56, fontWeight: '900', lineHeight: 64 },
+  scoreMax:     { fontSize: 20, fontWeight: '400' },
+  progressTrack:{ width: '100%', height: 6, borderRadius: 3, marginTop: 4 },
+  progressFill: { height: 6, borderRadius: 3 },
+  nextTierHint: { fontSize: 12, marginTop: 4 },
   // Stats grid
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap:      'wrap',
-    gap:           spacing.md,
-  },
-  statCard: {
-    width:        '47%',
-    borderRadius: radius.lg,
-    borderWidth:  1,
-    padding:      spacing.lg,
-    gap:          3,
-  },
-  statValue: {
-    fontSize:   22,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 12,
-  },
-  statSub: {
-    fontSize: 11,
-  },
-  // Echo Pool
-  echoCard: {
-    borderRadius: radius.lg,
-    borderWidth:  1,
-    padding:      spacing.xl,
-  },
-  echoRow: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    marginBottom:   spacing.md,
-  },
-  echoItem: {
-    flex:       1,
-    alignItems: 'center',
-  },
-  echoDivider: {
-    width:  1,
-    height: 40,
-  },
-  echoValue: {
-    fontSize:   22,
-    fontWeight: '700',
-  },
-  echoLabel: {
-    fontSize:  12,
-    marginTop: 3,
-  },
-  echoNote: {
-    fontSize:   11,
-    textAlign:  'center',
-    lineHeight: 16,
-  },
-  // Tier progression rows
-  tierRow: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    borderRadius:   radius.lg,
-    borderWidth:    1,
-    padding:        spacing.lg,
-    marginBottom:   spacing.sm,
-    gap:            spacing.md,
-  },
-  tierRowEmoji: {
-    fontSize: 24,
-    width:    32,
-    textAlign: 'center',
-  },
-  tierRowInfo: {
-    flex: 1,
-  },
-  tierRowName: {
-    fontSize:   14,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  tierRowRange: {
-    fontSize: 11,
-  },
-  tierRowRight: {
-    alignItems: 'flex-end',
-    gap:        2,
-  },
-  tierRowMultiplier: {
-    fontSize:   13,
-    fontWeight: '700',
-  },
-  tierRowFee: {
-    fontSize: 11,
-  },
-  walletCard: {
-    borderRadius: 16, borderWidth: 1, padding: 20, marginBottom: 0,
-  },
-  walletRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8,
-  },
-  walletLabel: { fontSize: 13 },
-  connectedBadge: {
-    borderRadius: 9999, borderWidth: 1, paddingVertical: 3, paddingHorizontal: 10,
-  },
-  connectedText: { fontSize: 11, fontWeight: '700' },
-  walletAddress: { fontSize: 16, fontWeight: '700', marginBottom: 16 },
-  disconnectBtn: {
-    borderRadius: 9999, borderWidth: 1, paddingVertical: 10, alignItems: 'center',
-  },
-  disconnectText: { fontSize: 14, fontWeight: '700' },
-  settingsCard: {
-    borderRadius: 16, borderWidth: 1, overflow: 'hidden',
-  },
-  settingRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    padding: 16,
-  },
-  settingInfo: { flex: 1, marginRight: 12 },
-  settingTitle: { fontSize: 14, fontWeight: '600', marginBottom: 3 },
-  settingDesc: { fontSize: 12 },
-  settingDivider: { height: 1, marginHorizontal: 16 },
-  appVersion: { fontSize: 11, textAlign: 'center', marginTop: 8, marginBottom: 8 },
+  statsGrid:    { flexDirection: 'row', flexWrap: 'wrap', borderRadius: 16,
+                  borderWidth: 1, overflow: 'hidden' },
+  statCell:     { width: '33.33%', padding: 16, alignItems: 'center',
+                  borderRightWidth: 1, borderBottomWidth: 1 },
+  statValue:    { fontSize: 20, fontWeight: '700' },
+  statLabel:    { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
+  // Section
+  section:      { borderRadius: 16, borderWidth: 1, padding: 20, gap: 0 },
+  sectionTitle: { fontSize: 10, letterSpacing: 2, fontWeight: '600',
+                  textTransform: 'uppercase', marginBottom: 12 },
+  multRow:      { flexDirection: 'row', justifyContent: 'space-between',
+                  alignItems: 'center', paddingVertical: 10,
+                  borderBottomWidth: StyleSheet.hairlineWidth },
+  multLabel:    { fontSize: 13 },
+  multValue:    { fontSize: 13, fontWeight: '600' },
+  nftNote:      { fontSize: 11, marginTop: 8, lineHeight: 16 },
+  cta:          { fontSize: 13, fontWeight: '600', marginTop: 12, textAlign: 'right' },
 });
-
-export default ConvictionProfileScreen;
