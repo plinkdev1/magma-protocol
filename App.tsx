@@ -29,6 +29,7 @@ import TermsScreen from './src/screens/TermsScreen';
 import EchoPoolScreen from './src/screens/EchoPoolScreen';
 import CreatorStudioScreen from './src/screens/CreatorStudioScreen';
 import SearchScreen from './src/screens/SearchScreen';
+import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -58,6 +59,7 @@ export type RootStackParamList = {
   EchoPool: undefined;
   CreatorStudio: undefined;
   Search: undefined;
+  Leaderboard: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -167,6 +169,7 @@ export default function App() {
                       <Stack.Screen name="EchoPool" component={EchoPoolScreen} />
                       <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} />
                           <Stack.Screen name="Search" component={SearchScreen} />
+                          <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>
