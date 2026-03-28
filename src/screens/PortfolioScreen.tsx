@@ -246,7 +246,7 @@ const PortfolioScreen: React.FC = () => {
               <Text style={[styles.narrativeCardStatus, { color: scoreColor }]}>
                 Score: {narrative.score}
               </Text>
-              <Text style={styles.narrativeCardStatus}>â€¢</Text>
+              <Text style={styles.narrativeCardStatus}>•</Text>
               <Text style={styles.narrativeCardStatus}>{narrative.status}</Text>
             </View>
           </View>
@@ -289,7 +289,7 @@ const PortfolioScreen: React.FC = () => {
       <Animated.View style={[styles.backedCard, cardStyle]}>
         <View style={styles.backedCardHeader}>
           <View style={styles.backedCardIcon}>
-            <Text style={styles.backedCardIconText}>ðŸ”¥</Text>
+            <Text style={styles.backedCardIconText}>🔥</Text>
           </View>
           <View style={styles.backedCardInfo}>
             <Text style={styles.backedCardTitle} numberOfLines={1}>
@@ -335,7 +335,7 @@ const PortfolioScreen: React.FC = () => {
       <Animated.View style={[styles.payoutCard, cardStyle]}>
         <View style={styles.payoutCardHeader}>
           <View style={styles.payoutCardIcon}>
-            <Text style={styles.payoutCardIconText}>ðŸ’°</Text>
+            <Text style={styles.payoutCardIconText}>💰</Text>
           </View>
           <View style={styles.payoutCardInfo}>
             <Text style={styles.payoutCardTitle} numberOfLines={1}>
@@ -360,7 +360,7 @@ const PortfolioScreen: React.FC = () => {
       <View style={styles.balanceCardHeader}>
         <Text style={styles.balanceCardLabel}>$MAGMA Balance</Text>
         <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-          <Text style={styles.refreshButtonText}>âŸ³</Text>
+          <Text style={styles.refreshButtonText}>⟳</Text>
         </TouchableOpacity>
       </View>
       <Text style={styles.balanceCardValue}>{formatNumber(magmaBalance)}</Text>
@@ -375,7 +375,7 @@ const PortfolioScreen: React.FC = () => {
     <Animated.View style={[styles.yieldCard, yieldStyle]}>
       <View style={styles.yieldCardHeader}>
         <Text style={styles.yieldCardLabel}>Total Yield Earned</Text>
-        <Text style={styles.yieldCardIcon}>ðŸ“ˆ</Text>
+        <Text style={styles.yieldCardIcon}>📈</Text>
       </View>
       <Text style={styles.yieldCardValue}>{formatNumber(totalYield)} SOL</Text>
       <View style={styles.yieldCardSubtext}>
@@ -453,7 +453,7 @@ const PortfolioScreen: React.FC = () => {
         </View>
       ) : (
         <EmptyState
-          icon="ðŸ“"
+          icon="📝"
           title="No narratives yet"
           subtitle="Create your first narrative from the Launch tab"
         />
@@ -469,7 +469,7 @@ const PortfolioScreen: React.FC = () => {
         </View>
       ) : (
         <EmptyState
-          icon="ðŸ‘›"
+          icon="👛"
           title="No backed narratives"
           subtitle="Back narratives from the Feed to earn yield"
         />
@@ -485,7 +485,7 @@ const PortfolioScreen: React.FC = () => {
         </View>
       ) : (
         <EmptyState
-          icon="ðŸ’°"
+          icon="💰"
           title="No payouts yet"
           subtitle="Payouts will appear here when you earn yield"
         />

@@ -1,5 +1,5 @@
 ﻿// src/screens/OnboardingScreen.tsx
-// 6-slide onboarding â€” faithful RN translation of magma_app_onboarding.html
+// 6-slide onboarding — faithful RN translation of magma_app_onboarding.html
 import { useAuthorization } from '../context/WalletContext';
 import { API_URL } from '../config';
 import WalletPickerModal from '../components/WalletPickerModal';
@@ -32,7 +32,7 @@ import Animated, {
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// â”€â”€â”€ DESIGN TOKENS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
   bg: '#09080C',
   card: '#111018',
@@ -46,9 +46,9 @@ const C = {
   cyan: '#00e5ff',
 };
 
-// â”€â”€â”€ SLIDE VISUALS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SLIDE VISUALS ─────────────────────────────────────────────────────────────
 
-// Slide 0 â€” Welcome: volcano logo
+// Slide 0 — Welcome: volcano logo
 const VisualWelcome = () => {
   const glow = useSharedValue(0.4);
   const bob = useSharedValue(0);
@@ -69,7 +69,7 @@ const VisualWelcome = () => {
   );
 };
 
-// Slide 1 â€” Ideas: ring diagram
+// Slide 1 — Ideas: ring diagram
 const VisualRings = () => {
   const r1 = useSharedValue(0);
   const r2 = useSharedValue(0);
@@ -94,13 +94,13 @@ const VisualRings = () => {
         <View style={[vis.ringDot, { backgroundColor: C.green }]} />
       </Animated.View>
       <View style={vis.ringCore}>
-        <Text style={vis.ringCoreEmoji}>ðŸ’¡</Text>
+        <Text style={vis.ringCoreEmoji}>💡</Text>
       </View>
     </View>
   );
 };
 
-// Slide 2 â€” AI Score: animated bars
+// Slide 2 — AI Score: animated bars
 const BARS = [
   { label: 'Factual', pct: 82, color: C.orange },
   { label: 'Engagement', pct: 74, color: C.amber },
@@ -133,7 +133,7 @@ const VisualBars = ({ active }: { active: boolean }) => {
   );
 };
 
-// Slide 3 â€” Yield: protocol pills
+// Slide 3 — Yield: protocol pills
 const PROTOCOLS = [
   { name: 'Meteora LP', apy: '~18% APY', color: C.green },
   { name: 'Kamino', apy: '~9% APY', color: C.cyan },
@@ -154,9 +154,9 @@ const VisualVault = ({ active }: { active: boolean }) => (
   </View>
 );
 
-// Slide 4 â€” Wallet: selection buttons
+// Slide 4 — Wallet: selection buttons
 const WALLETS = [
-  { logo: require('../../assets/logos/wallets/phantom.jpg'), name: 'Phantom', sub: 'Recommended Â· MWA' },
+  { logo: require('../../assets/logos/wallets/phantom.jpg'), name: 'Phantom', sub: 'Recommended · MWA' },
   { logo: require('../../assets/logos/wallets/backpack.jpg'), name: 'Backpack', sub: 'Solana Native' },
   { logo: require('../../assets/logos/wallets/solflare.jpg'), name: 'Solflare', sub: 'Ledger Compatible' },
 ];
@@ -164,7 +164,7 @@ const VisualWallet = () => {
   return <View />;
 };
 
-// Slide 5 â€” Ready: pulsing final ring
+// Slide 5 — Ready: pulsing final ring
 const VisualReady = () => {
   const pulse = useSharedValue(1);
   const outerOpacity = useSharedValue(0.3);
@@ -178,14 +178,14 @@ const VisualReady = () => {
     <View style={vis.readyWrap}>
       <Animated.View style={[vis.readyOuter, outerStyle]} />
       <Animated.View style={[vis.readyInner, pulseStyle]}>
-        <Text style={vis.readyEmoji}>ðŸŒ‹</Text>
+        <Text style={vis.readyEmoji}>🌋</Text>
       </Animated.View>
     </View>
   );
 };
 
 
-// Slide 5 — Path Choice
+// Slide 5 � Path Choice
 const PATHS = [
   { id: 'predictor', emoji: '🎯', label: 'Predictor', sub: 'I back narratives I believe in' },
   { id: 'observer',  emoji: '👁',  label: 'Observer',  sub: 'I watch and learn first' },
@@ -211,7 +211,7 @@ const VisualPathChoice = ({ selected, onSelect }: { selected: string; onSelect: 
   </View>
 );
 
-// Slide 6 — Notifications
+// Slide 6 � Notifications
 const VisualNotifications = () => (
   <View style={vis.notifWrap}>
     {['Narrative resolved ✓', 'Echo Pool distributed 💰', 'New narrative in your category 🔥'].map((n, i) => (
@@ -223,7 +223,7 @@ const VisualNotifications = () => (
   </View>
 );
 
-// Slide 7 — Seeker Phone
+// Slide 7 � Seeker Phone
 const VisualSeeker = () => (
   <View style={vis.seekerWrap}>
     <View style={vis.seekerPhone}>
@@ -234,7 +234,7 @@ const VisualSeeker = () => (
   </View>
 );
 
-// Slide 8 — Anti-Sybil
+// Slide 8 � Anti-Sybil
 const VisualAntiSybil = () => (
   <View style={vis.sybilWrap}>
     <View style={vis.sybilIcon}>
@@ -244,8 +244,8 @@ const VisualAntiSybil = () => (
   </View>
 );
 
-// Slide 9 — Terms
-const TERMS_TEXT = `MAGMA PROTOCOL — TERMS OF USE\n\nBy using MAGMA Protocol you agree to the following:\n\n1. MAGMA is a yield-bearing narrative capital market on Solana. Participation involves financial risk.\n\n2. Backing narratives is not investment advice. You may lose backed capital if a narrative resolves FALSE.\n\n3. Yield is generated through DeFi protocol integrations. APY rates are variable and not guaranteed.\n\n4. MAGMA does not custody your funds. All transactions are on-chain and irreversible.\n\n5. You are responsible for the security of your wallet and private keys.\n\n6. Anti-Sybil verification is required to participate. One wallet per person.\n\n7. MAGMA reserves the right to update these terms. Continued use constitutes acceptance.\n\n8. This protocol is in beta. Use at your own risk.\n\nBy tapping "Accept & Continue" you confirm you have read and agree to these terms.`;
+// Slide 9 � Terms
+const TERMS_TEXT = `MAGMA PROTOCOL � TERMS OF USE\n\nBy using MAGMA Protocol you agree to the following:\n\n1. MAGMA is a yield-bearing narrative capital market on Solana. Participation involves financial risk.\n\n2. Backing narratives is not investment advice. You may lose backed capital if a narrative resolves FALSE.\n\n3. Yield is generated through DeFi protocol integrations. APY rates are variable and not guaranteed.\n\n4. MAGMA does not custody your funds. All transactions are on-chain and irreversible.\n\n5. You are responsible for the security of your wallet and private keys.\n\n6. Anti-Sybil verification is required to participate. One wallet per person.\n\n7. MAGMA reserves the right to update these terms. Continued use constitutes acceptance.\n\n8. This protocol is in beta. Use at your own risk.\n\nBy tapping "Accept & Continue" you confirm you have read and agree to these terms.`;
 
 const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (
   <ScrollView
@@ -263,42 +263,42 @@ const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (
   </ScrollView>
 );
 
-// â”€â”€â”€ SLIDE DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SLIDE DATA ────────────────────────────────────────────────────────────────
 const SLIDES = [
   {
     eyebrow: 'Welcome',
     title: 'WELCOME TO\nMAGMA',
     body: 'The Solana-native narrative capital market. Back ideas with $MAGMA. Earn real yield. Shape the future of on-chain intelligence.',
     visual: (active: boolean) => <VisualWelcome />,
-    cta: 'Get Started â†’',
+    cta: 'Get Started →',
   },
   {
     eyebrow: 'How It Works',
     title: 'IDEAS HAVE\nPRICE',
     body: 'Submit a narrative, stake $MAGMA to back it, and earn a share of protocol fees when the community validates your belief as true.',
     visual: (active: boolean) => <VisualRings />,
-    cta: 'Next â†’',
+    cta: 'Next →',
   },
   {
     eyebrow: 'AI Scoring',
     title: 'SCORED BY\nAI + CROWD',
-    body: 'Every narrative is scored across four dimensions. Higher scores mean higher payouts â€” for you and every backer who believed early.',
+    body: 'Every narrative is scored across four dimensions. Higher scores mean higher payouts — for you and every backer who believed early.',
     visual: (active: boolean) => <VisualBars active={active} />,
-    cta: 'Next â†’',
+    cta: 'Next →',
   },
   {
     eyebrow: 'Yield Engine',
     title: 'EARN WHILE\nYOU BACK',
-    body: 'Your $MAGMA stake earns yield across integrated Solana DeFi protocols. Your holder tier multiplies your base APY up to 3.5Ã—.',
+    body: 'Your $MAGMA stake earns yield across integrated Solana DeFi protocols. Your holder tier multiplies your base APY up to 3.5×.',
     visual: (active: boolean) => <VisualVault active={active} />,
-    cta: 'Next â†’',
+    cta: 'Next →',
   },
   {
     eyebrow: 'Connect Wallet',
     title: 'LINK YOUR\nWALLET',
-    body: 'Your Solana wallet is your identity on MAGMA. No email, no passwords â€” just your keys.',
+    body: 'Your Solana wallet is your identity on MAGMA. No email, no passwords — just your keys.',
     visual: (active: boolean) => <VisualWallet />,
-    cta: 'Connect Wallet â†’',
+    cta: 'Connect Wallet →',
   },
       {
         eyebrow: 'Your Path',
@@ -340,11 +340,11 @@ const SLIDES = [
     title: 'LET THE\nLAVA\nFLOW',
     body: 'MAGMA is ready. Your first narrative feed is loading. Back an idea, submit your own, or explore the DeFi vault dashboard.',
     visual: (active: boolean) => <VisualReady />,
-    cta: 'Enter MAGMA ðŸŒ‹',
+    cta: 'Enter MAGMA 🌋',
   },
 ];
 
-// â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MAIN COMPONENT ────────────────────────────────────────────────────────────
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
@@ -366,13 +366,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const handleMain = useCallback(async () => {
     const eyebrow = SLIDES[current]?.eyebrow;
 
-    // Wallet slide — open picker if not connected
+    // Wallet slide � open picker if not connected
     if (eyebrow === 'Connect Wallet' && !isConnected) {
       setShowWalletPicker(true);
       return;
     }
 
-    // Notifications slide — request permission
+    // Notifications slide � request permission
     if (eyebrow === 'Stay Informed' && !notifRequested) {
       setNotifRequested(true);
       try {
@@ -383,7 +383,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       return;
     }
 
-    // Terms slide — must scroll to bottom first
+    // Terms slide � must scroll to bottom first
     if (eyebrow === 'Terms of Use') {
       if (!termsScrolled) return;
       // Record acceptance in backend
@@ -404,7 +404,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       return;
     }
 
-    // Last slide — complete onboarding
+    // Last slide � complete onboarding
     if (current >= SLIDES.length - 1) {
       onComplete();
       return;
@@ -474,7 +474,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   );
 };
 
-// â”€â”€â”€ VISUAL STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── VISUAL STYLES ─────────────────────────────────────────────────────────────
 const vis = StyleSheet.create({
   // Welcome
   welcomeWrap: { alignItems: 'center', justifyContent: 'center', height: 160 },
@@ -543,7 +543,7 @@ const vis = StyleSheet.create({
   termsText:     { fontSize: 10, color: 'rgba(255,232,208,0.6)', fontFamily: 'SpaceMono', lineHeight: 18, padding: 14 },
 });
 
-// â”€â”€â”€ SCREEN STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SCREEN STYLES ─────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, alignItems: 'center' },
   lavaBg: { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.35, backgroundColor: 'rgba(255,40,0,0.06)', borderTopLeftRadius: 200, borderTopRightRadius: 200 },

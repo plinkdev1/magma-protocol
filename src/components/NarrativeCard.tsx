@@ -175,7 +175,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
 
         {/* Swipe hints */}
         <View style={styles.hintContainer}>
-          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>â† Swipe to decide â†’</Text>
+          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>← Swipe to decide →</Text>
         </View>
       </Animated.View>
     </PanGestureHandler>

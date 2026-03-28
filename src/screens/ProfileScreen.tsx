@@ -49,10 +49,10 @@ interface Tier {
 }
 
 const TIERS: Tier[] = [
-  { name: 'Ember', minBalance: 0, maxBalance: 999, color: '#ff6b35', icon: 'ðŸ”¥', description: 'Just getting started' },
-  { name: 'Flare', minBalance: 1000, maxBalance: 9999, color: '#ffb347', icon: 'ðŸŒŸ', description: 'Rising influence' },
-  { name: 'Magma', minBalance: 10000, maxBalance: 99999, color: '#ff3355', icon: 'ðŸŒ‹', description: 'Core community member' },
-  { name: 'Core', minBalance: 100000, maxBalance: Infinity, color: '#00ff88', icon: 'ðŸ’Ž', description: 'Elite tier holder' },
+  { name: 'Ember', minBalance: 0, maxBalance: 999, color: '#ff6b35', icon: '🔥', description: 'Just getting started' },
+  { name: 'Flare', minBalance: 1000, maxBalance: 9999, color: '#ffb347', icon: '🌟', description: 'Rising influence' },
+  { name: 'Magma', minBalance: 10000, maxBalance: 99999, color: '#ff3355', icon: '🌋', description: 'Core community member' },
+  { name: 'Core', minBalance: 100000, maxBalance: Infinity, color: '#00ff88', icon: '💎', description: 'Elite tier holder' },
 ];
 
 const APP_VERSION = '1.0.0-alpha';
@@ -365,7 +365,7 @@ const ProfileScreen: React.FC = () => {
       {/* Security Settings */}
       <SettingsSection title="Security">
         <SettingRow
-          icon="ðŸ”"
+          icon="🔐"
           title="Biometric Lock"
           description="Use fingerprint or face to unlock"
           value={biometricEnabled}
@@ -380,7 +380,7 @@ const ProfileScreen: React.FC = () => {
       {/* Notifications Settings */}
       <SettingsSection title="Notifications">
         <SettingRow
-          icon="ðŸ””"
+          icon="🔔"
           title="Push Notifications"
           description="Receive alerts for score changes and payouts"
           value={notificationsEnabled}
@@ -394,24 +394,24 @@ const ProfileScreen: React.FC = () => {
 
         <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
           <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>ðŸ›¡ï¸</Text>
+            <Text style={styles.actionRowIconText}>🛡️</Text>
           </View>
           <View style={styles.actionRowInfo}>
             <Text style={styles.actionRowTitle}>Privacy Settings</Text>
             <Text style={styles.actionRowDescription}>Manage data and visibility</Text>
           </View>
-          <Text style={styles.actionRowArrow}>â†’</Text>
+          <Text style={styles.actionRowArrow}>→</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
           <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>â“</Text>
+            <Text style={styles.actionRowIconText}>❓</Text>
           </View>
           <View style={styles.actionRowInfo}>
             <Text style={styles.actionRowTitle}>Help & Support</Text>
             <Text style={styles.actionRowDescription}>FAQs and contact support</Text>
           </View>
-          <Text style={styles.actionRowArrow}>â†’</Text>
+          <Text style={styles.actionRowArrow}>→</Text>
         </TouchableOpacity>
       </SettingsSection>
 
@@ -428,7 +428,7 @@ const ProfileScreen: React.FC = () => {
           disabled={isDisconnecting || !isConnected}
           activeOpacity={0.7}
         >
-          <Text style={styles.dangerButtonIcon}>ðŸ‘›</Text>
+          <Text style={styles.dangerButtonIcon}>👛</Text>
           <Text style={styles.dangerButtonText}>
             {isDisconnecting ? 'Disconnecting...' : isConnected ? 'Disconnect Wallet' : 'No Wallet Connected'}
           </Text>
@@ -442,16 +442,16 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.appInfo}>
         <Text style={styles.appInfoLogo}>MAGMA</Text>
         <Text style={styles.appInfoVersion}>Version {APP_VERSION}</Text>
-        <Text style={styles.appInfoCopyright}>Â© 2026 MAGMA Protocol</Text>
+        <Text style={styles.appInfoCopyright}>© 2026 MAGMA Protocol</Text>
         <View style={styles.appInfoLinks}>
           <TouchableOpacity>
             <Text style={styles.appInfoLink}>Terms</Text>
           </TouchableOpacity>
-          <Text style={styles.appInfoLinkDivider}>â€¢</Text>
+          <Text style={styles.appInfoLinkDivider}>•</Text>
           <TouchableOpacity>
             <Text style={styles.appInfoLink}>Privacy</Text>
           </TouchableOpacity>
-          <Text style={styles.appInfoLinkDivider}>â€¢</Text>
+          <Text style={styles.appInfoLinkDivider}>•</Text>
           <TouchableOpacity>
             <Text style={styles.appInfoLink}>Docs</Text>
           </TouchableOpacity>

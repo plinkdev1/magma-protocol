@@ -23,7 +23,7 @@ import Animated, {
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// â”€â”€â”€ EMBER PARTICLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── EMBER PARTICLE ────────────────────────────────────────────────────────────
 const EMBER_COLORS = ['#ff3200', '#ff6b35', '#ffb347'];
 
 const Ember: React.FC<{ index: number }> = ({ index }) => {
@@ -64,7 +64,7 @@ const Ember: React.FC<{ index: number }> = ({ index }) => {
   return <Animated.View style={st} />;
 };
 
-// â”€â”€â”€ STEPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── STEPS ─────────────────────────────────────────────────────────────────────
 const STEPS = [
   { at: 0.00, dotIdx: 0, label: 'Loading',           status: 'Initializing...' },
   { at: 0.15, dotIdx: 1, label: 'Connecting wallet', status: 'Connecting wallet...' },
@@ -74,7 +74,7 @@ const STEPS = [
 ];
 const TOTAL_MS = 3500;
 
-// â”€â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MAIN ──────────────────────────────────────────────────────────────────────
 interface Props { onLoadComplete: () => void }
 
 const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
@@ -187,7 +187,7 @@ const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
 
       {/* Footer */}
       <View style={s.footer}>
-        <Text style={s.footerText}>Solana Â· $MAGMA Â· v1.0</Text>
+        <Text style={s.footerText}>Solana · $MAGMA · v1.0</Text>
       </View>
     </View>
   );
