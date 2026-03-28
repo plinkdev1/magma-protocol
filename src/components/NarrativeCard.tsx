@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+﻿import React, { useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { PanGestureHandler, GestureEvent, HandlerStateChangeEvent, PanGestureHandlerEventPayload } from 'react-native-gesture-handler';
 import Animated, {
@@ -68,7 +68,8 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
     if (state === 4 || state === 5) {
       isGestureActive.current = false;
       if (tx > SWIPE_THRESHOLD) {
-        translationX.value = withSpring(SCREEN_WIDTH * 1.2, { velocity: 20, damping: 15 }, () => runOnJS(onBack)());
+        runOnJS(onBack)();
+              translationX.value = withSpring(SCREEN_WIDTH * 1.2, { velocity: 20, damping: 15 });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else if (tx < -SWIPE_THRESHOLD) {
         translationX.value = withTiming(-SCREEN_WIDTH, { duration: 200 }, () => runOnJS(onDismiss)());
@@ -84,7 +85,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
     opacity: interpolate(
       Math.abs(translationX.value),
       [0, SCREEN_WIDTH / 2, SCREEN_WIDTH],
-      [1, 0.7, 0.5],
+      [1, 0.95, 0.9],
       Extrapolation.CLAMP
     ),
   }));
@@ -174,7 +175,7 @@ export const NarrativeCard: React.FC<NarrativeCardProps> = ({
 
         {/* Swipe hints */}
         <View style={styles.hintContainer}>
-          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>← Swipe to decide →</Text>
+          <Text style={[styles.hintLabel, { color: theme.textTertiary }]}>â† Swipe to decide â†’</Text>
         </View>
       </Animated.View>
     </PanGestureHandler>
