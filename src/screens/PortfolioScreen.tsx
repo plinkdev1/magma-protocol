@@ -1,4 +1,4 @@
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+﻿import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
@@ -43,27 +43,27 @@ interface Narrative {
   id: string;
   title: string;
   score: number;
-  scoreHistory: number[];
-  solBacked: number;
-  yieldEarned: number;
+  scoreHistory?: number[];
+  sol_backed: number;
+
   status: 'active' | 'completed' | 'expired';
 }
 
 interface BackedNarrative {
-  id: string;
-  title: string;
-  solAmount: number;
-  backedAt: Date;
-  currentScore: number;
+  backing_id: string;
+  amount_sol: number;
+  token_type?: string;
+  backed_at: string;
+  narrative: { title?: string; score?: number; } | null;
 }
 
 interface Payout {
-  id: string;
-  narrativeId: string;
-  narrativeTitle: string;
-  amount: number;
-  date: Date;
-  type: 'yield' | 'exit' | 'bonus';
+  backing_id: string;
+  narrative_id: string;
+  amount_sol: number;
+  payout_amount: number;
+  paid_at: string;
+  payout_tx?: string;
 }
 
 const API_BASE_URL = API_URL;
@@ -192,11 +192,11 @@ const PortfolioScreen: React.FC = () => {
   };
 
   // Format date
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+      const formatDate = (date: any) => {
+        return !date ? '-' : new Date(date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
     });
   };
 
@@ -246,7 +246,7 @@ const PortfolioScreen: React.FC = () => {
               <Text style={[styles.narrativeCardStatus, { color: scoreColor }]}>
                 Score: {narrative.score}
               </Text>
-              <Text style={styles.narrativeCardStatus}>•</Text>
+              <Text style={styles.narrativeCardStatus}>â€¢</Text>
               <Text style={styles.narrativeCardStatus}>{narrative.status}</Text>
             </View>
           </View>
@@ -257,13 +257,13 @@ const PortfolioScreen: React.FC = () => {
 
         <View style={styles.narrativeCardMetrics}>
           <View style={styles.narrativeMetric}>
-            <Text style={styles.narrativeMetricValue}>{(narrative.solBacked ?? 0).toFixed(2)}</Text>
+            <Text style={styles.narrativeMetricValue}>{(narrative.sol_backed ?? 0).toFixed(2)}</Text>
             <Text style={styles.narrativeMetricLabel}>SOL Backed</Text>
           </View>
           <View style={styles.narrativeMetricDivider} />
           <View style={styles.narrativeMetric}>
             <Text style={[styles.narrativeMetricValue, { color: COLORS.success }]}>
-              {(narrative.yieldEarned ?? 0).toFixed(4)}
+              {(0).toFixed(4)}
             </Text>
             <Text style={styles.narrativeMetricLabel}>Yield Earned</Text>
           </View>
@@ -289,24 +289,24 @@ const PortfolioScreen: React.FC = () => {
       <Animated.View style={[styles.backedCard, cardStyle]}>
         <View style={styles.backedCardHeader}>
           <View style={styles.backedCardIcon}>
-            <Text style={styles.backedCardIconText}>🔥</Text>
+            <Text style={styles.backedCardIconText}>ðŸ”¥</Text>
           </View>
           <View style={styles.backedCardInfo}>
             <Text style={styles.backedCardTitle} numberOfLines={1}>
-              {item.title}
+              {item.narrative?.title ?? 'Unknown'}
             </Text>
             <Text style={styles.backedCardDate}>
-              Backed {formatDate(item.backedAt)}
+              Backed {formatDate(item.backed_at)}
             </Text>
           </View>
           <View style={styles.backedCardAmount}>
-            <Text style={styles.backedCardValue}>{(item.solAmount ?? 0).toFixed(2)}</Text>
+            <Text style={styles.backedCardValue}>{(item.amount_sol ?? 0).toFixed(2)}</Text>
             <Text style={styles.backedCardLabel}>SOL</Text>
           </View>
         </View>
         <View style={styles.backedCardScore}>
           <Text style={styles.backedCardScoreLabel}>Current Score:</Text>
-          <Text style={styles.backedCardScoreValue}>{item.currentScore}</Text>
+          <Text style={styles.backedCardScoreValue}>{item.narrative?.score ?? 0}</Text>
         </View>
       </Animated.View>
     );
@@ -335,19 +335,19 @@ const PortfolioScreen: React.FC = () => {
       <Animated.View style={[styles.payoutCard, cardStyle]}>
         <View style={styles.payoutCardHeader}>
           <View style={styles.payoutCardIcon}>
-            <Text style={styles.payoutCardIconText}>💰</Text>
+            <Text style={styles.payoutCardIconText}>ðŸ’°</Text>
           </View>
           <View style={styles.payoutCardInfo}>
             <Text style={styles.payoutCardTitle} numberOfLines={1}>
-              {payout.narrativeTitle}
+              {payout.narrative_id ? 'Payout ' + payout.narrative_id.slice(0, 8) : 'Payout'}
             </Text>
-            <Text style={styles.payoutCardDate}>{formatDate(payout.date)}</Text>
+            <Text style={styles.payoutCardDate}>{formatDate(payout.paid_at)}</Text>
           </View>
-          <View style={[styles.payoutCardAmount, { borderColor: typeColors[payout.type] }]}>
-            <Text style={[styles.payoutCardValue, { color: typeColors[payout.type] }]}>
-              +{formatNumber(payout.amount)}
+          <View style={[styles.payoutCardAmount, { borderColor: COLORS.success }]}>
+            <Text style={[styles.payoutCardValue, { color: COLORS.success }]}>
+              +{formatNumber(payout.payout_amount ?? 0)}
             </Text>
-            <Text style={styles.payoutCardLabel}>{payout.type.toUpperCase()}</Text>
+            <Text style={styles.payoutCardLabel}>{'PAYOUT'}</Text>
           </View>
         </View>
       </Animated.View>
@@ -360,7 +360,7 @@ const PortfolioScreen: React.FC = () => {
       <View style={styles.balanceCardHeader}>
         <Text style={styles.balanceCardLabel}>$MAGMA Balance</Text>
         <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-          <Text style={styles.refreshButtonText}>⟳</Text>
+          <Text style={styles.refreshButtonText}>âŸ³</Text>
         </TouchableOpacity>
       </View>
       <Text style={styles.balanceCardValue}>{formatNumber(magmaBalance)}</Text>
@@ -375,7 +375,7 @@ const PortfolioScreen: React.FC = () => {
     <Animated.View style={[styles.yieldCard, yieldStyle]}>
       <View style={styles.yieldCardHeader}>
         <Text style={styles.yieldCardLabel}>Total Yield Earned</Text>
-        <Text style={styles.yieldCardIcon}>📈</Text>
+        <Text style={styles.yieldCardIcon}>ðŸ“ˆ</Text>
       </View>
       <Text style={styles.yieldCardValue}>{formatNumber(totalYield)} SOL</Text>
       <View style={styles.yieldCardSubtext}>
@@ -453,7 +453,7 @@ const PortfolioScreen: React.FC = () => {
         </View>
       ) : (
         <EmptyState
-          icon="📝"
+          icon="ðŸ“"
           title="No narratives yet"
           subtitle="Create your first narrative from the Launch tab"
         />
@@ -464,12 +464,12 @@ const PortfolioScreen: React.FC = () => {
       {backedNarratives.length > 0 ? (
         <View style={styles.backedContainer}>
           {backedNarratives.map((item, index) => (
-            <BackedNarrativeCard key={item.id} item={item} index={index} />
+            <BackedNarrativeCard key={item.backing_id} item={item} index={index} />
           ))}
         </View>
       ) : (
         <EmptyState
-          icon="👛"
+          icon="ðŸ‘›"
           title="No backed narratives"
           subtitle="Back narratives from the Feed to earn yield"
         />
@@ -480,12 +480,12 @@ const PortfolioScreen: React.FC = () => {
       {payouts.length > 0 ? (
         <View style={styles.payoutsContainer}>
           {payouts.map((payout, index) => (
-            <PayoutCard key={payout.id} payout={payout} index={index} />
+            <PayoutCard key={payout.backing_id} payout={payout} index={index} />
           ))}
         </View>
       ) : (
         <EmptyState
-          icon="💰"
+          icon="ðŸ’°"
           title="No payouts yet"
           subtitle="Payouts will appear here when you earn yield"
         />
