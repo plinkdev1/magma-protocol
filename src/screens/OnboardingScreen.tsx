@@ -1,5 +1,5 @@
-// src/screens/OnboardingScreen.tsx
-// 6-slide onboarding — faithful RN translation of magma_app_onboarding.html
+﻿// src/screens/OnboardingScreen.tsx
+// 6-slide onboarding â€” faithful RN translation of magma_app_onboarding.html
 import { useAuthorization } from '../context/WalletContext';
 import WalletPickerModal from '../components/WalletPickerModal';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -31,10 +31,10 @@ import Animated, {
 
 const { width: W, height: H } = Dimensions.get('window');
 
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
+// â”€â”€â”€ DESIGN TOKENS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const C = {
-  bg: '#080400',
-  card: '#0e0800',
+  bg: '#09080C',
+  card: '#111018',
   orange: '#ff6b35',
   amber: '#ffb347',
   ember: '#ff2200',
@@ -45,9 +45,9 @@ const C = {
   cyan: '#00e5ff',
 };
 
-// ─── SLIDE VISUALS ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ SLIDE VISUALS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// Slide 0 — Welcome: volcano logo
+// Slide 0 â€” Welcome: volcano logo
 const VisualWelcome = () => {
   const glow = useSharedValue(0.4);
   const bob = useSharedValue(0);
@@ -62,13 +62,13 @@ const VisualWelcome = () => {
       <Animated.View style={[vis.glowBehind, glowStyle]} />
       <Animated.View style={[vis.logoBox, bobStyle]}>
         <View style={vis.logoShine} />
-        <Text style={vis.logoEmoji}>🌋</Text>
+        <Image source={require('../../assets/magma-icon-orange.png')} style={vis.logoImage} resizeMode="contain" />
       </Animated.View>
     </View>
   );
 };
 
-// Slide 1 — Ideas: ring diagram
+// Slide 1 â€” Ideas: ring diagram
 const VisualRings = () => {
   const r1 = useSharedValue(0);
   const r2 = useSharedValue(0);
@@ -93,13 +93,13 @@ const VisualRings = () => {
         <View style={[vis.ringDot, { backgroundColor: C.green }]} />
       </Animated.View>
       <View style={vis.ringCore}>
-        <Text style={vis.ringCoreEmoji}>💡</Text>
+        <Text style={vis.ringCoreEmoji}>ðŸ’¡</Text>
       </View>
     </View>
   );
 };
 
-// Slide 2 — AI Score: animated bars
+// Slide 2 â€” AI Score: animated bars
 const BARS = [
   { label: 'Factual', pct: 82, color: C.orange },
   { label: 'Engagement', pct: 74, color: C.amber },
@@ -132,7 +132,7 @@ const VisualBars = ({ active }: { active: boolean }) => {
   );
 };
 
-// Slide 3 — Yield: protocol pills
+// Slide 3 â€” Yield: protocol pills
 const PROTOCOLS = [
   { name: 'Meteora LP', apy: '~18% APY', color: C.green },
   { name: 'Kamino', apy: '~9% APY', color: C.cyan },
@@ -153,9 +153,9 @@ const VisualVault = ({ active }: { active: boolean }) => (
   </View>
 );
 
-// Slide 4 — Wallet: selection buttons
+// Slide 4 â€” Wallet: selection buttons
 const WALLETS = [
-  { logo: require('../../assets/logos/wallets/phantom.jpg'), name: 'Phantom', sub: 'Recommended · MWA' },
+  { logo: require('../../assets/logos/wallets/phantom.jpg'), name: 'Phantom', sub: 'Recommended Â· MWA' },
   { logo: require('../../assets/logos/wallets/backpack.jpg'), name: 'Backpack', sub: 'Solana Native' },
   { logo: require('../../assets/logos/wallets/solflare.jpg'), name: 'Solflare', sub: 'Ledger Compatible' },
 ];
@@ -163,7 +163,7 @@ const VisualWallet = () => {
   return <View />;
 };
 
-// Slide 5 — Ready: pulsing final ring
+// Slide 5 â€” Ready: pulsing final ring
 const VisualReady = () => {
   const pulse = useSharedValue(1);
   const outerOpacity = useSharedValue(0.3);
@@ -177,59 +177,59 @@ const VisualReady = () => {
     <View style={vis.readyWrap}>
       <Animated.View style={[vis.readyOuter, outerStyle]} />
       <Animated.View style={[vis.readyInner, pulseStyle]}>
-        <Text style={vis.readyEmoji}>🌋</Text>
+        <Text style={vis.readyEmoji}>ðŸŒ‹</Text>
       </Animated.View>
     </View>
   );
 };
 
-// ─── SLIDE DATA ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SLIDE DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SLIDES = [
   {
     eyebrow: 'Welcome',
     title: 'WELCOME TO\nMAGMA',
     body: 'The Solana-native narrative capital market. Back ideas with $MAGMA. Earn real yield. Shape the future of on-chain intelligence.',
     visual: (active: boolean) => <VisualWelcome />,
-    cta: 'Get Started →',
+    cta: 'Get Started â†’',
   },
   {
     eyebrow: 'How It Works',
     title: 'IDEAS HAVE\nPRICE',
     body: 'Submit a narrative, stake $MAGMA to back it, and earn a share of protocol fees when the community validates your belief as true.',
     visual: (active: boolean) => <VisualRings />,
-    cta: 'Next →',
+    cta: 'Next â†’',
   },
   {
     eyebrow: 'AI Scoring',
     title: 'SCORED BY\nAI + CROWD',
-    body: 'Every narrative is scored across four dimensions. Higher scores mean higher payouts — for you and every backer who believed early.',
+    body: 'Every narrative is scored across four dimensions. Higher scores mean higher payouts â€” for you and every backer who believed early.',
     visual: (active: boolean) => <VisualBars active={active} />,
-    cta: 'Next →',
+    cta: 'Next â†’',
   },
   {
     eyebrow: 'Yield Engine',
     title: 'EARN WHILE\nYOU BACK',
-    body: 'Your $MAGMA stake earns yield across integrated Solana DeFi protocols. Your holder tier multiplies your base APY up to 3.5×.',
+    body: 'Your $MAGMA stake earns yield across integrated Solana DeFi protocols. Your holder tier multiplies your base APY up to 3.5Ã—.',
     visual: (active: boolean) => <VisualVault active={active} />,
-    cta: 'Next →',
+    cta: 'Next â†’',
   },
   {
     eyebrow: 'Connect Wallet',
     title: 'LINK YOUR\nWALLET',
-    body: 'Your Solana wallet is your identity on MAGMA. No email, no passwords — just your keys.',
+    body: 'Your Solana wallet is your identity on MAGMA. No email, no passwords â€” just your keys.',
     visual: (active: boolean) => <VisualWallet />,
-    cta: 'Connect Wallet →',
+    cta: 'Connect Wallet â†’',
   },
   {
     eyebrow: "You're Ready",
     title: 'LET THE\nLAVA\nFLOW',
     body: 'MAGMA is ready. Your first narrative feed is loading. Back an idea, submit your own, or explore the DeFi vault dashboard.',
     visual: (active: boolean) => <VisualReady />,
-    cta: 'Enter MAGMA 🌋',
+    cta: 'Enter MAGMA ðŸŒ‹',
   },
 ];
 
-// ─── MAIN COMPONENT ────────────────────────────────────────────────────────────
+// â”€â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
@@ -320,14 +320,14 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   );
 };
 
-// ─── VISUAL STYLES ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ VISUAL STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const vis = StyleSheet.create({
   // Welcome
   welcomeWrap: { alignItems: 'center', justifyContent: 'center', height: 160 },
   glowBehind: { position: 'absolute', width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,50,0,0.12)' },
   logoBox: { width: 100, height: 100, borderRadius: 24, backgroundColor: '#1a0800', borderWidth: 1, borderColor: 'rgba(255,107,53,0.25)', alignItems: 'center', justifyContent: 'center', shadowColor: '#ff6b35', shadowOpacity: 0.4, shadowRadius: 20, elevation: 10 },
   logoShine: { position: 'absolute', top: 8, left: 12, width: 20, height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4 },
-  logoEmoji: { fontSize: 48 },
+      logoImage: { width: 80, height: 80, borderRadius: 18 },
 
   // Rings
   ringWrap: { width: 180, height: 180, alignItems: 'center', justifyContent: 'center' },
@@ -370,7 +370,7 @@ const vis = StyleSheet.create({
   readyEmoji: { fontSize: 44 },
 });
 
-// ─── SCREEN STYLES ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ SCREEN STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, alignItems: 'center' },
   lavaBg: { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.35, backgroundColor: 'rgba(255,40,0,0.06)', borderTopLeftRadius: 200, borderTopRightRadius: 200 },
