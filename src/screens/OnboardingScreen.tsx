@@ -1,6 +1,7 @@
 ﻿// src/screens/OnboardingScreen.tsx
 // 6-slide onboarding â€” faithful RN translation of magma_app_onboarding.html
 import { useAuthorization } from '../context/WalletContext';
+import { API_URL } from '../config';
 import WalletPickerModal from '../components/WalletPickerModal';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
@@ -183,6 +184,85 @@ const VisualReady = () => {
   );
 };
 
+
+// Slide 5 — Path Choice
+const PATHS = [
+  { id: 'predictor', emoji: '🎯', label: 'Predictor', sub: 'I back narratives I believe in' },
+  { id: 'observer',  emoji: '👁',  label: 'Observer',  sub: 'I watch and learn first' },
+  { id: 'farmer',   emoji: '🌾', label: 'Yield Farmer', sub: 'I want to earn yield' },
+];
+const VisualPathChoice = ({ selected, onSelect }: { selected: string; onSelect: (id: string) => void }) => (
+  <View style={vis.pathWrap}>
+    {PATHS.map(p => (
+      <TouchableOpacity
+        key={p.id}
+        style={[vis.pathPill, selected === p.id && vis.pathPillActive]}
+        onPress={() => onSelect(p.id)}
+        activeOpacity={0.8}
+      >
+        <Text style={vis.pathEmoji}>{p.emoji}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[vis.pathLabel, selected === p.id && { color: C.orange }]}>{p.label}</Text>
+          <Text style={vis.pathSub}>{p.sub}</Text>
+        </View>
+        {selected === p.id && <Text style={{ color: C.orange, fontSize: 16 }}>✓</Text>}
+      </TouchableOpacity>
+    ))}
+  </View>
+);
+
+// Slide 6 — Notifications
+const VisualNotifications = () => (
+  <View style={vis.notifWrap}>
+    {['Narrative resolved ✓', 'Echo Pool distributed 💰', 'New narrative in your category 🔥'].map((n, i) => (
+      <Animated.View key={i} entering={FadeIn.delay(i * 200).duration(400)} style={vis.notifRow}>
+        <View style={[vis.notifDot, { backgroundColor: i === 0 ? C.green : i === 1 ? C.amber : C.orange }]} />
+        <Text style={vis.notifText}>{n}</Text>
+      </Animated.View>
+    ))}
+  </View>
+);
+
+// Slide 7 — Seeker Phone
+const VisualSeeker = () => (
+  <View style={vis.seekerWrap}>
+    <View style={vis.seekerPhone}>
+      <Text style={{ fontSize: 48 }}>📱</Text>
+      <Text style={[vis.seekerLabel, { color: C.cyan }]}>Seeker Phone</Text>
+    </View>
+    <Text style={vis.seekerSub}>SKR holders get 0% deposit fee{'\n'}and priority access to narratives</Text>
+  </View>
+);
+
+// Slide 8 — Anti-Sybil
+const VisualAntiSybil = () => (
+  <View style={vis.sybilWrap}>
+    <View style={vis.sybilIcon}>
+      <Text style={{ fontSize: 48 }}>🔐</Text>
+    </View>
+    <Text style={vis.sybilText}>One-time verification{'\n'}protects every backer</Text>
+  </View>
+);
+
+// Slide 9 — Terms
+const TERMS_TEXT = `MAGMA PROTOCOL — TERMS OF USE\n\nBy using MAGMA Protocol you agree to the following:\n\n1. MAGMA is a yield-bearing narrative capital market on Solana. Participation involves financial risk.\n\n2. Backing narratives is not investment advice. You may lose backed capital if a narrative resolves FALSE.\n\n3. Yield is generated through DeFi protocol integrations. APY rates are variable and not guaranteed.\n\n4. MAGMA does not custody your funds. All transactions are on-chain and irreversible.\n\n5. You are responsible for the security of your wallet and private keys.\n\n6. Anti-Sybil verification is required to participate. One wallet per person.\n\n7. MAGMA reserves the right to update these terms. Continued use constitutes acceptance.\n\n8. This protocol is in beta. Use at your own risk.\n\nBy tapping "Accept & Continue" you confirm you have read and agree to these terms.`;
+
+const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (
+  <ScrollView
+    style={vis.termsScroll}
+    onMomentumScrollEnd={(e) => {
+      const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+      if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 20) {
+        onScrollEnd();
+      }
+    }}
+    scrollEventThrottle={16}
+    showsVerticalScrollIndicator={true}
+  >
+    <Text style={vis.termsText}>{TERMS_TEXT}</Text>
+  </ScrollView>
+);
+
 // â”€â”€â”€ SLIDE DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SLIDES = [
   {
@@ -220,6 +300,41 @@ const SLIDES = [
     visual: (active: boolean) => <VisualWallet />,
     cta: 'Connect Wallet â†’',
   },
+      {
+        eyebrow: 'Your Path',
+        title: 'HOW WILL\nYOU PLAY?',
+        body: 'Choose your role in the MAGMA ecosystem. You can always change this later.',
+        visual: (active: boolean, selPath: string, setSelPath: (s: string) => void) => <VisualPathChoice selected={selPath} onSelect={setSelPath} />,
+        cta: 'Next ->',
+      },
+      {
+        eyebrow: 'Stay Informed',
+        title: 'NEVER MISS\nA SIGNAL',
+        body: 'Get notified when your narratives resolve, yield is distributed, and new opportunities emerge.',
+        visual: (active: boolean) => <VisualNotifications />,
+        cta: 'Enable Notifications ->',
+      },
+      {
+        eyebrow: 'Seeker Phone',
+        title: 'SKR HOLDER\nBENEFITS',
+        body: 'Seeker phone owners and SKR holders get 0% deposit fee and priority access to new narratives.',
+        visual: (active: boolean) => <VisualSeeker />,
+        cta: 'Next ->',
+      },
+      {
+        eyebrow: 'Verification',
+        title: 'PROVE YOUR\nHUMANITY',
+        body: 'One-time verification prevents bots from manipulating the narrative market. Your privacy is preserved.',
+        visual: (active: boolean) => <VisualAntiSybil />,
+        cta: 'Verify with Civic ->',
+      },
+      {
+        eyebrow: 'Terms of Use',
+        title: 'READ &\nACCEPT',
+        body: 'Scroll to the bottom to accept the terms and enter MAGMA.',
+        visual: (active: boolean, selPath: string, setSelPath: (s: string) => void, setTermsDone: (v: boolean) => void) => <VisualTerms onScrollEnd={() => setTermsDone(true)} />,
+        cta: 'Accept & Continue ->',
+      },
   {
     eyebrow: "You're Ready",
     title: 'LET THE\nLAVA\nFLOW',
@@ -235,10 +350,13 @@ interface OnboardingScreenProps {
 }
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
-  const { connect, isConnected } = useAuthorization();
+  const { connect, isConnected, account } = useAuthorization();
   const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+  const [selectedPath, setSelectedPath] = useState('predictor');
+  const [termsScrolled, setTermsScrolled] = useState(false);
+  const [notifRequested, setNotifRequested] = useState(false);
 
   const goTo = useCallback((idx: number) => {
     setDirection(idx > current ? 'forward' : 'back');
@@ -246,18 +364,54 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   }, [current]);
 
   const handleMain = useCallback(async () => {
-    const isWalletSlide = SLIDES[current]?.eyebrow === 'Connect Wallet';
-    if (isWalletSlide && !isConnected) {
-      setShowWalletPicker(true); return;
+    const eyebrow = SLIDES[current]?.eyebrow;
+
+    // Wallet slide — open picker if not connected
+    if (eyebrow === 'Connect Wallet' && !isConnected) {
+      setShowWalletPicker(true);
+      return;
+    }
+
+    // Notifications slide — request permission
+    if (eyebrow === 'Stay Informed' && !notifRequested) {
+      setNotifRequested(true);
+      try {
+        const Notifications = await import('expo-notifications');
+        await Notifications.requestPermissionsAsync();
+      } catch {}
       goTo(current + 1);
       return;
     }
-    if (current < SLIDES.length - 1) {
+
+    // Terms slide — must scroll to bottom first
+    if (eyebrow === 'Terms of Use') {
+      if (!termsScrolled) return;
+      // Record acceptance in backend
+      if (account?.address) {
+        try {
+          await fetch(`${API_URL}/v1/wallets/accept-terms`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              wallet_address: account.address,
+              terms_version: 'v1',
+              source: 'onboarding',
+            }),
+          });
+        } catch {}
+      }
       goTo(current + 1);
-    } else {
-      onComplete();
+      return;
     }
-  }, [current, goTo, onComplete, connect, isConnected]);
+
+    // Last slide — complete onboarding
+    if (current >= SLIDES.length - 1) {
+      onComplete();
+      return;
+    }
+
+    goTo(current + 1);
+  }, [current, goTo, onComplete, isConnected, account, termsScrolled, notifRequested]);
 
   const slide = SLIDES[current];
   const entering = direction === 'forward' ? SlideInRight.duration(320) : SlideInLeft.duration(320);
@@ -295,7 +449,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       >
         {/* Visual area */}
         <View style={s.visualArea}>
-          {slide.visual(true)}
+          {slide.visual(true, selectedPath, setSelectedPath, setTermsScrolled)}
         </View>
 
         {/* Text area */}
@@ -368,6 +522,25 @@ const vis = StyleSheet.create({
   readyOuter: { position: 'absolute', width: 160, height: 160, borderRadius: 80, borderWidth: 1, borderColor: 'rgba(255,107,53,0.3)' },
   readyInner: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#1a0800', borderWidth: 1.5, borderColor: 'rgba(255,107,53,0.4)', alignItems: 'center', justifyContent: 'center', shadowColor: '#ff6b35', shadowOpacity: 0.5, shadowRadius: 24, elevation: 12 },
   readyEmoji: { fontSize: 44 },
+  pathWrap:      { width: '100%', gap: 10, paddingHorizontal: 4 },
+  pathPill:      { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', backgroundColor: 'rgba(255,107,53,0.05)' },
+  pathPillActive:{ borderColor: '#FF6B35', backgroundColor: 'rgba(255,107,53,0.12)' },
+  pathEmoji:     { fontSize: 24 },
+  pathLabel:     { fontSize: 14, fontWeight: '700', color: '#E8E4F0', fontFamily: 'SpaceMono' },
+  pathSub:       { fontSize: 11, color: 'rgba(255,232,208,0.45)', fontFamily: 'SpaceMono', marginTop: 2 },
+  notifWrap:     { width: '100%', gap: 12, paddingHorizontal: 4 },
+  notifRow:      { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 10, backgroundColor: 'rgba(255,107,53,0.06)', borderWidth: 1, borderColor: 'rgba(255,107,53,0.15)' },
+  notifDot:      { width: 8, height: 8, borderRadius: 4 },
+  notifText:     { fontSize: 13, color: '#E8E4F0', fontFamily: 'SpaceMono' },
+  seekerWrap:    { alignItems: 'center', gap: 16 },
+  seekerPhone:   { alignItems: 'center', gap: 8, padding: 20, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(0,229,255,0.3)', backgroundColor: 'rgba(0,229,255,0.05)' },
+  seekerLabel:   { fontSize: 13, fontWeight: '700', fontFamily: 'SpaceMono', letterSpacing: 2 },
+  seekerSub:     { fontSize: 12, color: 'rgba(255,232,208,0.45)', textAlign: 'center', fontFamily: 'SpaceMono', lineHeight: 20 },
+  sybilWrap:     { alignItems: 'center', gap: 16 },
+  sybilIcon:     { padding: 20, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,107,53,0.3)', backgroundColor: 'rgba(255,107,53,0.08)' },
+  sybilText:     { fontSize: 13, color: 'rgba(255,232,208,0.7)', textAlign: 'center', fontFamily: 'SpaceMono', lineHeight: 22 },
+  termsScroll:   { width: '100%', maxHeight: 200, backgroundColor: 'rgba(255,107,53,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,107,53,0.15)' },
+  termsText:     { fontSize: 10, color: 'rgba(255,232,208,0.6)', fontFamily: 'SpaceMono', lineHeight: 18, padding: 14 },
 });
 
 // â”€â”€â”€ SCREEN STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
