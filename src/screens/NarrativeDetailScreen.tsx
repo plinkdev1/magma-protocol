@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+﻿import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import SideShiftWidget from '../components/SideShiftWidget';
 import { API_URL } from '../config';
 import { RootStackParamList } from '../../App';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'NarrativeDetail'>;
@@ -34,7 +34,7 @@ type Props = {
 type KitTab = 'Hooks' | 'Article' | 'Thread';
 type Token = BackingToken;
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const C = {
   bg: '#09080C',
@@ -48,13 +48,13 @@ const C = {
   info: '#00c4ff',
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const truncateWallet = (addr: string) =>
-  addr?.length > 12 ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : addr ?? '–';
+  addr?.length > 12 ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : addr ?? 'â€“';
 
 const formatDate = (iso: string | null | undefined) => {
-  if (!iso) return '–';
+  if (!iso) return 'â€“';
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
@@ -74,7 +74,7 @@ const getTierLabel = (score: number) => {
   return 'OBSERVER';
 };
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const SectionHeader = ({ title }: { title: string }) => (
   <View style={styles.sectionHeader}>
@@ -93,7 +93,7 @@ const CopyButton = ({ text }: { text: string }) => (
   </TouchableOpacity>
 );
 
-// ─── Main screen ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { narrativeId } = route.params;
@@ -107,7 +107,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     // Keep static values for compatibility
     accentAlt: '#FFB347',
   };
-  const { account } = useWallet();
+  const { account, nftState } = useWallet();
   const { narrative, backers, loading, error, refetch } = useNarrative(narrativeId);
 
   const [activeKitTab, setActiveKitTab] = useState<KitTab>('Hooks');
@@ -211,7 +211,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     Linking.openURL(`https://solscan.io/tx/${sig}?cluster=devnet`);
   }, []);
 
-  // ── Loading / Error states ──
+  // â”€â”€ Loading / Error states â”€â”€
   if (loading) {
     return (
       <View style={[styles.centerFill, { paddingTop: insets.top, backgroundColor: C.bg }]}>
@@ -237,13 +237,13 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const totalBacked = (narrative.total_backed_sol ?? narrative.sol_backed ?? 0);
   const backerCount = narrative.backer_count ?? narrative.backers ?? 0;
 
-  // ── Kit content ──
+  // â”€â”€ Kit content â”€â”€
   const hooks: string[] = narrative.kit_hooks ?? [];
   const article: string = narrative.kit_article ?? '';
   const thread: string = narrative.kit_thread ?? '';
   const hasKit = hooks.length > 0 || article || thread;
 
-  // ── Oracle badge ──
+  // â”€â”€ Oracle badge â”€â”€
   const oracleStatus = narrative.oracle_status ?? 'pending';
   const isResolved = ['resolved_true','resolved_false','under_review'].includes(oracleStatus);
   const isTrue = oracleStatus === 'resolved_true';
@@ -262,13 +262,13 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     oracleStatus === 'running' ? C.accent :
     C.muted;
   const oracleLabel =
-    isTrue ? (isFinal ? 'RESOLVED — TRUE  [FINAL]' : 'RESOLVED — TRUE') :
-    isFalse ? (isFinal ? 'RESOLVED — FALSE  [FINAL]' : 'RESOLVED — FALSE') :
+    isTrue ? (isFinal ? 'RESOLVED â€” TRUE  [FINAL]' : 'RESOLVED â€” TRUE') :
+    isFalse ? (isFinal ? 'RESOLVED â€” FALSE  [FINAL]' : 'RESOLVED â€” FALSE') :
     isUnderReview ? 'UNDER REVIEW' :
     oracleStatus === 'running' ? 'SCORING...' :
     'PENDING';
 
-  // ── Estimated yield (stub for Phase D) ──
+  // â”€â”€ Estimated yield (stub for Phase D) â”€â”€
   const estimatedYield = backAmount
     ? (parseFloat(backAmount || '0') * 0.072).toFixed(4)
     : null;
@@ -276,7 +276,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
 
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={handleBack} activeOpacity={0.7}>
           <ArrowLeft size={20} color={C.text} />
@@ -294,7 +294,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* ── Section 1: Narrative ── */}
+        {/* â”€â”€ Section 1: Narrative â”€â”€ */}
         <SectionHeader title="NARRATIVE" />
 
         <View style={styles.authorRow}>
@@ -315,7 +315,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
         )}
 
-        {/* ── Section 2: Narrative Kit ── */}
+        {/* â”€â”€ Section 2: Narrative Kit â”€â”€ */}
         <SectionHeader title="NARRATIVE KIT" />
 
         {hasKit ? (
@@ -385,7 +385,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
         )}
 
-        {/* ── Section 3: Backing ── */}
+        {/* â”€â”€ Section 3: Backing â”€â”€ */}
         <SectionHeader title="BACKING" />
 
         <View style={styles.backingStats}>
@@ -412,7 +412,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           activeOpacity={0.7}
         >
           <Text style={[styles.tokenSelectorText, { color: C.primary }]}>
-            {selectedToken} ▾
+            {selectedToken} â–¾
           </Text>
         </TouchableOpacity>
         <TokenSelectorModal
@@ -437,7 +437,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           )}
         </View>
 
-        {/* SideShift shortcut — shown when amount entered */}
+        {/* SideShift shortcut â€” shown when amount entered */}
         {backAmount && parseFloat(backAmount) > 0 && !txSignature && (
           <View style={styles.convertRow}>
             <Text style={[styles.convertLabel, { color: C.muted }]}>Need {selectedToken}?</Text>
@@ -452,6 +452,28 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
         )}
+            {/* Multiplier preview — shown when amount entered */}
+            {backAmount && parseFloat(backAmount) > 0 && !txSignature && (
+              <View style={styles.multiplierPreview}>
+                <Text style={styles.multiplierPreviewTitle}>YOUR MULTIPLIERS</Text>
+                <View style={styles.multiplierRow}>
+                  <Text style={styles.multiplierLabel}>Discovery</Text>
+                  <Text style={styles.multiplierValue}>check timing</Text>
+                </View>
+                <View style={styles.multiplierRow}>
+                  <Text style={styles.multiplierLabel}>NFT + Conviction</Text>
+                  <Text style={[styles.multiplierValue, { color: '#FF6B35' }]}>
+                    {nftState.total_yield_multiplier + 'x'}
+                  </Text>
+                </View>
+                <View style={[styles.multiplierRow, styles.multiplierRowLast]}>
+                  <Text style={styles.multiplierLabel}>Est. yield on {backAmount} {selectedToken}</Text>
+                  <Text style={[styles.multiplierValue, { color: '#22C55E' }]}>
+                    {(parseFloat(backAmount || '0') * 0.072 * nftState.total_yield_multiplier).toFixed(4)} {selectedToken}
+                  </Text>
+                </View>
+              </View>
+            )}
         {/* SideShift modal */}
         {showSideShift && (
           <View style={styles.sideShiftModal}>
@@ -459,7 +481,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
               style={styles.sideShiftClose}
               onPress={() => setShowSideShift(false)}
             >
-              <Text style={{ color: C.muted, fontSize: 14 }}>✕ Close</Text>
+              <Text style={{ color: C.muted, fontSize: 14 }}>âœ• Close</Text>
             </TouchableOpacity>
             <SideShiftWidget
               settleAddress={account?.publicKey?.toString() ?? ''}
@@ -493,7 +515,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.passBtnText}>PASS</Text>
         </TouchableOpacity>
 
-        {/* ── Section 4: Oracle Status ── */}
+        {/* â”€â”€ Section 4: Oracle Status â”€â”€ */}
         <SectionHeader title="ORACLE STATUS" />
 
         <View style={styles.oracleCard}>
@@ -620,7 +642,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
         </Modal>
 
-        {/* ── Section 6: Backing History ── */}
+        {/* â”€â”€ Section 6: Backing History â”€â”€ */}
         <SectionHeader title="BACKING HISTORY" />
 
         <TouchableOpacity
@@ -668,7 +690,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const styles = StyleSheet.create({
   root: {
@@ -1392,6 +1414,43 @@ const styles = StyleSheet.create({
     color: '#7a4a30',
     fontSize: 13,
     fontFamily: 'SpaceMono',
+  },
+  multiplierPreview: {
+    backgroundColor: '#120D0A',
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#2A1F15',
+    gap: 0,
+  },
+  multiplierPreviewTitle: {
+    fontSize: 10,
+    color: '#7A6B5A',
+    letterSpacing: 2,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  multiplierRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2A1F15',
+  },
+  multiplierRowLast: {
+    borderBottomWidth: 0,
+  },
+  multiplierLabel: {
+    fontSize: 12,
+    color: '#7A6B5A',
+  },
+  multiplierValue: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#E8E4F0',
   },
 });
 
