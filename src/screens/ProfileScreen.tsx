@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+﻿import React, { useState, useCallback, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
@@ -22,18 +22,19 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
 
 import { useAuthorization } from '../context/WalletContext';
+import { useNavigation } from '@react-navigation/native';
 import WalletPickerModal from '../components/WalletPickerModal';
 
 // Design tokens
 const COLORS = {
-  background: '#080400',
+  background: '#09080C',
   primary: '#ff6b35',
   accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
-  cardBorder: '#3d2a1f',
-  success: '#00ff88',
+  text: '#E8E4F0',
+  muted: '#5C5668',
+  card: '#111018',
+  cardBorder: '#1E1B26',
+  success: '#22C55E',
   error: '#ff3355',
 };
 
@@ -48,16 +49,17 @@ interface Tier {
 }
 
 const TIERS: Tier[] = [
-  { name: 'Ember', minBalance: 0, maxBalance: 999, color: '#ff6b35', icon: '🔥', description: 'Just getting started' },
-  { name: 'Flare', minBalance: 1000, maxBalance: 9999, color: '#ffb347', icon: '🌟', description: 'Rising influence' },
-  { name: 'Magma', minBalance: 10000, maxBalance: 99999, color: '#ff3355', icon: '🌋', description: 'Core community member' },
-  { name: 'Core', minBalance: 100000, maxBalance: Infinity, color: '#00ff88', icon: '💎', description: 'Elite tier holder' },
+  { name: 'Ember', minBalance: 0, maxBalance: 999, color: '#ff6b35', icon: 'ðŸ”¥', description: 'Just getting started' },
+  { name: 'Flare', minBalance: 1000, maxBalance: 9999, color: '#ffb347', icon: 'ðŸŒŸ', description: 'Rising influence' },
+  { name: 'Magma', minBalance: 10000, maxBalance: 99999, color: '#ff3355', icon: 'ðŸŒ‹', description: 'Core community member' },
+  { name: 'Core', minBalance: 100000, maxBalance: Infinity, color: '#00ff88', icon: 'ðŸ’Ž', description: 'Elite tier holder' },
 ];
 
 const APP_VERSION = '1.0.0-alpha';
 
 const ProfileScreen: React.FC = () => {
-  const { account, isConnected, disconnect, connect, isConnected: isWalletConnected } = useAuthorization();
+  const { account, isConnected, disconnect, connect, isConnected: isWalletConnected, nftState } = useAuthorization();
+  const navigation = useNavigation<any>();
   const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const insets = useSafeAreaInsets();
   const [magmaBalance, setMagmaBalance] = useState(0);
@@ -336,10 +338,34 @@ const ProfileScreen: React.FC = () => {
       {/* Wallet Card */}
       <WalletCard />
 
+
+          {/* Conviction Score Mini-Summary */}
+          <TouchableOpacity
+            style={styles.convictionCard}
+            onPress={() => navigation.navigate('ConvictionProfile' as never)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.convictionCardLeft}>
+              <Text style={styles.convictionCardLabel}>CONVICTION SCORE</Text>
+              <Text style={styles.convictionCardScore}>
+                {nftState?.total_yield_multiplier ? (nftState.total_yield_multiplier + 'x yield') : 'View Score'}
+              </Text>
+              {nftState?.mlava_tier && (
+                <Text style={styles.convictionCardNFT}>
+                  {nftState.mlava_tier.toUpperCase() + ' NFT Active'}
+                </Text>
+              )}
+              {nftState?.genesis_holder && (
+                <Text style={styles.convictionCardGenesis}>Genesis Card holder</Text>
+              )}
+            </View>
+            <Text style={styles.convictionCardArrow}>→</Text>
+          </TouchableOpacity>
+
       {/* Security Settings */}
       <SettingsSection title="Security">
         <SettingRow
-          icon="🔐"
+          icon="ðŸ”"
           title="Biometric Lock"
           description="Use fingerprint or face to unlock"
           value={biometricEnabled}
@@ -354,7 +380,7 @@ const ProfileScreen: React.FC = () => {
       {/* Notifications Settings */}
       <SettingsSection title="Notifications">
         <SettingRow
-          icon="🔔"
+          icon="ðŸ””"
           title="Push Notifications"
           description="Receive alerts for score changes and payouts"
           value={notificationsEnabled}
@@ -364,37 +390,28 @@ const ProfileScreen: React.FC = () => {
 
       {/* Account Settings */}
       <SettingsSection title="Account">
-        <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
-          <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>📋</Text>
-          </View>
-          <View style={styles.actionRowInfo}>
-            <Text style={styles.actionRowTitle}>View Activity Log</Text>
-            <Text style={styles.actionRowDescription}>See your transaction history</Text>
-          </View>
-          <Text style={styles.actionRowArrow}>→</Text>
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionRow} activeOpacity={0.7} onPress={() => (navigation as any).navigate('History')}><View style={styles.actionRowIcon}><Text style={styles.actionRowIconText}>📋</Text></View><View style={styles.actionRowInfo}><Text style={styles.actionRowTitle}>View Activity Log</Text><Text style={styles.actionRowDescription}>See your transaction history</Text></View><Text style={styles.actionRowArrow}>→</Text></TouchableOpacity>
 
         <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
           <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>🛡️</Text>
+            <Text style={styles.actionRowIconText}>ðŸ›¡ï¸</Text>
           </View>
           <View style={styles.actionRowInfo}>
             <Text style={styles.actionRowTitle}>Privacy Settings</Text>
             <Text style={styles.actionRowDescription}>Manage data and visibility</Text>
           </View>
-          <Text style={styles.actionRowArrow}>→</Text>
+          <Text style={styles.actionRowArrow}>â†’</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
           <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>❓</Text>
+            <Text style={styles.actionRowIconText}>â“</Text>
           </View>
           <View style={styles.actionRowInfo}>
             <Text style={styles.actionRowTitle}>Help & Support</Text>
             <Text style={styles.actionRowDescription}>FAQs and contact support</Text>
           </View>
-          <Text style={styles.actionRowArrow}>→</Text>
+          <Text style={styles.actionRowArrow}>â†’</Text>
         </TouchableOpacity>
       </SettingsSection>
 
@@ -411,7 +428,7 @@ const ProfileScreen: React.FC = () => {
           disabled={isDisconnecting || !isConnected}
           activeOpacity={0.7}
         >
-          <Text style={styles.dangerButtonIcon}>👛</Text>
+          <Text style={styles.dangerButtonIcon}>ðŸ‘›</Text>
           <Text style={styles.dangerButtonText}>
             {isDisconnecting ? 'Disconnecting...' : isConnected ? 'Disconnect Wallet' : 'No Wallet Connected'}
           </Text>
@@ -425,16 +442,16 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.appInfo}>
         <Text style={styles.appInfoLogo}>MAGMA</Text>
         <Text style={styles.appInfoVersion}>Version {APP_VERSION}</Text>
-        <Text style={styles.appInfoCopyright}>© 2026 MAGMA Protocol</Text>
+        <Text style={styles.appInfoCopyright}>Â© 2026 MAGMA Protocol</Text>
         <View style={styles.appInfoLinks}>
           <TouchableOpacity>
             <Text style={styles.appInfoLink}>Terms</Text>
           </TouchableOpacity>
-          <Text style={styles.appInfoLinkDivider}>•</Text>
+          <Text style={styles.appInfoLinkDivider}>â€¢</Text>
           <TouchableOpacity>
             <Text style={styles.appInfoLink}>Privacy</Text>
           </TouchableOpacity>
-          <Text style={styles.appInfoLinkDivider}>•</Text>
+          <Text style={styles.appInfoLinkDivider}>â€¢</Text>
           <TouchableOpacity>
             <Text style={styles.appInfoLink}>Docs</Text>
           </TouchableOpacity>
@@ -563,6 +580,23 @@ const styles = StyleSheet.create({
     color: COLORS.muted,
     fontFamily: 'Syne-Regular',
   },
+  convictionCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,0.25)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  convictionCardLeft: { flex: 1, gap: 4 },
+  convictionCardLabel: { fontSize: 9, color: COLORS.muted, letterSpacing: 2, fontFamily: 'SpaceMono', textTransform: 'uppercase' },
+  convictionCardScore: { fontSize: 18, fontWeight: '700', color: '#FF6B35', fontFamily: 'SpaceMono' },
+  convictionCardNFT:   { fontSize: 11, color: '#FFB347', fontFamily: 'SpaceMono' },
+  convictionCardGenesis: { fontSize: 11, color: '#06B6D4', fontFamily: 'SpaceMono' },
+  convictionCardArrow: { fontSize: 18, color: COLORS.muted },
   connectionStatus: {
     flexDirection: 'row',
     alignItems: 'center',
