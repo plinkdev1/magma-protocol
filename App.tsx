@@ -30,6 +30,7 @@ import EchoPoolScreen from './src/screens/EchoPoolScreen';
 import CreatorStudioScreen from './src/screens/CreatorStudioScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
+import NFTScreen from './src/screens/NFTScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -60,6 +61,7 @@ export type RootStackParamList = {
   CreatorStudio: undefined;
   Search: undefined;
   Leaderboard: undefined;
+  NFT: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -170,6 +172,7 @@ export default function App() {
                       <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} />
                           <Stack.Screen name="Search" component={SearchScreen} />
                           <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+                          <Stack.Screen name="NFT" component={NFTScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>
