@@ -64,7 +64,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
       <View style={styles.headerRight}>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => { /* Search coming soon */ }}
+          onPress={() => { navigation.getParent()?.navigate('Search'); }}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >

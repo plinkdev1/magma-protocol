@@ -1,4 +1,4 @@
-import 'react-native-get-random-values';
+﻿import 'react-native-get-random-values';
 import React from 'react';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 configureReanimatedLogger({ level: ReanimatedLogLevel.warn, strict: false });
@@ -28,6 +28,7 @@ import TransactionHistoryScreen from './src/screens/TransactionHistoryScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import EchoPoolScreen from './src/screens/EchoPoolScreen';
 import CreatorStudioScreen from './src/screens/CreatorStudioScreen';
+import SearchScreen from './src/screens/SearchScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -56,6 +57,7 @@ export type RootStackParamList = {
   Terms: undefined;
   EchoPool: undefined;
   CreatorStudio: undefined;
+  Search: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -164,6 +166,7 @@ export default function App() {
                       <Stack.Screen name="Terms" component={TermsScreen} />
                       <Stack.Screen name="EchoPool" component={EchoPoolScreen} />
                       <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} />
+                          <Stack.Screen name="Search" component={SearchScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>
