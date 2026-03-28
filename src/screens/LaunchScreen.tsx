@@ -1,4 +1,4 @@
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+﻿import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import React, { useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
@@ -38,15 +38,15 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 
 // Design tokens
 const COLORS = {
-  background: '#080400',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
-  cardBorder: '#3d2a1f',
-  success: '#00ff88',
-  error: '#ff3355',
+  background: '#09080C',
+  primary: '#FF6B35',
+  accent: '#FFB347',
+  text: '#E8E4F0',
+  muted: '#5C5668',
+  card: '#111018',
+  cardBorder: '#1E1B26',
+  success: '#22C55E',
+  error: '#EF4444',
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -333,7 +333,7 @@ const LaunchScreen: React.FC = () => {
           size="large"
         />
 
-        <Text style={styles.dividerText}>— OR TYPE MANUALLY —</Text>
+        <Text style={styles.dividerText}>â€” OR TYPE MANUALLY â€”</Text>
 
         <TextInput
           style={styles.textInput}
@@ -395,7 +395,7 @@ const LaunchScreen: React.FC = () => {
               ]}
             >
               <Text style={styles.originalityBadgeIcon}>
-                {originalityResult.isOriginal ? '✨' : '⚠️'}
+                {originalityResult.isOriginal ? 'âœ¨' : 'âš ï¸'}
               </Text>
               <Text
                 style={[
@@ -427,7 +427,7 @@ const LaunchScreen: React.FC = () => {
               <View style={styles.similarList}>
                 <Text style={styles.similarLabel}>Similar narratives:</Text>
                 {originalityResult.similarNarratives.slice(0, 3).map((narrative, i) => (
-                  <Text key={i} style={styles.similarItem}>• {narrative}</Text>
+                  <Text key={i} style={styles.similarItem}>â€¢ {narrative}</Text>
                 ))}
               </View>
             )}
@@ -525,7 +525,7 @@ const LaunchScreen: React.FC = () => {
                 onPress={() => handleHookSwipe('left')}
                 disabled={currentHookIndex === 0}
               >
-                <Text style={styles.hookNavText}>← Prev</Text>
+                <Text style={styles.hookNavText}>â† Prev</Text>
               </TouchableOpacity>
               <Text style={styles.hookIndex}>
                 {currentHookIndex + 1} / {kitPreview.hooks.length}
@@ -539,7 +539,7 @@ const LaunchScreen: React.FC = () => {
                 onPress={() => handleHookSwipe('right')}
                 disabled={currentHookIndex >= kitPreview.hooks.length - 1}
               >
-                <Text style={styles.hookNavText}>Next →</Text>
+                <Text style={styles.hookNavText}>Next â†’</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -588,7 +588,7 @@ const LaunchScreen: React.FC = () => {
       <View style={styles.publishContainer}>
         {!isConnected ? (
           <View style={styles.connectPrompt}>
-            <Text style={styles.connectIcon}>👛</Text>
+            <Text style={styles.connectIcon}>ðŸ‘›</Text>
             <Text style={styles.connectText}>Connect wallet to continue</Text>
             <TouchableOpacity
               style={styles.connectButton}
@@ -600,7 +600,7 @@ const LaunchScreen: React.FC = () => {
           </View>
         ) : publishedNarrativeId ? (
           <View style={styles.successState}>
-            <Text style={styles.successIcon}>🎉</Text>
+            <Text style={styles.successIcon}>ðŸŽ‰</Text>
             <Text style={styles.successTitle}>Narrative Launched!</Text>
             <Text style={styles.successSubtitle}>
               Your narrative is now live on MAGMA
@@ -662,7 +662,7 @@ const LaunchScreen: React.FC = () => {
 
             {publishError && (
               <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerIcon}>⚠️</Text>
+                <Text style={styles.errorBannerIcon}>âš ï¸</Text>
                 <Text style={styles.errorBannerText}>{publishError}</Text>
               </View>
             )}

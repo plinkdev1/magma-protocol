@@ -26,14 +26,14 @@ import { useAuthorization } from '../context/WalletContext';
 
 // Design tokens
 const COLORS = {
-  background: '#080400',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
-  cardBorder: '#3d2a1f',
-  success: '#00ff88',
+  background: '#09080C',
+  primary: '#FF6B35',
+  accent: '#FFB347',
+  text: '#E8E4F0',
+  muted: '#5C5668',
+  card: '#111018',
+  cardBorder: '#1E1B26',
+  success: '#22C55E',
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
