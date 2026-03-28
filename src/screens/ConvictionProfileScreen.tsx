@@ -88,7 +88,7 @@ export default function ConvictionProfileScreen() {
   const navigation  = useNavigation<any>();
   const insets      = useSafeAreaInsets();
   const { theme }   = useTheme();
-  const { account } = useWallet();
+  const { account, nftState } = useWallet();
 
   const wallet = account?.publicKey?.toString() ?? '';
 
@@ -238,13 +238,11 @@ export default function ConvictionProfileScreen() {
         {[
           { label: 'Yield Multiplier',  value: `${conviction.conviction_multiplier}×` },
           { label: 'Streak Bonus',      value: `${conviction.streak_multiplier}×` },
-          { label: 'Combined Yield',    value: `${conviction.combined_multiplier}×`, accent: true },
+          { label: 'Combined Yield',    value: `\×`, accent: true },
           { label: 'Protocol Fee',      value: conviction.fee_pct === 0 ? 'WAIVED 🎉' : `${conviction.fee_pct}%` },
           {
             label: 'NFT Boost',
-            value: conviction.nft_tier
-              ? `${conviction.nft_tier.toUpperCase()} NFT Active`
-              : 'No NFT',
+            value: nftState.mlava_tier ? (nftState.mlava_tier.toUpperCase() + ' NFT Active') : 'No NFT',
           },
         ].map((row, i) => (
           <View key={i} style={[s.multRow, { borderBottomColor: theme.cardBorder }]}>
@@ -262,9 +260,7 @@ export default function ConvictionProfileScreen() {
         <View style={s.multRow}>
           <Text style={[s.multLabel, { color: theme.textSecondary }]}>Status</Text>
           <Text style={[s.multValue, { color: theme.textPrimary }]}>
-            {conviction.nft_tier
-              ? `${conviction.nft_tier.toUpperCase()} · Active`
-              : 'No NFT · Mint opens post-TGE'}
+            {nftState.mlava_tier ? (nftState.mlava_tier.toUpperCase() + ' · Active') : nftState.genesis_holder ? 'Genesis Origin Card · Echo Pool +1.1x' : 'No NFT · Mint opens post-TGE'}
           </Text>
         </View>
         <Text style={[s.nftNote, { color: theme.textTertiary }]}>
