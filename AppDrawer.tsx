@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   View,
   Text,
@@ -16,13 +16,13 @@ import { useWallet } from './src/context/WalletContext';
 import WalletPickerModal from './src/components/WalletPickerModal';
 import { radius, spacing } from './src/theme/tokens';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type DrawerParamList = {
   MainTabs: undefined;
 };
 
-// ─── Persistent Header ────────────────────────────────────────────────────────
+// â”€â”€â”€ Persistent Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
   const { theme, colorScheme, setColorScheme } = useTheme();
@@ -38,7 +38,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         borderBottomColor: theme.cardBorder,
       },
     ]}>
-      {/* Left — hamburger */}
+      {/* Left â€” hamburger */}
       <TouchableOpacity
         style={styles.headerBtn}
         onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
@@ -52,7 +52,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         </View>
       </TouchableOpacity>
 
-      {/* Center — logo */}
+      {/* Center â€” logo */}
       <View style={styles.headerCenter}>
         <Text style={[styles.logoText, { color: theme.orange }]}>MAGMA</Text>
         {title && (
@@ -60,15 +60,15 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         )}
       </View>
 
-      {/* Right — search + history + wallet */}
+      {/* Right â€” search + history + wallet */}
       <View style={styles.headerRight}>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => { setTimeout(() => navigation.getParent()?.navigate('Search'), 0); }}
+          onPress={() => { /* Search coming soon */ }}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.headerIcon, { color: theme.textSecondary }]}>🔍</Text>
+          <Text style={[styles.headerIcon, { color: theme.textSecondary }]}>ðŸ”</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.headerBtn}
@@ -76,21 +76,21 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.headerIcon, { color: theme.textSecondary }]}>🕐</Text>
+          <Text style={[styles.headerIcon, { color: theme.textSecondary }]}>ðŸ•</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.walletPill, { backgroundColor: 'rgba(255,107,53,0.12)', borderColor: theme.borderMedium }]}
-          onPress={() => { navigation.closeDrawer(); navigation.navigate('MainTabs', { screen: 'Profile' }); }}
+          onPress={() => { navigation.closeDrawer(); navigation.navigate('Main', { screen: 'Profile' }); }}
           activeOpacity={0.7}
         >
-          <Text style={[styles.walletPillText, { color: theme.orange }]}>⬡</Text>
+          <Text style={[styles.walletPillText, { color: theme.orange }]}>â¬¡</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-// ─── Drawer Content ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Drawer Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DrawerItem: React.FC<{
   label:    string;
@@ -171,27 +171,27 @@ export const DrawerContent: React.FC<any> = (props) => {
       <ScrollView showsVerticalScrollIndicator={false} style={styles.drawerScroll}>
 
         <DrawerSection title="MAGMA CORE">
-          <DrawerItem emoji="🏠" label="Feed"              onPress={() => goTab('Feed')} />
-          <DrawerItem emoji="🚀" label="Submit Narrative"  onPress={() => goTab('Launch')} />
-          <DrawerItem emoji="💼" label="My Portfolio"      onPress={() => goTab('Portfolio')} />
-          <DrawerItem emoji="📊" label="DeFi / Control"    onPress={() => goTab('DeFi')} />
+          <DrawerItem emoji="ðŸ " label="Feed"              onPress={() => goTab('Feed')} />
+          <DrawerItem emoji="ðŸš€" label="Submit Narrative"  onPress={() => goTab('Launch')} />
+          <DrawerItem emoji="ðŸ’¼" label="My Portfolio"      onPress={() => goTab('Portfolio')} />
+          <DrawerItem emoji="ðŸ“Š" label="DeFi / Control"    onPress={() => goTab('DeFi')} />
         </DrawerSection>
 
         <DrawerSection title="NOVA">
-          <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => goTab('Profile')} />
-          <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => goStack('EchoPool')} />
-          <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => goStack('CreatorStudio')} />
+          <DrawerItem emoji="âš¡" label="My Conviction Score" onPress={() => goTab('Profile')} />
+          <DrawerItem emoji="ðŸŒŠ" label="Echo Pool"           onPress={() => goStack('EchoPool')} />
+          <DrawerItem emoji="âœï¸" label="Creator Studio"      onPress={() => goStack('CreatorStudio')} />
         </DrawerSection>
 
         <DrawerSection title="EXIDANTE ECOSYSTEM">
-          <DrawerItem emoji="🔮" label="CYPHER"  onPress={() => {}} muted badge="Soon" />
-          <DrawerItem emoji="🌐" label="ORIGIN"  onPress={() => {}} muted badge="Soon" />
+          <DrawerItem emoji="ðŸ”®" label="CYPHER"  onPress={() => {}} muted badge="Soon" />
+          <DrawerItem emoji="ðŸŒ" label="ORIGIN"  onPress={() => {}} muted badge="Soon" />
         </DrawerSection>
 
         <DrawerSection title="WALLET">
           {isConnected && account ? (
             <View style={styles.drawerItem}>
-              <Text style={styles.drawerItemEmoji}>👛</Text>
+              <Text style={styles.drawerItemEmoji}>ðŸ‘›</Text>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.drawerItemLabel, { color: theme.textPrimary }]}>
                   {account.address ? account.address.slice(0,4) + '...' + account.address.slice(-4) : 'Connected'}
@@ -206,7 +206,7 @@ export const DrawerContent: React.FC<any> = (props) => {
             </View>
           ) : (
             <DrawerItem
-              emoji="🔗"
+              emoji="ðŸ”—"
               label="Connect Wallet"
               onPress={() => setShowWalletPicker(true)}
             />
@@ -217,7 +217,7 @@ export const DrawerContent: React.FC<any> = (props) => {
         <DrawerSection title="SETTINGS">
           {/* Theme toggle */}
           <View style={[styles.drawerItem, styles.drawerThemeRow]}>
-            <Text style={styles.drawerItemEmoji}>🌙</Text>
+            <Text style={styles.drawerItemEmoji}>ðŸŒ™</Text>
             <Text style={[styles.drawerItemLabel, { color: theme.textPrimary, flex: 1 }]}>Dark Mode</Text>
             <Switch
               value={colorScheme === 'dark' || colorScheme === 'system'}
@@ -226,8 +226,8 @@ export const DrawerContent: React.FC<any> = (props) => {
               thumbColor={theme.bgBase}
             />
           </View>
-          <DrawerItem emoji="📜" label="Terms & Conditions" onPress={() => goStack('Terms')} />
-          <DrawerItem emoji="ℹ️"  label="About MAGMA"        onPress={() => {}} />
+          <DrawerItem emoji="ðŸ“œ" label="Terms & Conditions" onPress={() => goStack('Terms')} />
+          <DrawerItem emoji="â„¹ï¸"  label="About MAGMA"        onPress={() => {}} />
         </DrawerSection>
 
       </ScrollView>
@@ -235,14 +235,14 @@ export const DrawerContent: React.FC<any> = (props) => {
       {/* Footer */}
       <View style={[styles.drawerFooter, { borderTopColor: theme.cardBorder, paddingBottom: insets.bottom + 8 }]}>
         <Text style={[styles.drawerVersion, { color: theme.textTertiary }]}>
-          MAGMA Protocol v1.0.0-alpha · ExiDante Corp
+          MAGMA Protocol v1.0.0-alpha Â· ExiDante Corp
         </Text>
       </View>
     </View>
   );
 };
 
-// ─── Drawer Navigator ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Drawer Navigator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
@@ -270,7 +270,7 @@ export const AppDrawer: React.FC<{ children: React.ReactNode }> = ({ children })
   );
 };
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const styles = StyleSheet.create({
   // Header
