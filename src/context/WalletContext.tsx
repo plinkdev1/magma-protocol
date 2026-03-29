@@ -1,4 +1,5 @@
-﻿import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+﻿import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { transact, Web3MobileWallet } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { PublicKey } from '@solana/web3.js';
 import { API_URL } from '../config';
@@ -97,7 +98,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           authToken: authResult.auth_token,
         });
         setIsConnected(true);
-        // Fetch NFT state after successful connect — non-blocking
+              AsyncStorage.setItem('magma_wallet', JSON.stringify({ authToken: authResult.auth_token, address })).catch(() => {});
+              // Fetch NFT state after successful connect — non-blocking
         fetchNFTState(address).then(setNftState).catch(() => {});
       });
     } catch (err) {
@@ -112,7 +114,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   }, [isConnecting]);
 
   const disconnect = useCallback(() => {
-    setIsConnected(false);
+        AsyncStorage.removeItem('magma_wallet').catch(() => {});
+        setIsConnected(false);
     setAccount(null);
     setNftState(DEFAULT_NFT_STATE);
     setError(null);
