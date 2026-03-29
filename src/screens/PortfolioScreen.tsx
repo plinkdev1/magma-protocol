@@ -1,16 +1,7 @@
 ﻿import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  RefreshControl,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, RefreshControl, Dimensions, useColorScheme } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -25,7 +16,7 @@ import axios from 'axios';
 import { useAuthorization } from '../context/WalletContext';
 
 // Design tokens
-const COLORS = {
+const getColors = (dark: boolean) => ({
   background: '#09080C',
   primary: '#FF6B35',
   accent: '#FFB347',
@@ -34,7 +25,7 @@ const COLORS = {
   card: '#111018',
   cardBorder: '#1E1B26',
   success: '#22C55E',
-};
+});
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -69,6 +60,9 @@ interface Payout {
 const API_BASE_URL = API_URL;
 
 const PortfolioScreen: React.FC = () => {
+  const _s = useColorScheme();
+  const COLORS = getColors(_s !== 'light');
+  const styles = makeStyles(COLORS);
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [narratives, setNarratives] = useState<Narrative[]>([]);
@@ -494,7 +488,7 @@ const PortfolioScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
