@@ -247,10 +247,10 @@ const LaunchScreen: React.FC = () => {
       setIsPublishing(false);
       Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
       setShouldNavigateToFeed(true);
-    } catch (error) {
+        } catch (error: any) {
       console.error('[LaunchScreen] Publish failed:', error);
-      setPublishError(error instanceof Error ? error.message : 'Publish failed');
-      setIsPublishing(false);
+          const msg = error?.response?.data?.message || error?.response?.data?.error || (error instanceof Error ? error.message : 'Publish failed');
+          setPublishError(msg);
       Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
     }
   }, [isConnected, connect, thesis, kitPreview]);
