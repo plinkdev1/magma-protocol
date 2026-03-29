@@ -31,6 +31,7 @@ import CreatorStudioScreen from './src/screens/CreatorStudioScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
 import NFTScreen from './src/screens/NFTScreen';
+import AboutScreen from './src/screens/AboutScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
@@ -62,6 +63,7 @@ export type RootStackParamList = {
   Search: undefined;
   Leaderboard: undefined;
   NFT: undefined;
+  About: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -173,6 +175,7 @@ export default function App() {
                           <Stack.Screen name="Search" component={SearchScreen} />
                           <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
                           <Stack.Screen name="NFT" component={NFTScreen} />
+                          <Stack.Screen name="About" component={AboutScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>

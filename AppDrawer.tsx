@@ -226,7 +226,7 @@ export const DrawerContent: React.FC<any> = (props) => {
             />
           </View>
           <DrawerItem emoji="📜" label="Terms & Conditions" onPress={() => goStack('Terms')} />
-          <DrawerItem emoji="ℹ️"  label="About MAGMA"        onPress={() => {}} />
+          <DrawerItem emoji="ℹ️"  label="About MAGMA"        onPress={() => goStack('About')} />
         </DrawerSection>
 
       </ScrollView>
