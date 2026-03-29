@@ -185,7 +185,7 @@ const VisualReady = () => {
 };
 
 
-// Slide 5 ó Path Choice
+// Slide 5 ÔøΩ Path Choice
 const PATHS = [
   { id: 'predictor', emoji: 'üéØ', label: 'Predictor', sub: 'I back narratives I believe in' },
   { id: 'observer',  emoji: 'üëÅ',  label: 'Observer',  sub: 'I watch and learn first' },
@@ -211,7 +211,7 @@ const VisualPathChoice = ({ selected, onSelect }: { selected: string; onSelect: 
   </View>
 );
 
-// Slide 6 ó Notifications
+// Slide 6 ÔøΩ Notifications
 const VisualNotifications = () => (
   <View style={vis.notifWrap}>
     {['Narrative resolved ‚úì', 'Echo Pool distributed üí∞', 'New narrative in your category üî•'].map((n, i) => (
@@ -223,7 +223,7 @@ const VisualNotifications = () => (
   </View>
 );
 
-// Slide 7 ó Seeker Phone
+// Slide 7 ÔøΩ Seeker Phone
 const VisualSeeker = () => (
   <View style={vis.seekerWrap}>
     <View style={vis.seekerPhone}>
@@ -234,7 +234,7 @@ const VisualSeeker = () => (
   </View>
 );
 
-// Slide 8 ó Anti-Sybil
+// Slide 8 ÔøΩ Anti-Sybil
 const VisualAntiSybil = () => (
   <View style={vis.sybilWrap}>
     <View style={vis.sybilIcon}>
@@ -244,8 +244,8 @@ const VisualAntiSybil = () => (
   </View>
 );
 
-// Slide 9 ó Terms
-const TERMS_TEXT = `MAGMA PROTOCOL ó TERMS OF USE\n\nBy using MAGMA Protocol you agree to the following:\n\n1. MAGMA is a yield-bearing narrative capital market on Solana. Participation involves financial risk.\n\n2. Backing narratives is not investment advice. You may lose backed capital if a narrative resolves FALSE.\n\n3. Yield is generated through DeFi protocol integrations. APY rates are variable and not guaranteed.\n\n4. MAGMA does not custody your funds. All transactions are on-chain and irreversible.\n\n5. You are responsible for the security of your wallet and private keys.\n\n6. Anti-Sybil verification is required to participate. One wallet per person.\n\n7. MAGMA reserves the right to update these terms. Continued use constitutes acceptance.\n\n8. This protocol is in beta. Use at your own risk.\n\nBy tapping "Accept & Continue" you confirm you have read and agree to these terms.`;
+// Slide 9 ÔøΩ Terms
+const TERMS_TEXT = `MAGMA PROTOCOL ÔøΩ TERMS OF USE\n\nBy using MAGMA Protocol you agree to the following:\n\n1. MAGMA is a yield-bearing narrative capital market on Solana. Participation involves financial risk.\n\n2. Backing narratives is not investment advice. You may lose backed capital if a narrative resolves FALSE.\n\n3. Yield is generated through DeFi protocol integrations. APY rates are variable and not guaranteed.\n\n4. MAGMA does not custody your funds. All transactions are on-chain and irreversible.\n\n5. You are responsible for the security of your wallet and private keys.\n\n6. Anti-Sybil verification is required to participate. One wallet per person.\n\n7. MAGMA reserves the right to update these terms. Continued use constitutes acceptance.\n\n8. This protocol is in beta. Use at your own risk.\n\nBy tapping "Accept & Continue" you confirm you have read and agree to these terms.`;
 
 const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (
   <ScrollView
@@ -366,13 +366,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const handleMain = useCallback(async () => {
     const eyebrow = SLIDES[current]?.eyebrow;
 
-    // Wallet slide ó open picker if not connected
+    // Wallet slide ÔøΩ open picker if not connected
     if (eyebrow === 'Connect Wallet' && !isConnected) {
       setShowWalletPicker(true);
       return;
     }
 
-    // Notifications slide ó request permission
+    // Notifications slide ÔøΩ request permission
     if (eyebrow === 'Stay Informed' && !notifRequested) {
       setNotifRequested(true);
       try {
@@ -383,7 +383,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       return;
     }
 
-    // Terms slide ó must scroll to bottom first
+    // Terms slide ÔøΩ must scroll to bottom first
     if (eyebrow === 'Terms of Use') {
       if (!termsScrolled) return;
       // Record acceptance in backend
@@ -404,7 +404,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       return;
     }
 
-    // Last slide ó complete onboarding
+    // Last slide ÔøΩ complete onboarding
     if (current >= SLIDES.length - 1) {
       onComplete();
       return;
@@ -563,6 +563,8 @@ const s = StyleSheet.create({
   mainBtn: { width: '100%', paddingVertical: 16, backgroundColor: C.orange, alignItems: 'center', shadowColor: C.orange, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8, borderRadius: 12 },
   mainBtnText: { fontFamily: 'SpaceMono', fontSize: 13, fontWeight: '700', color: '#fff', letterSpacing: 1 },
   swipeHint: { fontFamily: 'SpaceMono', fontSize: 9, color: 'rgba(255,107,53,0.3)', letterSpacing: 2 },
+  mainBtnDisabled: { backgroundColor: 'rgba(255,107,53,0.3)', shadowOpacity: 0 },
+  termsHint: { fontFamily: 'SpaceMono', fontSize: 10, color: 'rgba(255,107,53,0.6)', letterSpacing: 1, textAlign: 'center', marginTop: 8 },
 });
 
 export default OnboardingScreen;
