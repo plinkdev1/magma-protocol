@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
     alignItems:     'center',
     justifyContent: 'center',
     marginTop:      spacing.md,
-    paddingHorizontal: spacing.xl,
     width:          '100%',
   },
   hintArrowText: {
@@ -282,10 +281,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   hintLabel: {
-    fontSize:        12,
-    marginHorizontal: spacing.md,
-    flexShrink:      1,
-    textAlign:       'center',
+    fontSize:   12,
+    textAlign:  'center',
+    width:      '100%',
   },
 });
 
