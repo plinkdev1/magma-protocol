@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+﻿import React, { useState, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -48,10 +48,10 @@ function getDiscoveryLabel(daysRemaining: number, deadlineAt?: string, createdAt
     : 30;
   const elapsed = total - daysRemaining;
   const pct = elapsed / total;
-  if (daysRemaining <= 0) return '⏰ CLOSED';
-  if (pct < 0.25) return '🟢 EARLY · 2.0× Discovery';
-  if (pct < 0.50) return '🟡 MID · 1.2× Discovery';
-  return '🔴 LATE · 1.0× Discovery';
+  if (daysRemaining <= 0) return 'â° CLOSED';
+  if (pct < 0.25) return 'ðŸŸ¢ EARLY Â· 2.0Ã— Discovery';
+  if (pct < 0.50) return 'ðŸŸ¡ MID Â· 1.2Ã— Discovery';
+  return 'ðŸ”´ LATE Â· 1.0Ã— Discovery';
 }
 
 const FeedScreen: React.FC = () => {
@@ -101,6 +101,7 @@ const FeedScreen: React.FC = () => {
   }, [queryClient]);
 
   const handleBack = useCallback((narrativeId: string) => {
+    setDismissedIds(prev => new Set([...prev, narrativeId]));
     navigation.navigate('NarrativeDetail', { narrativeId });
   }, [navigation]);
 
@@ -124,7 +125,7 @@ const FeedScreen: React.FC = () => {
         )}
       </View>
       <Text style={styles.priceMeta}>
-        Pyth • {lastUpdated ? lastUpdated.toLocaleTimeString() : '--:--'}
+        Pyth â€¢ {lastUpdated ? lastUpdated.toLocaleTimeString() : '--:--'}
       </Text>
     </View>
   );
@@ -169,7 +170,7 @@ const FeedScreen: React.FC = () => {
 
   const renderEmptyState = () => (
     <Animated.View style={styles.emptyState} entering={FadeIn} exiting={FadeOut}>
-      <Text style={styles.emptyIcon}>🔥</Text>
+      <Text style={styles.emptyIcon}>ðŸ”¥</Text>
       <Text style={styles.emptyTitle}>No narratives yet</Text>
       <Text style={styles.emptySubtitle}>
         Check back soon for new opportunities
@@ -206,7 +207,7 @@ const FeedScreen: React.FC = () => {
         renderSkeleton()
       ) : isError ? (
         <View style={styles.errorState}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorIcon}>âš ï¸</Text>
           <Text style={styles.errorTitle}>Failed to load narratives</Text>
           <Text style={styles.errorSubtitle}>
             {error instanceof Error ? error.message : 'Unknown error'}
