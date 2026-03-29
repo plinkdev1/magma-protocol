@@ -1,5 +1,7 @@
 // src/components/EcosystemGrid.tsx
 import React from 'react';
+import { useColorScheme } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
 import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
 
 const { width: W } = Dimensions.get('window');
@@ -55,7 +57,7 @@ const s = StyleSheet.create({
   card: {
     width: CARD_SIZE,
     alignItems: 'center',
-    backgroundColor: '#130b02',
+    backgroundColor: '#130b02', // replaced below
     borderWidth: 1,
     borderColor: 'rgba(255,107,53,0.12)',
     borderRadius: 12,
