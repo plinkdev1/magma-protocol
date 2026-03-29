@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
+import { useColorScheme } from 'react-native';
 import {
   View,
   Text,
@@ -37,7 +38,7 @@ import { DEADLINE_OPTIONS, DEFAULT_DEADLINE, DeadlineTier } from '../constants/p
 import { PublicKey, Transaction } from '@solana/web3.js';
 
 // Design tokens
-const COLORS = {
+const getColors = (dark: boolean) => ({
   background: '#09080C',
   primary: '#FF6B35',
   accent: '#FFB347',
@@ -47,7 +48,7 @@ const COLORS = {
   cardBorder: '#1E1B26',
   success: '#22C55E',
   error: '#EF4444',
-};
+});
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const API_BASE_URL = API_URL;
@@ -68,6 +69,9 @@ interface KitPreview {
 }
 
 const LaunchScreen: React.FC = () => {
+  const _scheme = useColorScheme();
+  const COLORS = getColors(_scheme !== 'light');
+  const styles = makeStyles(COLORS);
   const navigation = useNavigation() as any;
   const [shouldNavigateToFeed, setShouldNavigateToFeed] = useState(false);
   const insets = useSafeAreaInsets();
@@ -721,7 +725,7 @@ const LaunchScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -1291,6 +1295,7 @@ const styles = StyleSheet.create({
   deadlinePillTag: { color: COLORS.text, fontSize: 11, fontFamily: 'SpaceMono', letterSpacing: 1 },
   deadlinePillDays: { color: COLORS.muted, fontSize: 10, fontFamily: 'SpaceMono', marginTop: 2 },
 });
+
 
 export default LaunchScreen;
 
