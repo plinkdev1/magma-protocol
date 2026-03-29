@@ -98,6 +98,7 @@ const LaunchScreen: React.FC = () => {
   const [kitPreview, setKitPreview] = useState<KitPreview | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishReframe, setPublishReframe] = useState<string | null>(null);
   const [publishedNarrativeId, setPublishedNarrativeId] = useState<string | null>(null);
 
   const { connect, isConnected, account } = useAuthorization();
@@ -223,7 +224,7 @@ const LaunchScreen: React.FC = () => {
     }
 
     setIsPublishing(true);
-    setPublishError(null);
+    setPublishError(null); setPublishReframe(null);
 
     try {
       // Get mint transaction from backend
@@ -250,6 +251,7 @@ const LaunchScreen: React.FC = () => {
         } catch (error: any) {
       console.error('[LaunchScreen] Publish failed:', error);
           const msg = error?.response?.data?.message || error?.response?.data?.error || (error instanceof Error ? error.message : 'Publish failed');
+          setPublishReframe(error?.response?.data?.suggested_reframe || null);
           setPublishError(msg);
       Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
     }
@@ -270,7 +272,7 @@ const LaunchScreen: React.FC = () => {
     setJobId(null);
     setKitPreview(null);
     setPublishedNarrativeId(null);
-    setPublishError(null);
+    setPublishError(null); setPublishReframe(null);
     setOriginalityResult(null);
     setCurrentHookIndex(0);
     setShouldNavigateToFeed(false);
@@ -664,6 +666,12 @@ const LaunchScreen: React.FC = () => {
               <View style={styles.errorBanner}>
                 <Text style={styles.errorBannerIcon}>⚠️</Text>
                 <Text style={styles.errorBannerText}>{publishError}</Text>
+                    {publishReframe && (
+                      <View style={styles.reframeBanner}>
+                        <Text style={styles.reframeBannerLabel}>SUGGESTED REFRAME</Text>
+                        <Text style={styles.reframeBannerText}>{publishReframe}</Text>
+                      </View>
+                    )}
               </View>
             )}
 
@@ -1250,6 +1258,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 8,
   },
+      reframeBanner: { marginTop: 8, padding: 10, backgroundColor: 'rgba(255,107,53,0.08)', borderRadius: 6, borderLeftWidth: 2, borderLeftColor: '#FF6B35', gap: 4 },
+      reframeBannerLabel: { fontSize: 9, fontWeight: '700', color: '#FF6B35', letterSpacing: 1.5 },
+      reframeBannerText: { fontSize: 12, color: '#E8E4F0', lineHeight: 18 },
   errorBannerIcon: {
     fontSize: 18,
   },
