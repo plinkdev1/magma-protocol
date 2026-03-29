@@ -2,7 +2,6 @@
 // 6-slide onboarding — faithful RN translation of magma_app_onboarding.html
 import { useAuthorization } from '../context/WalletContext';
 import { API_URL } from '../config';
-import WalletPickerModal from '../components/WalletPickerModal';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
@@ -351,7 +350,6 @@ interface OnboardingScreenProps {
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const { connect, isConnected, account } = useAuthorization();
-  const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [selectedPath, setSelectedPath] = useState('predictor');
@@ -368,8 +366,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
 
     // Wallet slide � open picker if not connected
     if (eyebrow === 'Connect Wallet' && !isConnected) {
-      setShowWalletPicker(true);
-      return;
+      connect();
     }
 
     // Notifications slide � request permission
@@ -469,7 +466,6 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
           <Text style={s.swipeHint}>Swipe to continue</Text>
         )}
       </View>
-      <WalletPickerModal visible={showWalletPicker} onClose={() => setShowWalletPicker(false)} />
     </View>
   );
 };

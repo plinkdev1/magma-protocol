@@ -13,7 +13,6 @@ import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from './src/theme/ThemeContext';
 import { useWallet } from './src/context/WalletContext';
-import WalletPickerModal from './src/components/WalletPickerModal';
 import { radius, spacing } from './src/theme/tokens';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -132,8 +131,7 @@ const DrawerSection: React.FC<{ title: string; children: React.ReactNode }> = ({
 export const DrawerContent: React.FC<any> = (props) => {
   const { theme, colorScheme, setColorScheme } = useTheme();
   const navigation = props.navigation;
-  const { account, isConnected, disconnect } = useWallet();
-  const [showWalletPicker, setShowWalletPicker] = React.useState(false);
+  const { account, isConnected, disconnect, connect } = useWallet();
   const insets = useSafeAreaInsets();
 
   const go = (screen: string) => {
@@ -210,10 +208,9 @@ export const DrawerContent: React.FC<any> = (props) => {
             <DrawerItem
               emoji="🔗"
               label="Connect Wallet"
-              onPress={() => setShowWalletPicker(true)}
+              onPress={() => connect()}
             />
           )}
-          <WalletPickerModal visible={showWalletPicker} onClose={() => setShowWalletPicker(false)} />
         </DrawerSection>
 
         <DrawerSection title="SETTINGS">

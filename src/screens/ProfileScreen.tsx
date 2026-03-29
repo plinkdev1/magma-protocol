@@ -23,7 +23,6 @@ import * as Notifications from 'expo-notifications';
 
 import { useAuthorization } from '../context/WalletContext';
 import { useNavigation } from '@react-navigation/native';
-import WalletPickerModal from '../components/WalletPickerModal';
 
 // Design tokens
 const COLORS = {
@@ -60,7 +59,6 @@ const APP_VERSION = '1.0.0-alpha';
 const ProfileScreen: React.FC = () => {
   const { account, isConnected, disconnect, connect, isConnected: isWalletConnected, nftState } = useAuthorization();
   const navigation = useNavigation<any>();
-  const [showWalletPicker, setShowWalletPicker] = React.useState(false);
   const insets = useSafeAreaInsets();
   const [magmaBalance, setMagmaBalance] = useState(0);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -418,7 +416,7 @@ const ProfileScreen: React.FC = () => {
       {/* Danger Zone */}
       <SettingsSection title="Danger Zone">
         {!isConnected && (
-          <TouchableOpacity style={styles.dangerButton} onPress={() => setShowWalletPicker(true)} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.dangerButton} onPress={() => connect()} activeOpacity={0.7}>
             <Text style={styles.dangerButtonText}>Connect Wallet</Text>
           </TouchableOpacity>
         )}
@@ -457,7 +455,6 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <WalletPickerModal visible={showWalletPicker} onClose={() => setShowWalletPicker(false)} />
     </ScrollView>
   );
 };
