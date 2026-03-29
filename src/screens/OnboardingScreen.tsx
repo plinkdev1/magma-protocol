@@ -550,7 +550,7 @@ const s = StyleSheet.create({
   dotActive: { backgroundColor: C.orange, shadowColor: C.orange, shadowOpacity: 0.6, shadowRadius: 6, elevation: 4 },
   dotDone: { backgroundColor: 'rgba(255,107,53,0.4)' },
   slide: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', paddingTop: 80, paddingHorizontal: 32, width: W },
-  visualArea: { height: 180, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  visualArea: { minHeight: 180, alignItems: 'center', justifyContent: 'center', marginBottom: 20, width: '100%' },
   textArea: { alignItems: 'center', gap: 10 },
   eyebrow: { fontFamily: 'SpaceMono', fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: C.orange },
   title: { fontFamily: 'SpaceMono', fontSize: 28, fontWeight: '700', color: C.text, textAlign: 'center', lineHeight: 34 },
