@@ -1,6 +1,6 @@
-import { API_URL } from '../config';
+﻿import { API_URL } from '../config';
 import React, { useEffect, useCallback, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,8 +17,8 @@ import Animated, {
 import axios from 'axios';
 
 // Design tokens
-const COLORS = {
-  background: '#080400',
+const getColors = (dark: boolean) => ({
+  background: dark ? '#09080C' : '#F5F3F0',
   primary: '#ff6b35',
   accent: '#ffb347',
   text: '#f0d8c0',
@@ -27,7 +27,7 @@ const COLORS = {
   cardBorder: '#3d2a1f',
   success: '#00ff88',
   error: '#ff3355',
-};
+});
 
 // Agent definitions
 interface AgentStep {
@@ -38,13 +38,13 @@ interface AgentStep {
 }
 
 const AGENT_STEPS: AgentStep[] = [
-  { id: 'thesis', name: 'Thesis Analyzer', icon: '🔍', description: 'Analyzing narrative thesis' },
-  { id: 'originality', name: 'Originality Checker', icon: '✨', description: 'Checking uniqueness' },
-  { id: 'hook', name: 'Hook Writer', icon: '🎣', description: 'Crafting compelling hook' },
-  { id: 'article', name: 'Article Writer', icon: '📝', description: 'Writing full article' },
-  { id: 'thread', name: 'Thread Writer', icon: '🧵', description: 'Creating Twitter thread' },
-  { id: 'score', name: 'Score Evaluator', icon: '📊', description: 'Evaluating narrative score' },
-  { id: 'ipfs', name: 'IPFS Publisher', icon: '🌐', description: 'Publishing to IPFS' },
+  { id: 'thesis', name: 'Thesis Analyzer', icon: 'ðŸ”', description: 'Analyzing narrative thesis' },
+  { id: 'originality', name: 'Originality Checker', icon: 'âœ¨', description: 'Checking uniqueness' },
+  { id: 'hook', name: 'Hook Writer', icon: 'ðŸŽ£', description: 'Crafting compelling hook' },
+  { id: 'article', name: 'Article Writer', icon: 'ðŸ“', description: 'Writing full article' },
+  { id: 'thread', name: 'Thread Writer', icon: 'ðŸ§µ', description: 'Creating Twitter thread' },
+  { id: 'score', name: 'Score Evaluator', icon: 'ðŸ“Š', description: 'Evaluating narrative score' },
+  { id: 'ipfs', name: 'IPFS Publisher', icon: 'ðŸŒ', description: 'Publishing to IPFS' },
 ];
 
 type StepStatus = 'pending' | 'running' | 'done' | 'error';
@@ -67,11 +67,15 @@ export interface AgentProgressProps {
   onError?: (error: string) => void;
 }
 
+
 export const AgentProgress: React.FC<AgentProgressProps> = ({
   jobId,
   onComplete,
   onError,
 }) => {
+  const _s = useColorScheme();
+  const COLORS = getColors(_s !== 'light');
+  const styles = makeStyles(COLORS);
   const [steps, setSteps] = useState<Record<string, StepState>>(() => {
     const initial: Record<string, StepState> = {};
     AGENT_STEPS.forEach((step) => {
@@ -259,10 +263,10 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
         );
       }
       if (stepState.status === 'done') {
-        return <Text style={styles.statusIcon}>✓</Text>;
+        return <Text style={styles.statusIcon}>âœ“</Text>;
       }
       if (stepState.status === 'error') {
-        return <Text style={styles.statusIcon}>✕</Text>;
+        return <Text style={styles.statusIcon}>âœ•</Text>;
       }
       return null;
     };
@@ -342,14 +346,14 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
 
       {errorMessage && (
         <Animated.View style={styles.errorContainer} entering={FadeIn}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorIcon}>âš ï¸</Text>
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         </Animated.View>
       )}
 
       {overallStatus === 'completed' && (
         <Animated.View style={styles.successContainer} entering={FadeIn}>
-          <Text style={styles.successIcon}>🎉</Text>
+          <Text style={styles.successIcon}>ðŸŽ‰</Text>
           <Text style={styles.successText}>Pipeline Complete!</Text>
         </Animated.View>
       )}
@@ -357,7 +361,7 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: any) => StyleSheet.create({
   container: {
     backgroundColor: COLORS.background,
     padding: 16,
