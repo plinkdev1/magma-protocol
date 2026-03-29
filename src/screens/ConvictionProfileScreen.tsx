@@ -227,7 +227,7 @@ export default function ConvictionProfileScreen() {
             <Text style={[s.statValue, { color: stat.color ?? theme.textPrimary }]}>
               {stat.value}
             </Text>
-            <Text style={[s.statLabel, { color: theme.textTertiary }]}>{stat.label}</Text>
+            <Text style={[s.statLabel, { color: theme.textTertiary }]} numberOfLines={1} adjustsFontSizeToFit>{stat.label}</Text>
           </View>
         ))}
       </View>
@@ -363,10 +363,10 @@ const makeStyles = (theme: any, insets: any) => StyleSheet.create({
   // Stats grid
   statsGrid:    { flexDirection: 'row', flexWrap: 'wrap', borderRadius: 16,
                   borderWidth: 1, overflow: 'hidden' },
-  statCell:     { width: '33.33%', padding: 16, alignItems: 'center',
-                  borderRightWidth: 1, borderBottomWidth: 1 },
-  statValue:    { fontSize: 20, fontWeight: '700' },
-  statLabel:    { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
+  statCell:     { width: '33.33%', padding: 10, alignItems: 'center',
+                      borderRightWidth: 1, borderBottomWidth: 1 },
+  statValue:    { fontSize: 18, fontWeight: '700' },
+  statLabel:    { fontSize: 9, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 2 },
   // Section
   section:      { borderRadius: 16, borderWidth: 1, padding: 20, gap: 0 },
   sectionTitle: { fontSize: 10, letterSpacing: 2, fontWeight: '600',
