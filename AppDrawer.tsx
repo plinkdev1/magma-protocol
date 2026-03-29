@@ -64,7 +64,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
       <View style={styles.headerRight}>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => { navigation.getParent()?.navigate('Search'); }}
+          onPress={() => { navigation.getParent()?.navigate('Search' as never); }}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
@@ -72,7 +72,7 @@ export const AppHeader: React.FC<{ title?: string }> = ({ title }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.headerBtn}
-          onPress={() => { setTimeout(() => navigation.getParent()?.navigate('History'), 0); }}
+          onPress={() => { setTimeout(() => navigation.getParent()?.navigate('History' as never), 0); }}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
@@ -139,21 +139,21 @@ export const DrawerContent: React.FC<any> = (props) => {
   const go = (screen: string) => {
     navigation.closeDrawer();
     setTimeout(() => {
-      navigation.getParent()?.navigate('Main', { screen });
+      navigation.navigate('Main' as never, { screen } as never);
     }, 300);
   };
 
   const goStack = (screen: string) => {
     navigation.closeDrawer();
     setTimeout(() => {
-      navigation.getParent()?.navigate(screen);
+      navigation.getParent()?.navigate(screen as never);
     }, 300);
   };
 
   const goTab = (tab: string) => {
     navigation.closeDrawer();
     setTimeout(() => {
-      navigation.getParent()?.navigate('Main', { screen: tab });
+      navigation.navigate('Main' as never, { screen: tab } as never);
     }, 300);
   };
 
