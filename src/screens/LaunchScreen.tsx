@@ -266,8 +266,10 @@ const LaunchScreen: React.FC = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as Step);
       Haptics?.impactAsync(Haptics?.ImpactFeedbackStyle.Light);
+    } else {
+      try { navigation.navigate('Feed' as never); } catch(e) { navigation.goBack(); }
     }
-  }, [currentStep]);
+  }, [currentStep, navigation]);
 
   // Reset entire flow for new narrative
   const handleReset = useCallback(() => {
