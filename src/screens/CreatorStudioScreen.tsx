@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
   ActivityIndicator, TouchableOpacity,
@@ -74,7 +74,7 @@ export default function CreatorStudioScreen() {
     >
       {/* Hero */}
       <View style={[styles.heroCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-        <Text style={[styles.heroLabel, { color: theme.textTertiary }]}>✍️  CREATOR STUDIO</Text>
+        <Text style={[styles.heroLabel, { color: theme.textTertiary }]}>âœï¸  CREATOR STUDIO</Text>
         <Text style={[styles.tierDisplay, { color: theme.orange }]}>
           {creator?.creator_tier?.toUpperCase() ?? 'UNRANKED'}
         </Text>
@@ -108,7 +108,7 @@ export default function CreatorStudioScreen() {
         onPress={() => setShowTierTable(!showTierTable)}
       >
         <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-          TIER BENEFITS {showTierTable ? '▲' : '▼'}
+          TIER BENEFITS {showTierTable ? 'â–²' : 'â–¼'}
         </Text>
         {showTierTable && (
           <>
@@ -126,7 +126,7 @@ export default function CreatorStudioScreen() {
                 <Text style={[styles.tableCell, {
                   color: creator?.creator_tier === row.tier ? theme.orange : theme.textPrimary
                 }]}>{row.tier}</Text>
-                <Text style={[styles.tableCell, { color: theme.textPrimary }]}>{row.min}–{row.max}</Text>
+                <Text style={[styles.tableCell, { color: theme.textPrimary }]}>{row.min}â€“{row.max}</Text>
                 <Text style={[styles.tableCell, { color: theme.textPrimary }]}>{row.share}</Text>
               </View>
             ))}
@@ -182,8 +182,8 @@ export default function CreatorStudioScreen() {
                   color: n.status === 'graduated' ? theme.green :
                          n.status === 'failed'    ? '#EF4444' : theme.amber,
                 }]}>
-                  {n.status === 'graduated' ? '✓ TRUE' :
-                   n.status === 'failed'    ? '✗ FALSE' : 'PENDING'}
+                  {n.status === 'graduated' ? 'âœ“ TRUE' :
+                   n.status === 'failed'    ? 'âœ— FALSE' : 'PENDING'}
                 </Text>
               </View>
             </View>
@@ -194,10 +194,10 @@ export default function CreatorStudioScreen() {
       {/* CTA */}
       <TouchableOpacity
         style={[styles.submitBtn, { backgroundColor: theme.orange }]}
-        onPress={() => navigation.navigate('Launch' as never)}
+        onPress={() => (navigation as any).navigate('Main', { screen: 'Launch' })}
         activeOpacity={0.8}
       >
-        <Text style={styles.submitBtnText}>✍️  Submit New Narrative</Text>
+        <Text style={styles.submitBtnText}>âœï¸  Submit New Narrative</Text>
       </TouchableOpacity>
     </ScrollView>
   );
