@@ -22,6 +22,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
 
 import { useAuthorization } from '../context/WalletContext';
+import { API_URL } from '../config';
 import { useNavigation } from '@react-navigation/native';
 
 // Design tokens
@@ -60,7 +61,21 @@ const ProfileScreen: React.FC = () => {
   const { account, isConnected, disconnect, connect, isConnected: isWalletConnected, nftState } = useAuthorization();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const [magmaBalance, setMagmaBalance] = useState(0);
+  const [convictionScore, setConvictionScore] = useState(0);
+  const [convictionTierName, setConvictionTierName] = useState('Unranked');
+
+  useEffect(() => {
+    if (!account?.address) return;
+    fetch(API_URL + '/v1/conviction/' + account.address)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d) {
+          setConvictionScore(d.conviction_score ?? 0);
+          setConvictionTierName(d.conviction_tier ?? 'Unranked');
+        }
+      })
+      .catch(() => {});
+  }, [account?.address]);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [hasBiometric, setHasBiometric] = useState(false);
@@ -71,8 +86,8 @@ const ProfileScreen: React.FC = () => {
 
   // Get current tier
   const getCurrentTier = useCallback((): Tier => {
-    return TIERS.find((tier) => magmaBalance >= tier.minBalance && magmaBalance <= tier.maxBalance) || TIERS[0];
-  }, [magmaBalance]);
+    return TIERS.find((tier) => convictionScore >= tier.minBalance && convictionScore <= tier.maxBalance) || TIERS[0];
+  }, [convictionScore]);
 
   const currentTier = getCurrentTier();
 
@@ -224,7 +239,7 @@ const ProfileScreen: React.FC = () => {
       <Text style={[styles.tierBadgeName, { color: currentTier.color }]}>{currentTier.name}</Text>
       <Text style={styles.tierBadgeDescription}>{currentTier.description}</Text>
       <View style={styles.tierBadgeBalance}>
-        <Text style={styles.tierBadgeBalanceValue}>{magmaBalance.toLocaleString()}</Text>
+        <Text style={styles.tierBadgeBalanceValue}>{convictionScore.toLocaleString()}</Text>
         <Text style={styles.tierBadgeBalanceLabel}>$MAGMA</Text>
       </View>
     </Animated.View>
@@ -304,7 +319,7 @@ const ProfileScreen: React.FC = () => {
     const currentIndex = TIERS.findIndex((t) => t.name === currentTier.name);
     const nextTier = TIERS[currentIndex + 1];
     const progress = nextTier
-      ? Math.min(((magmaBalance - currentTier.minBalance) / (nextTier.minBalance - currentTier.minBalance)) * 100, 100)
+      ? Math.min(((convictionScore - currentTier.minBalance) / (nextTier.minBalance - currentTier.minBalance)) * 100, 100)
       : 100;
 
     return (
@@ -318,7 +333,7 @@ const ProfileScreen: React.FC = () => {
         </View>
         {nextTier && (
           <Text style={styles.tierProgressRemaining}>
-            {(nextTier.minBalance - magmaBalance).toLocaleString()} $MAGMA remaining
+            {(nextTier.minBalance - convictionScore).toLocaleString()} $MAGMA remaining
           </Text>
         )}
       </View>
