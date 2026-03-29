@@ -1,4 +1,5 @@
 ﻿import React, { useState, useCallback } from 'react';
+import { useAuthorization } from '../context/WalletContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -58,6 +59,8 @@ const FeedScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
+  const { account } = useAuthorization();
+  const wallet = account?.publicKey?.toString() ?? '';
   const [refreshing, setRefreshing] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
@@ -67,7 +70,7 @@ const FeedScreen: React.FC = () => {
 
   const fetchNarratives = useCallback(async (): Promise<Narrative[]> => {
     const response = await axios.get(`${API_BASE_URL}/v1/narratives`, {
-      params: { filter: activeFilter.toLowerCase() },
+      params: { filter: activeFilter.toLowerCase(), ...(activeFilter === 'Backed' && wallet ? { wallet } : {}) },
       timeout: 10000,
     });
     const raw = response.data.narratives || [];
