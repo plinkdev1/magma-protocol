@@ -323,9 +323,9 @@ const SLIDES = [
       {
         eyebrow: 'Verification',
         title: 'PROVE YOUR\nHUMANITY',
-        body: 'One-time verification prevents bots from manipulating the narrative market. Your privacy is preserved.',
+        body: 'Verify your humanity with Gitcoin Passport. Solana wallets with EVM history get a score boost. No Passport? Get one free at passport.xyz.',
         visual: (active: boolean) => <VisualAntiSybil />,
-        cta: 'Verify with Civic ->',
+        cta: 'Check My Passport ->',
       },
       {
         eyebrow: 'Terms of Use',
@@ -376,6 +376,23 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         const Notifications = await import('expo-notifications');
         await Notifications.requestPermissionsAsync();
       } catch {}
+      goTo(current + 1);
+      return;
+    }
+
+    // Verification slide — Gitcoin Passport check (soft gate, never blocks)
+    if (eyebrow === 'Verification') {
+      if (account?.address) {
+        try {
+          const res = await fetch(`${API_URL}/v1/verify/passport/${account.address}`);
+          const data = await res.json();
+          const score = data.score ?? 0;
+          const msg = score > 0
+            ? `Passport score: ${score.toFixed(1)} — verified`
+            : 'No EVM Passport found. You can get one free at passport.xyz';
+          console.log('[Passport]', msg);
+        } catch {}
+      }
       goTo(current + 1);
       return;
     }
