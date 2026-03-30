@@ -111,6 +111,8 @@ const LaunchScreen: React.FC = () => {
   const swipeOffset = useSharedValue(0);
   const [currentHookIndex, setCurrentHookIndex] = useState(0);
   const [selectedDeadline, setSelectedDeadline] = useState<DeadlineTier>(DEFAULT_DEADLINE);
+  const [isPolishing,    setIsPolishing]    = useState(false);
+  const [polishedThesis, setPolishedThesis] = useState<string | null>(null);
 
   // Animate progress bar when step changes
   React.useEffect(() => {
@@ -328,6 +330,19 @@ const LaunchScreen: React.FC = () => {
   };
 
   // Step 1: Voice/Text Input
+  const handlePolish = useCallback(async () => {
+    if (!thesis.trim() || isPolishing) return;
+    setIsPolishing(true);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/v1/narratives/polish`, { thesis });
+      if (res.data.polished) setPolishedThesis(res.data.polished);
+    } catch (err) {
+      // silently fail — user keeps original
+    } finally {
+      setIsPolishing(false);
+    }
+  }, [thesis, isPolishing]);
+
   const renderStep1 = () => (
     <Animated.View style={styles.stepContainer} entering={FadeInRight} exiting={FadeOutLeft}>
       <Text style={styles.stepTitle}>What's your narrative?</Text>
@@ -355,6 +370,39 @@ const LaunchScreen: React.FC = () => {
         />
 
         <Text style={styles.charCount}>{thesis.length}/500</Text>
+      {polishedThesis ? (
+        <View style={styles.polishPreview}>
+          <Text style={styles.polishLabel}>POLISHED VERSION</Text>
+          <Text style={styles.polishText}>{polishedThesis}</Text>
+          <View style={styles.polishActions}>
+            <TouchableOpacity
+              style={styles.polishAccept}
+              onPress={() => { setThesis(polishedThesis); setPolishedThesis(null); }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.polishAcceptText}>Use This</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.polishDiscard}
+              onPress={() => setPolishedThesis(null)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.polishDiscardText}>Keep Original</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={[styles.polishButton, (!thesis.trim() || isPolishing) && styles.polishButtonDisabled]}
+          onPress={handlePolish}
+          disabled={!thesis.trim() || isPolishing}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.polishButtonText}>
+            {isPolishing ? 'Polishing...' : 'Polish with AI'}
+          </Text>
+        </TouchableOpacity>
+      )}
       </View>
 
       <TouchableOpacity
@@ -856,6 +904,33 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
     color: COLORS.background,
     fontFamily: 'Syne-Bold',
   },
+  polishButton: {
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,0.40)',
+    backgroundColor: 'rgba(255,107,53,0.08)',
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  polishButtonDisabled: { opacity: 0.4 },
+  polishButtonText: { color: '#FF6B35', fontSize: 13, fontWeight: '600' },
+  polishPreview: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,0.30)',
+    backgroundColor: 'rgba(255,107,53,0.06)',
+    padding: 12,
+    marginTop: 8,
+    gap: 8,
+  },
+  polishLabel: { fontSize: 10, fontWeight: '700', color: '#FF6B35', letterSpacing: 1 },
+  polishText:  { fontSize: 14, color: '#F2EEF8', lineHeight: 20 },
+  polishActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  polishAccept:  { flex: 1, borderRadius: 9999, backgroundColor: '#FF6B35', paddingVertical: 8, alignItems: 'center' },
+  polishAcceptText:   { color: '#09080C', fontSize: 13, fontWeight: '700' },
+  polishDiscard: { flex: 1, borderRadius: 9999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', paddingVertical: 8, alignItems: 'center' },
+  polishDiscardText:  { color: '#9B95A8', fontSize: 13, fontWeight: '600' },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
