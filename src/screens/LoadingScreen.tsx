@@ -7,6 +7,7 @@ import { Image,
   StyleSheet,
   Dimensions,
   StatusBar,
+  ImageBackground,
 } from 'react-native';
 import Svg, { Path, Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import Animated, {
@@ -122,22 +123,14 @@ const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
   const step      = STEPS[stepIdx];
 
   return (
-    <View style={s.container}>
+    <ImageBackground
+      source={require('../../assets/images/loading-bg.png')}
+      style={s.container}
+      resizeMode="cover"
+    >
+      <View style={[s.overlay]} />
       <StatusBar barStyle="light-content" backgroundColor="#09080C" />
 
-          {/* Volcano */}
-          <Svg style={{ position: "absolute", bottom: 0, left: 0, right: 0 }} width={W} height={H * 0.52} viewBox={"0 0 " + W + " " + (H * 0.52)} pointerEvents="none">
-            <Defs><RadialGradient id="craterGlow" cx="50%" cy="0%" rx="30%" ry="40%"><Stop offset="0%" stopColor="#FF6B35" stopOpacity="0.6" /><Stop offset="100%" stopColor="#FF6B35" stopOpacity="0" /></RadialGradient></Defs>
-            <Path d={"M0 " + (H*0.52) + " L" + (W*0.05) + " " + (H*0.38) + " L" + (W*0.18) + " " + (H*0.28) + " L" + (W*0.28) + " " + (H*0.35) + " L" + (W*0.38) + " " + (H*0.52) + " Z"} fill="rgba(255,107,53,0.06)" />
-            <Path d={"M" + (W*0.62) + " " + (H*0.52) + " L" + (W*0.72) + " " + (H*0.35) + " L" + (W*0.82) + " " + (H*0.28) + " L" + (W*0.95) + " " + (H*0.38) + " L" + W + " " + (H*0.52) + " Z"} fill="rgba(255,107,53,0.06)" />
-            <Path d={"M" + (W*0.15) + " " + (H*0.52) + " L" + (W*0.38) + " " + (H*0.18) + " Q" + (W*0.42) + " " + (H*0.13) + " " + (W*0.45) + " " + (H*0.11) + " L" + (W*0.5) + " " + (H*0.08) + " L" + (W*0.55) + " " + (H*0.11) + " Q" + (W*0.58) + " " + (H*0.13) + " " + (W*0.62) + " " + (H*0.18) + " L" + (W*0.85) + " " + (H*0.52) + " Z"} fill="rgba(255,107,53,0.12)" />
-            <Path d={"M" + (W*0.25) + " " + (H*0.52) + " L" + (W*0.42) + " " + (H*0.19) + " L" + (W*0.46) + " " + (H*0.12) + " L" + (W*0.5) + " " + (H*0.09) + " L" + (W*0.54) + " " + (H*0.12) + " L" + (W*0.58) + " " + (H*0.19) + " L" + (W*0.75) + " " + (H*0.52) + " Z"} fill="rgba(255,58,0,0.15)" />
-            <Path d={"M" + (W*0.5) + " " + (H*0.09) + " Q" + (W*0.47) + " " + (H*0.18) + " " + (W*0.44) + " " + (H*0.28) + " Q" + (W*0.42) + " " + (H*0.35) + " " + (W*0.4) + " " + (H*0.45)} stroke="rgba(255,107,53,0.4)" strokeWidth="2" fill="none" />
-            <Path d={"M" + (W*0.5) + " " + (H*0.09) + " Q" + (W*0.53) + " " + (H*0.18) + " " + (W*0.56) + " " + (H*0.28) + " Q" + (W*0.58) + " " + (H*0.35) + " " + (W*0.6) + " " + (H*0.45)} stroke="rgba(255,107,53,0.4)" strokeWidth="2" fill="none" />
-            <Path d={"M0 " + (H*0.52) + " L" + W + " " + (H*0.52) + " L" + W + " " + (H*0.45) + " Q" + (W*0.5) + " " + (H*0.38) + " 0 " + (H*0.45) + " Z"} fill="rgba(255,107,53,0.05)" />
-            <Path d={"M" + (W*0.3) + " 0 L" + (W*0.7) + " 0 L" + (W*0.7) + " " + (H*0.2) + " L" + (W*0.3) + " " + (H*0.2) + " Z"} fill="url(#craterGlow)" />
-            <Circle cx={W*0.5} cy={H*0.09} r={8} fill="#FF6B35" opacity={0.8} />
-          </Svg>
 
 
       {/* Embers */}
@@ -189,12 +182,13 @@ const LoadingScreen: React.FC<Props> = ({ onLoadComplete }) => {
       <View style={s.footer}>
         <Text style={s.footerText}>Solana · $MAGMA · v1.0</Text>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const s = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: '#09080C', alignItems: 'center', justifyContent: 'center', paddingBottom: 60 },
+  container:    { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 60 },
+  overlay:      { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.52)' },
   flowWrap:     { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.42, overflow: 'hidden' },
   wave:         { position: 'absolute', bottom: 0, left: '-10%' as any, right: '-10%' as any, borderTopLeftRadius: 200, borderTopRightRadius: 200 },
   wave1:        { height: '60%', backgroundColor: 'rgba(255,34,0,0.12)' },
