@@ -3,6 +3,7 @@
 import { useAuthorization } from '../context/WalletContext';
 import { API_URL } from '../config';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -413,20 +414,21 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
     // Terms slide � must scroll to bottom first
     if (eyebrow === 'Terms of Use') {
       if (!termsScrolled) return;
-      // Record acceptance in backend
-      if (account?.address) {
-        try {
-          await fetch(`${API_URL}/v1/wallets/accept-terms`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              wallet_address: account.address,
-              terms_version: 'v1',
-              source: 'onboarding',
-            }),
-          });
-        } catch {}
-      }
+      const walletAddr = account?.address || null;
+      try {
+        await fetch(`${API_URL}/v1/terms/accept`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet_address: walletAddr,
+            terms_version: '0.1',
+            source: 'app',
+            platform: 'mobile_app',
+            app_version: '1.0.0',
+          }),
+        });
+      } catch {}
+      try { await AsyncStorage.setItem('magma_terms_v0.1', '1'); } catch {}
       goTo(current + 1);
       return;
     }

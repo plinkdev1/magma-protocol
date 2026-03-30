@@ -113,8 +113,9 @@ export default function App() {
 
   const handleLoadComplete = React.useCallback(async () => {
     try {
-      const seen = await AsyncStorage.getItem('hasSeenOnboarding');
-      if (seen === 'true') {
+      const seen          = await AsyncStorage.getItem('hasSeenOnboarding');
+      const termsAccepted = await AsyncStorage.getItem('magma_terms_v0.1');
+      if (seen === 'true' && termsAccepted === '1') {
         setAppState('main');
       } else {
         setAppState('onboarding');
@@ -127,6 +128,7 @@ export default function App() {
   const handleOnboardingComplete = React.useCallback(async () => {
     try {
       await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+      await AsyncStorage.setItem('magma_terms_v0.1', '1');
     } catch {}
     setAppState('main');
   }, []);
