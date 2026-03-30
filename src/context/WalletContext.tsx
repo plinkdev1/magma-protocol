@@ -101,6 +101,15 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
               AsyncStorage.setItem('magma_wallet', JSON.stringify({ authToken: authResult.auth_token, address })).catch(() => {});
               // Fetch NFT state after successful connect — non-blocking
         fetchNFTState(address).then(setNftState).catch(() => {});
+        // Verify terms acceptance server-side — non-blocking
+        fetch(`${API_URL}/v1/terms/status/${address}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.accepted === false) {
+              AsyncStorage.removeItem('magma_terms_v0.1').catch(() => {});
+            }
+          })
+          .catch(() => {});
       });
     } catch (err) {
       console.error('[WalletContext] Connect failed:', err);
