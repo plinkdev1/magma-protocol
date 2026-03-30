@@ -18,6 +18,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 import NarrativeCard from '../components/NarrativeCard';
+import NarrativeCardSlim from '../components/NarrativeCardSlim';
 import { getDaysRemaining } from '../utils/narrative';
 import { usePythPriceFeed } from '../hooks/usePythPriceFeed';
 import { useTheme } from '../theme/ThemeContext';
@@ -38,6 +39,7 @@ interface Narrative {
   category?: string;
   narrative_type?: string;
   created_at?: string;
+  stage?: string;
 }
 
 const FILTERS: FilterType[] = ['All', 'Trending', 'New', 'Backed'];
@@ -181,22 +183,34 @@ const FeedScreen: React.FC = () => {
     </Animated.View>
   );
 
-  const renderItem = ({ item }: { item: Narrative }) => (
-    <NarrativeCard
-      title={item.title}
-      thesis={item.thesis}
-      score={item.score}
-      solBacked={item.solBacked}
-      backers={item.backers}
-      daysRemaining={item.daysRemaining}
-      category={item.category || item.narrative_type || undefined}
-      discoveryLabel={getDiscoveryLabel(item.daysRemaining, item.deadline_at, item.created_at)}
-      onBack={() => handleBack(item.id)}
-      onPress={() => handleBack(item.id)}
-      onDismiss={() => handleDismiss(item.id)}
-    />
-  );
-
+  const renderItem = ({ item }: { item: Narrative }) => {
+    if (activeFilter === 'Backed') {
+      return (
+        <NarrativeCardSlim
+          title={item.title}
+          status={item.stage}
+          solBacked={item.solBacked}
+          daysRemaining={item.daysRemaining}
+          onPress={() => navigation.navigate('NarrativeDetail', { narrativeId: item.id })}
+        />
+      );
+    }
+    return (
+      <NarrativeCard
+        title={item.title}
+        thesis={item.thesis}
+        score={item.score}
+        solBacked={item.solBacked}
+        backers={item.backers}
+        daysRemaining={item.daysRemaining}
+        category={item.category || item.narrative_type || undefined}
+        discoveryLabel={getDiscoveryLabel(item.daysRemaining, item.deadline_at, item.created_at)}
+        onBack={() => handleBack(item.id)}
+        onPress={() => handleBack(item.id)}
+        onDismiss={() => handleDismiss(item.id)}
+      />
+    );
+  };
   const renderSeparator = () => <View style={styles.separator} />;
 
   const keyExtractor = useCallback((item: Narrative) => item.id, []);
