@@ -1,26 +1,26 @@
-# 🌋 MAGMA Protocol
-
+# MAGMA Protocol
 **Narrative Capital Markets on Solana**
 
-> Submit a thesis. AI builds your kit. Mint on-chain. Community backs with SOL. Best narratives earn.
+> Back what you believe. Earn while you wait. Get rewarded for being right early.
 
 [![Solana](https://img.shields.io/badge/Solana-Mobile-9945FF?style=flat&logo=solana)](https://solanamobile.com)
-[![Anchor](https://img.shields.io/badge/Anchor-0.30-FF6B35?style=flat)](https://anchor-lang.com)
-[![Expo](https://img.shields.io/badge/Expo-SDK%2055-000020?style=flat&logo=expo)](https://expo.dev)
-[![Claude](https://img.shields.io/badge/Claude-Sonnet%204-FF6B35?style=flat)](https://anthropic.com)
+[![Expo](https://img.shields.io/badge/Expo-Managed-000020?style=flat&logo=expo)](https://expo.dev)
+[![Fastify](https://img.shields.io/badge/Fastify-Backend-000000?style=flat)](https://fastify.dev)
+[![Claude](https://img.shields.io/badge/Claude-AI%20Pipeline-FF6B35?style=flat)](https://anthropic.com)
+[![Pyth](https://img.shields.io/badge/Pyth-Oracle-A259FF?style=flat)](https://pyth.network)
 
 ---
 
 ## What is MAGMA?
 
-MAGMA is the first **narrative capital markets protocol on Solana**. Ideas have always driven crypto prices — now they have a market.
+MAGMA is a narrative capital markets protocol built for Solana Mobile. Users submit market theses, back them with SOL or SPL tokens, and earn yield on their capital while the oracle resolves each narrative.
 
-1. **Submit** a thesis (text or voice input)
-2. **AI Pipeline** — 7 Claude agents generate a full narrative kit (article, hooks, imagery brief, distribution plan) in ~55 seconds
-3. **Mint** — kit uploaded to IPFS, Metaplex cNFT minted on Solana (0.001 SOL)
-4. **Back** — community stakes SOL on narratives they believe in
-5. **Score** — Pyth-validated oracle scores each narrative over 7 days
-6. **Earn** — top narratives graduate; creators + backers earn SOL yield boosted by Meteora + Kamino DeFi treasury
+- **Submit** a thesis via text or voice input
+- **AI pipeline** builds a full narrative kit in ~55 seconds (article, hooks, distribution plan)
+- **Back** narratives with SOL, SKR, or 14 other SPL tokens
+- **Earn** DeFi yield on backing capital while narratives resolve
+- **Get rewarded** for accurate early backing through the Conviction Score system
+- **Echo Pool** distributes a share of all resolved capital to top conviction holders monthly
 
 ---
 
@@ -28,77 +28,100 @@ MAGMA is the first **narrative capital markets protocol on Solana**. Ideas have 
 
 | Layer | Technology |
 |---|---|
-| Smart Contracts | Anchor 0.30 · Rust · Solana |
-| Token | SPL Token-2022 + TransferHook |
-| NFT | Metaplex Bubblegum cNFT |
-| DeFi | Meteora DLMM · Kamino · Jupiter · Orca |
-| Oracle | Pyth Network (SOL/USD · Entropy) |
-| Mobile | React Native · Expo SDK 55 · MWA |
-| Backend | Node.js 20 · Fastify · Supabase · Redis |
-| AI | Anthropic Claude Sonnet 4 · Haiku 4-5 |
-| Storage | IPFS via Pinata |
-| Search | Tavily · Pinecone |
+| Mobile | React Native + Expo (managed workflow) |
+| Wallet | Solana Mobile Wallet Adapter v2 (MWA) |
+| Backend | Node.js 20 + Fastify + TypeScript |
+| Database | Supabase (PostgreSQL) |
+| Cache / Queues | Redis + BullMQ |
+| AI Pipeline | Anthropic Claude (Sonnet + Haiku) |
+| Oracle | Grok AI + Tavily search + Pyth Network |
+| DeFi | Kamino + Meteora DLMM + Save Finance + Jupiter Lend |
+| NFT | Metaplex Core |
+| Price Feeds | Pyth Hermes (SOL/USD + 15 tokens) |
+| Infrastructure | Railway (backend) + Supabase (database) |
 
 ---
 
 ## Repository Structure
 
 ```
-magma-protocol/
-├── android/                  # Android build output
-├── src/
-│   ├── screens/              # React Native screens
-│   │   ├── FeedScreen.tsx    # Narrative feed + filtering
-│   │   ├── LaunchScreen.tsx  # Thesis input + AI pipeline
-│   │   ├── DeFiScreen.tsx    # Treasury yield + Jupiter swap
-│   │   ├── PortfolioScreen.tsx
-│   │   └── ProfileScreen.tsx
-│   ├── components/           # Shared components
-│   ├── hooks/                # usePythPriceFeed, useMagmaTransactions
-│   ├── stores/               # Zustand state
-│   └── types/                # TypeScript types
-├── programs/                 # Anchor smart contracts (Rust)
-│   ├── magma_token/          # SPL Token-2022 mint
-│   ├── magma_registry/       # Narrative NFT registry
-│   ├── magma_score/          # Pyth-validated scoring oracle
-│   └── magma_vault/          # DeFi treasury + staking
-├── shims/                    # React Native polyfills
-├── backend/                  # Node.js API (separate repo)
-├── docs/
-│   ├── magma_tech_spec.md
-│   ├── magma_dev_plan.md
-│   └── magma_strategy.md
-├── App.tsx
-├── index.ts
-├── metro.config.js
-├── babel.config.js
-└── app.json
+magma-protocol/          # React Native mobile app (this repo)
+  src/
+    screens/             # App screens
+    components/          # Shared UI components
+    context/             # WalletContext (MWA state)
+    hooks/               # usePythPriceFeed, useBackNarrative
+    theme/               # Design system tokens (V2)
+    utils/               # Helpers
+  android/               # Gradle release build output
+  App.tsx                # Root navigator
+  app.json               # Expo config
+
+magma-backend/           # Separate repo: plinkdev1/magma-backend
+  src/
+    routes/              # API route handlers
+    services/            # Business logic
+    workers/             # BullMQ background workers
+    lib/                 # Redis, Supabase, queue setup
 ```
 
 ---
 
-## Smart Contracts
+## AI Agent Pipeline
 
-### `magma_token` — SPL Token-2022
-- 1B $MAGMA supply with TransferHook extension
-- Staking side effects on transfer
-- Freeze authority revoked post-TGE
+MAGMA uses a multi-agent Claude pipeline to process every narrative submission:
 
-### `magma_registry` — Narrative NFT Program
-- `register_narrative()` — submit thesis + IPFS CID, mint cNFT
-- `cast_vote()` — community voting with PDA per voter
-- `update_status()` — oracle-triggered graduation/slash
+| Stage | Function |
+|---|---|
+| Uncertainty Check | Rejects trivially certain or incoherent theses |
+| Resolvability Score | Validates the narrative can be objectively resolved |
+| Originality Check | Detects duplicate or near-duplicate narratives |
+| Narrative Generator | Produces article, hooks, and distribution kit |
+| Oracle Resolution | Grok + Tavily + Pyth validate outcome at deadline |
 
-### `magma_score` — Pyth Oracle Program
-- `write_score()` — composite score (originality + community + novelty + clarity + timeliness + potential)
-- Pyth SOL/USD freshness validation (30s max staleness)
-- Graduation threshold: ≥60 · Slash threshold: ≤30
+Pipeline runtime: ~55 seconds per narrative
 
-### `magma_vault` — DeFi Treasury
-- `stake_on_narrative()` — SOL staking with 7-day window
-- `unstake()` — principal + yield return
-- `credit_yield()` — 2% protocol fee on DeFi yield
-- Integrations: Meteora DLMM · Kamino Whirlpool · Save Finance
+---
+
+## DeFi Yield Integration
+
+Backing capital never sits idle. Every token backed into a narrative is deployed into a yield protocol while the narrative resolves:
+
+| Token | Yield Source |
+|---|---|
+| SOL | Kamino Lend |
+| SKR | Guardian Staking (0% fee) |
+| JUP | Jupiter Lend |
+| BONK, RAY, WIF | Kamino Lend |
+| KMNO, MET | Meteora DLMM |
+| USDC | Kamino Lend / Save Finance |
+
+Principal is always returned 1:1. Yield multipliers apply to earned yield only.
+
+---
+
+## Conviction Score System
+
+Every wallet builds a Conviction Score through accurate narrative backing:
+
+- **Tiers**: Ember → Flare → Magma → Core → Volcanic
+- **Multipliers**: yield bonuses applied to earned yield (not principal)
+- **Echo Pool**: monthly distribution to high-conviction holders
+- **Creator Score**: separate track for narrative submitters
+
+Scores are earned through accuracy over time — not purchasable.
+
+---
+
+## NFT Collections
+
+**Lava Tier Cards (MLAVA)** — 10,000 supply across 5 tiers
+Metaplex Core standard. Provide yield multiplier floors for holders.
+Mint opens post-mainnet.
+
+**Genesis Origin Cards (MGNSS)** — 100 supply, commemorative
+Awarded to founding testnet participants via verifiable raffle.
+Provides Echo Pool weight boost.
 
 ---
 
@@ -107,89 +130,81 @@ magma-protocol/
 ### Prerequisites
 - Node.js 20+
 - Expo CLI
-- Android Studio + emulator (API 33+)
-- Rust + Anchor CLI (for smart contract development)
-- Solana CLI
+- Android device or emulator (API 33+ / Android 13+)
+- Phantom or Solflare wallet (Solana Mobile Wallet Adapter)
 
 ### Mobile App
 
 ```bash
-git clone https://github.com/YOURUSERNAME/magma-protocol.git
+git clone https://github.com/plinkdev1/magma-protocol.git
 cd magma-protocol
 npm install
-npx expo start --tunnel
+npx expo start
 ```
+
+> Note: MWA wallet signing requires a physical Android device or an emulator with a Solana wallet installed.
+
+### Environment
+
+Create `src/config.ts` with your backend URL:
+
+```typescript
+export const API_URL = 'http://YOUR_LOCAL_IP:3000';
+```
+
+> `src/config.ts` is excluded from git. Never commit it.
 
 ### Backend
 
 ```bash
+git clone https://github.com/plinkdev1/magma-backend.git
 cd magma-backend
 npm install
-# Configure .env (see .env.example)
+cp .env.example .env
+# Fill in SUPABASE_URL, SUPABASE_ANON_KEY, REDIS_URL, GROK_API_KEY,
+# TAVILY_API_KEY, PYTH_ENDPOINT, ANTHROPIC_API_KEY
 npm run dev
 ```
 
-### Smart Contracts (Devnet)
+### Release Build (Android)
 
 ```bash
-cd programs
-anchor build
-anchor deploy --provider.cluster devnet
+node patch-prod.js
+cd android
+.\gradlew assembleRelease
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+node patch-dev.js
 ```
 
 ---
 
-## AI Agent Pipeline
+## Anti-Sybil
 
-| Agent | Role | Model |
-|---|---|---|
-| S-00 | Solana Context Check | Haiku 4-5 |
-| S-01 | Thesis Architect | Sonnet 4 |
-| S-02 | Hook Engineer | Sonnet 4 |
-| S-03 | Article Writer | Sonnet 4 |
-| S-04 | Imagery Brief | Haiku 4-5 |
-| S-05 | Distribution Planner | Haiku 4-5 |
-| S-06 | Score Predictor | Sonnet 4 |
-| S-07 | Fact Checker | Sonnet 4 + Tavily |
+MAGMA uses Gitcoin Passport (Human Passport) for identity verification.
+Users with established EVM wallet history receive a Passport score.
+Verification is informational — it does not block app access.
 
-Total pipeline: ~55 seconds · Target: <3% hallucination rate
+Passport: [passport.xyz](https://passport.xyz)
 
 ---
 
-## Payout Distribution
+## Network
 
-```
-On cycle close (7 days):
-  Creator        60% of narrative payout
-  Backers        30% (pro-rata × early multiplier)
-  $MAGMA stakers 10%
-
-Early backer bonus: 1.5× multiplier (first 48h)
-DeFi yield: Meteora DLMM + Kamino auto-compound
-```
+Currently running on **Solana devnet**.
+Mainnet deployment follows independent security audit.
 
 ---
 
-## Hackathon
+## Built For
 
-Built for **Monolith** — Solana Mobile Hackathon · March 2026
+**Monolith** — Solana Mobile Hackathon, March 2026
 
-- ✅ Android APK (side-loadable)
-- ✅ Solana Mobile Wallet Adapter
-- ✅ Devnet smart contracts
-- ✅ Full AI pipeline
-- ✅ DeFi treasury architecture
-
----
-
-## Roadmap
-
-| Phase | Timeline | Milestone |
-|---|---|---|
-| Phase 1 | Month 1–2 | Devnet programs + AI pipeline + 25 alpha wallets |
-| Phase 2 | Month 3–4 | DeFi treasury live + 250 beta wallets + first SOL payout |
-| Phase 3 | Month 5–6 | Jupiter + Orca + security audit + first graduation |
-| Phase 4 | Month 7–8 | Mainnet launch + dApp Store + Vibestarter raise |
+- Android APK (Gradle release build)
+- Solana Mobile Wallet Adapter v2
+- Seeker phone + SKR native integration
+- Pyth Network price feeds + entropy
+- Multi-agent AI pipeline (Anthropic Claude)
+- Live DeFi yield (Kamino, Meteora, Jupiter, Save)
 
 ---
 
@@ -199,4 +214,4 @@ MIT
 
 ---
 
-*MAGMA Protocol · Narrative Capital Markets · Built on Solana · March 2026*
+*MAGMA Protocol · Narrative Capital Markets · Built on Solana · 2026*
