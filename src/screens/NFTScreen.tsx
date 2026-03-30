@@ -7,7 +7,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useWallet } from '../context/WalletContext';
 
 const MLAVA_TIERS = [
-  { tier: 'ember',    supply: 6850,  price: 0.5,  multiplier: 1.0, fee: '2.0%',    score: '0–99',    color: '#CC7722' },
+  { tier: 'ember',    supply: 6850,  price: 0.5,  multiplier: 1.1, fee: '2.0%',    score: '0–99',    color: '#CC7722' },
   { tier: 'flare',    supply: 2500,  price: 1.5,  multiplier: 1.3, fee: '1.5%',    score: '100–299', color: '#FF6B35' },
   { tier: 'magma',    supply: 400,   price: 5.0,  multiplier: 1.6, fee: '1.5%',    score: '300–599', color: '#FF4500' },
   { tier: 'core',     supply: 150,   price: 12.0, multiplier: 2.0, fee: '1.0%',    score: '600–899', color: '#CC0000' },
