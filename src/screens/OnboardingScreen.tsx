@@ -14,6 +14,7 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
   Image,
+  ImageBackground,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -38,6 +39,7 @@ const C = {
   card: '#111018',
   orange: '#ff6b35',
   amber: '#ffb347',
+
   ember: '#ff2200',
   text: '#ffe8d0',
   muted: 'rgba(255,232,208,0.45)',
@@ -45,6 +47,12 @@ const C = {
   green: '#00ff88',
   cyan: '#00e5ff',
 };
+
+const BG_IMAGES = [
+  require('../../assets/images/onboarding-bg-1.png'),
+  require('../../assets/images/onboarding-bg-2.png'),
+  require('../../assets/images/onboarding-bg-3.png'),
+];
 
 // ─── SLIDE VISUALS ─────────────────────────────────────────────────────────────
 
@@ -447,11 +455,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const exiting = direction === 'forward' ? SlideOutLeft.duration(320) : SlideOutRight.duration(320);
 
   return (
-    <View style={s.container}>
+    <ImageBackground
+      source={BG_IMAGES[current % 3]}
+      style={s.container}
+      resizeMode="cover"
+    >
+      <View style={s.overlay} pointerEvents="none" />
       <StatusBar barStyle="light-content" backgroundColor={C.bg} />
 
       {/* Lava bg glow */}
-      <View style={s.lavaBg} />
 
       {/* Skip */}
       {current < SLIDES.length - 1 && (
@@ -498,7 +510,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
           <Text style={s.swipeHint}>Swipe to continue</Text>
         )}
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -573,7 +585,8 @@ const vis = StyleSheet.create({
 
 // ─── SCREEN STYLES ─────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg, alignItems: 'center' },
+  container:  { flex: 1 },
+  overlay:    { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.48)' },
   lavaBg: { position: 'absolute', bottom: 0, left: 0, right: 0, height: H * 0.35, backgroundColor: 'rgba(255,40,0,0.06)', borderTopLeftRadius: 200, borderTopRightRadius: 200 },
   skipBtn: { position: 'absolute', top: 80, right: 24, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: 'rgba(255,107,53,0.2)', zIndex: 20, borderRadius: 12 },
   skipText: { fontFamily: 'SpaceMono', fontSize: 10, color: 'rgba(255,107,53,0.5)', letterSpacing: 1 },
