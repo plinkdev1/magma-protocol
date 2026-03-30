@@ -1,0 +1,29 @@
+{
+  "release": {
+    "catalog_entry": {
+      "i18n": {
+        "en": {
+          "name": "MAGMA Protocol",
+          "short_description": "Narrative capital markets on Solana. Back what you believe. Earn while you wait.",
+          "long_description": "MAGMA is a narrative capital markets protocol built for Solana Mobile. Submit a market thesis, back it with SOL or SPL tokens, and earn DeFi yield on your capital while the AI oracle resolves each narrative.\n\nFeatures:\n- Voice or text narrative submission\n- 7-agent AI pipeline generates full narrative kit in ~55 seconds\n- Back narratives with SOL, SKR, or 14 other SPL tokens\n- Earn Kamino, Meteora, and Jupiter Lend yield while narratives resolve\n- Conviction Score system rewards accurate early backers\n- Echo Pool distributes monthly to top conviction holders\n- Native Seeker phone + SKR integration\n- Metaplex Core NFT collections (Lava Tier Cards + Genesis Origin Cards)",
+          "new_in_version": "Initial release. Full narrative capital markets protocol on Solana devnet.",
+          "saga_features": ""
+        }
+      },
+      "app_package_name": "com.magmaprotocol.app",
+      "urls": {
+        "license_url": "https://magmaprotocol.xyz/terms",
+        "copyright_url": "https://magmaprotocol.xyz",
+        "privacy_policy_url": "https://magmaprotocol.xyz/terms"
+      },
+      "media": {
+        "banner_image_path": "./assets/images/banner.png",
+        "preview_images": [
+          "./assets/images/preview-1.png",
+          "./assets/images/preview-2.png",
+          "./assets/images/preview-3.png"
+        ]
+      }
+    }
+  }
+}
