@@ -369,12 +369,25 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       connect();
     }
 
-    // Notifications slide � request permission
+    // Notifications slide — request permission + save push token
     if (eyebrow === 'Stay Informed' && !notifRequested) {
       setNotifRequested(true);
       try {
         const Notifications = await import('expo-notifications');
-        await Notifications.requestPermissionsAsync();
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status === 'granted' && account?.address) {
+          try {
+            const tokenData = await Notifications.getExpoPushTokenAsync();
+            const pushToken = tokenData.data;
+            await fetch(`${API_URL}/v1/users/push-token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ wallet_address: account.address, push_token: pushToken }),
+            });
+          } catch (tokenErr) {
+            console.warn('[push] failed to save token:', tokenErr);
+          }
+        }
       } catch {}
       goTo(current + 1);
       return;
