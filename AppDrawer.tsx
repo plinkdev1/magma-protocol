@@ -173,24 +173,12 @@ export const DrawerContent: React.FC<any> = (props) => {
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.drawerScroll}>
 
-        <DrawerSection title="MAGMA CORE">
-          <DrawerItem emoji="🏠" label="Feed"              onPress={() => goTab('Feed')} />
-          <DrawerItem emoji="🚀" label="Submit Narrative"  onPress={() => goTab('Launch')} />
-          <DrawerItem emoji="💼" label="My Portfolio"      onPress={() => goTab('Portfolio')} />
-          <DrawerItem emoji="📊" label="DeFi / Control"    onPress={() => goTab('DeFi')} />
-        </DrawerSection>
-
         <DrawerSection title="NOVA">
           <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => goTab('Profile')} />
           <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => goStack('EchoPool')} />
           <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => goStack('CreatorStudio')} />
               <DrawerItem emoji="🏆" label="Leaderboard" onPress={() => goStack('Leaderboard')} />
               <DrawerItem emoji="🌋" label="NFT Cards" onPress={() => goStack('NFT')} />
-        </DrawerSection>
-
-        <DrawerSection title="EXIDANTE ECOSYSTEM">
-          <DrawerItem emoji="🔮" label="CYPHER"  onPress={() => {}} muted badge="Soon" />
-          <DrawerItem emoji="🌐" label="ORIGIN"  onPress={() => {}} muted badge="Soon" />
         </DrawerSection>
 
         <DrawerSection title="WALLET">
