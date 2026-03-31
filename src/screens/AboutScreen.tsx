@@ -50,7 +50,7 @@ export default function AboutScreen() {
             onPress={() => url && Linking.openURL(url)}
             activeOpacity={0.7}
           >
-            <Text style={{ fontSize: 14, color: theme.textPrimary }}>{label}</Text>
+            <Text style={{ fontSize: 14, color: theme.textPrimary, flex: 1, marginRight: 8 }}>{label}</Text>
             <Text style={{ fontSize: 14, color: theme.textTertiary }}>→</Text>
           </TouchableOpacity>
         ))}

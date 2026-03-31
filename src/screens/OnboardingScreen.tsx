@@ -255,7 +255,7 @@ const VisualAntiSybil = () => (
 // Slide 9 � Terms
 const TERMS_TEXT = `MAGMA PROTOCOL � TERMS OF USE\n\nBy using MAGMA Protocol you agree to the following:\n\n1. MAGMA is a yield-bearing narrative capital market on Solana. Participation involves financial risk.\n\n2. Backing narratives is not investment advice. You may lose backed capital if a narrative resolves FALSE.\n\n3. Yield is generated through DeFi protocol integrations. APY rates are variable and not guaranteed.\n\n4. MAGMA does not custody your funds. All transactions are on-chain and irreversible.\n\n5. You are responsible for the security of your wallet and private keys.\n\n6. Anti-Sybil verification is required to participate. One wallet per person.\n\n7. MAGMA reserves the right to update these terms. Continued use constitutes acceptance.\n\n8. This protocol is in beta. Use at your own risk.\n\nBy tapping "Accept & Continue" you confirm you have read and agree to these terms.`;
 
-const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (
+const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (<>
   <ScrollView
     style={vis.termsScroll}
     onMomentumScrollEnd={(e) => {
@@ -269,6 +269,8 @@ const VisualTerms = ({ onScrollEnd }: { onScrollEnd: () => void }) => (
   >
     <Text style={vis.termsText}>{TERMS_TEXT}</Text>
   </ScrollView>
+  <Text style={vis.termsHint}>Scroll to the bottom to accept</Text>
+  </>
 );
 
 // ─── SLIDE DATA ────────────────────────────────────────────────────────────────
@@ -451,8 +453,8 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   }, [current, goTo, onComplete, isConnected, account, termsScrolled, notifRequested]);
 
   const slide = SLIDES[current];
-  const entering = direction === 'forward' ? SlideInRight.duration(320) : SlideInLeft.duration(320);
-  const exiting = direction === 'forward' ? SlideOutLeft.duration(320) : SlideOutRight.duration(320);
+  const entering = direction === 'forward' ? SlideInRight.duration(200).springify() : SlideInLeft.duration(200).springify();
+  const exiting = direction === 'forward' ? SlideOutLeft.duration(180) : SlideOutRight.duration(180);
 
   return (
     <ImageBackground
@@ -581,6 +583,7 @@ const vis = StyleSheet.create({
   sybilText:     { fontSize: 13, color: 'rgba(255,232,208,0.7)', textAlign: 'center', fontFamily: 'SpaceMono', lineHeight: 22 },
   termsScroll:   { width: '100%', maxHeight: 200, backgroundColor: 'rgba(255,107,53,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,107,53,0.15)' },
   termsText:     { fontSize: 10, color: 'rgba(255,232,208,0.6)', fontFamily: 'SpaceMono', lineHeight: 18, padding: 14 },
+  termsHint: { fontSize: 11, color: 'rgba(255,107,53,0.7)', textAlign: 'center', marginTop: 6, fontFamily: 'SpaceMono', letterSpacing: 0.5 },
 });
 
 // ─── SCREEN STYLES ─────────────────────────────────────────────────────────────
