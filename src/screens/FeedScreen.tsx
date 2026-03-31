@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAuthorization } from '../context/WalletContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,7 +20,6 @@ import axios from 'axios';
 import NarrativeCard from '../components/NarrativeCard';
 import NarrativeCardSlim from '../components/NarrativeCardSlim';
 import { getDaysRemaining } from '../utils/narrative';
-import { usePythPriceFeed } from '../hooks/usePythPriceFeed';
 import { useTheme } from '../theme/ThemeContext';
 
 const API_BASE_URL = API_URL;
@@ -51,10 +50,10 @@ function getDiscoveryLabel(daysRemaining: number, deadlineAt?: string, createdAt
     : 30;
   const elapsed = total - daysRemaining;
   const pct = elapsed / total;
-  if (daysRemaining <= 0) return 'â° CLOSED';
-  if (pct < 0.25) return 'ðŸŸ¢ EARLY Â· 2.0Ã— Discovery';
-  if (pct < 0.50) return 'ðŸŸ¡ MID Â· 1.2Ã— Discovery';
-  return 'ðŸ”´ LATE Â· 1.0Ã— Discovery';
+  if (daysRemaining <= 0) return 'CLOSED';
+  if (pct < 0.25) return 'EARLY · 2.0× Discovery';
+  if (pct < 0.50) return 'MID · 1.2× Discovery';
+  return 'LATE · 1.0× Discovery';
 }
 
 const FeedScreen: React.FC = () => {
@@ -68,7 +67,6 @@ const FeedScreen: React.FC = () => {
   const queryClient = useQueryClient();
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { price, lastUpdated, isStale, error: priceError } = usePythPriceFeed();
 
   const fetchNarratives = useCallback(async (): Promise<Narrative[]> => {
     const response = await axios.get(`${API_BASE_URL}/v1/narratives`, {
@@ -116,24 +114,6 @@ const FeedScreen: React.FC = () => {
 
   const styles = makeStyles(theme);
 
-  const renderPriceTicker = () => (
-    <View style={styles.priceTicker}>
-      <View style={styles.priceContent}>
-        <Text style={styles.priceLabel}>SOL/USD</Text>
-        <Text style={priceError ? styles.priceError : styles.priceValue}>
-          ${price.toFixed(2)}
-        </Text>
-        {isStale && (
-          <View style={styles.staleBadge}>
-            <Text style={styles.staleText}>STALE</Text>
-          </View>
-        )}
-      </View>
-      <Text style={styles.priceMeta}>
-        Pyth â€¢ {lastUpdated ? lastUpdated.toLocaleTimeString() : '--:--'}
-      </Text>
-    </View>
-  );
 
   const renderFilterBar = () => (
     <View style={styles.filterBar}>
@@ -175,7 +155,7 @@ const FeedScreen: React.FC = () => {
 
   const renderEmptyState = () => (
     <Animated.View style={styles.emptyState} entering={FadeIn} exiting={FadeOut}>
-      <Text style={styles.emptyIcon}>ðŸ”¥</Text>
+      <Text style={styles.emptyIcon}>Ã°Å¸”Â¥</Text>
       <Text style={styles.emptyTitle}>No narratives yet</Text>
       <Text style={styles.emptySubtitle}>
         Check back soon for new opportunities
@@ -217,14 +197,13 @@ const FeedScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {renderPriceTicker()}
       {renderFilterBar()}
 
       {isLoading ? (
         renderSkeleton()
       ) : isError ? (
         <View style={styles.errorState}>
-          <Text style={styles.errorIcon}>âš ï¸</Text>
+          <Text style={styles.errorIcon}>Ã¢Å¡Â Ã¯Â¸Â</Text>
           <Text style={styles.errorTitle}>Failed to load narratives</Text>
           <Text style={styles.errorSubtitle}>
             {error instanceof Error ? error.message : 'Unknown error'}
@@ -265,16 +244,6 @@ const makeStyles = (theme: ReturnType<typeof useTheme>['theme']) =>
     container: {
       flex: 1,
       backgroundColor: theme.bgBase,
-    },
-    // --- Price ticker ---
-    priceTicker: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.cardBorder,
     },
     priceContent: {
       flexDirection: 'row',

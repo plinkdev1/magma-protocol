@@ -151,7 +151,12 @@ export const DrawerContent: React.FC<any> = (props) => {
   const goTab = (tab: string) => {
     navigation.closeDrawer();
     setTimeout(() => {
-      navigation.navigate('Main' as never, { screen: tab } as never);
+      const parent = navigation.getParent();
+      if (parent) {
+        parent.navigate('Main' as never, { screen: tab } as never);
+      } else {
+        (navigation as any).navigate('Main', { screen: tab });
+      }
     }, 300);
   };
 
