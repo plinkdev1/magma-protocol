@@ -39,13 +39,13 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 
 // Design tokens
 const getColors = (dark: boolean) => ({
-  background: '#09080C',
+  background: dark ? '#09080C' : '#F5F4F8',
   primary: '#FF6B35',
   accent: '#FFB347',
-  text: '#E8E4F0',
-  muted: '#5C5668',
-  card: '#111018',
-  cardBorder: '#1E1B26',
+  text: dark ? '#E8E4F0' : '#1A1625',
+  muted: dark ? '#5C5668' : '#7C7689',
+  card: dark ? '#111018' : '#FFFFFF',
+  cardBorder: dark ? '#1E1B26' : '#E2DFF0',
   success: '#22C55E',
   error: '#EF4444',
 });
