@@ -344,7 +344,7 @@ export default function ConvictionProfileScreen() {
 const makeStyles = (theme: any, insets: any) => StyleSheet.create({
   container:    { flex: 1 },
   centered:     { justifyContent: 'center', alignItems: 'center', gap: 12, padding: 24 },
-  content:      { padding: 16, gap: 12, paddingBottom: insets.bottom + 32 },
+  content:      { padding: 16, gap: 12, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32 },
   loadingText:  { marginTop: 12, fontSize: 14 },
   emptyIcon:    { fontSize: 32 },
   emptyTitle:   { fontSize: 18, fontWeight: '700' },

@@ -70,7 +70,7 @@ export default function CreatorStudioScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.bgBase }]}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 40 }]}
     >
       {/* Hero */}
       <View style={[styles.heroCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
@@ -205,7 +205,7 @@ export default function CreatorStudioScreen() {
 
 const styles = StyleSheet.create({
   container:      { flex: 1 },
-  content:        { padding: 20, gap: 16, paddingBottom: 40 },
+  content:        { padding: 20, gap: 16 },
   center:         { flex: 1, alignItems: 'center', justifyContent: 'center' },
   heroCard:       { borderRadius: 16, borderWidth: 1, padding: 24, alignItems: 'center' },
   heroLabel:      { fontSize: 10, letterSpacing: 2, marginBottom: 8, textTransform: 'uppercase' },

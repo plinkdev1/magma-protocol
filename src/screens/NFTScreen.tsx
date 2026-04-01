@@ -145,7 +145,7 @@ export default function NFTScreen() {
 
 const makeStyles = (theme: any, insets: any) => StyleSheet.create({
   container:      { flex: 1 },
-  content:        { padding: 16, gap: 12, paddingBottom: insets.bottom + 32 },
+  content:        { padding: 16, gap: 12, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32 },
   heading:        { fontSize: 24, fontWeight: '800', letterSpacing: 1 },
   subheading:     { fontSize: 12, marginBottom: 4 },
   ownedBanner:    { borderRadius: 16, borderWidth: 1.5, padding: 16, gap: 6 },
