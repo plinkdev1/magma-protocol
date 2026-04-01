@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { ArrowLeft, Copy, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { ArrowLeft, Copy, ExternalLink, ChevronDown, ChevronUp } from '../components/ui/Icon';
 import { useNarrative } from '../hooks/useNarrative';
 import { useWallet } from '../context/WalletContext';
 import { useBackNarrative } from '../hooks/useBackNarrative';

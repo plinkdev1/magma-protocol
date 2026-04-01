@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { TrendingUp, TrendingDown } from 'lucide-react-native';
+import { TrendingUp, TrendingDown } from './ui/Icon';
 
 interface StatCardProps {
   icon: React.ReactNode;

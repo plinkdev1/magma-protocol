@@ -10,7 +10,7 @@ import {
   Flame,
   Zap,
   XCircle,
-} from 'lucide-react-native';
+} from './ui/Icon';
 
 export type StageKey =
   | 'GRADUATED'

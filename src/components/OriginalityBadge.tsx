@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Sparkles, AlertTriangle, Minus } from 'lucide-react-native';
+import { Sparkles, AlertTriangle, Minus } from './ui/Icon';
 
 export type OriginalityResult = 'original' | 'derivative' | 'inconclusive';
 

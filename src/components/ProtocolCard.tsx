@@ -10,7 +10,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { TrendingUp, TrendingDown, ChevronRight, Globe } from 'lucide-react-native';
+import { TrendingUp, TrendingDown, ChevronRight, Globe } from './ui/Icon';
 
 // ─── Logo registry ────────────────────────────────────────────────────────────
 

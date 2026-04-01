@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Mic } from 'lucide-react-native';
+import { Mic } from './ui/Icon';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

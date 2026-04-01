@@ -12,7 +12,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AppDrawer, AppHeader } from './src/components/AppDrawer';
 import OfflineBanner from './src/components/ui/OfflineBanner';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
+import { Home, Rocket, LineChart, Wallet, User } from './src/components/ui/Icon';
 import { WalletProvider } from './src/context/WalletContext';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 
