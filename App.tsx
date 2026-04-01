@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { AppDrawer, AppHeader } from './AppDrawer';
+import { AppDrawer, AppHeader } from './src/components/AppDrawer';
 import OfflineBanner from './src/components/ui/OfflineBanner';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Home, Rocket, LineChart, Wallet, User } from 'lucide-react-native';
