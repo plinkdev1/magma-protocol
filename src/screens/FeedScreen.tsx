@@ -155,7 +155,7 @@ const FeedScreen: React.FC = () => {
 
   const renderEmptyState = () => (
     <Animated.View style={styles.emptyState} entering={FadeIn} exiting={FadeOut}>
-      <Text style={styles.emptyIcon}>Ã°Å¸”Â¥</Text>
+      <Text style={styles.emptyIcon}>🔥</Text>
       <Text style={styles.emptyTitle}>No narratives yet</Text>
       <Text style={styles.emptySubtitle}>
         Check back soon for new opportunities
@@ -203,7 +203,7 @@ const FeedScreen: React.FC = () => {
         renderSkeleton()
       ) : isError ? (
         <View style={styles.errorState}>
-          <Text style={styles.errorIcon}>Ã¢Å¡Â Ã¯Â¸Â</Text>
+          <Text style={styles.errorIcon}>⚠️</Text>
           <Text style={styles.errorTitle}>Failed to load narratives</Text>
           <Text style={styles.errorSubtitle}>
             {error instanceof Error ? error.message : 'Unknown error'}
