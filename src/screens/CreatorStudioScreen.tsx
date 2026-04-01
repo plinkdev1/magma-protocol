@@ -74,7 +74,7 @@ export default function CreatorStudioScreen() {
     >
       {/* Hero */}
       <View style={[styles.heroCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-        <Text style={[styles.heroLabel, { color: theme.textTertiary }]}>âœï¸  CREATOR STUDIO</Text>
+        <Text style={[styles.heroLabel, { color: theme.textTertiary }]}>✏️  CREATOR STUDIO</Text>
         <Text style={[styles.tierDisplay, { color: theme.orange }]}>
           {creator?.creator_tier?.toUpperCase() ?? 'UNRANKED'}
         </Text>
@@ -108,7 +108,7 @@ export default function CreatorStudioScreen() {
         onPress={() => setShowTierTable(!showTierTable)}
       >
         <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>
-          TIER BENEFITS {showTierTable ? 'â–²' : 'â–¼'}
+          TIER BENEFITS {showTierTable ? '▲' : '▼'}
         </Text>
         {showTierTable && (
           <>
@@ -126,7 +126,7 @@ export default function CreatorStudioScreen() {
                 <Text style={[styles.tableCell, {
                   color: creator?.creator_tier === row.tier ? theme.orange : theme.textPrimary
                 }]}>{row.tier}</Text>
-                <Text style={[styles.tableCell, { color: theme.textPrimary }]}>{row.min}â€“{row.max}</Text>
+                <Text style={[styles.tableCell, { color: theme.textPrimary }]}>{row.min}–{row.max}</Text>
                 <Text style={[styles.tableCell, { color: theme.textPrimary }]}>{row.share}</Text>
               </View>
             ))}
@@ -182,8 +182,8 @@ export default function CreatorStudioScreen() {
                   color: n.status === 'graduated' ? theme.green :
                          n.status === 'failed'    ? '#EF4444' : theme.amber,
                 }]}>
-                  {n.status === 'graduated' ? 'âœ“ TRUE' :
-                   n.status === 'failed'    ? 'âœ— FALSE' : 'PENDING'}
+                  {n.status === 'graduated' ? '✓ TRUE' :
+                   n.status === 'failed'    ? '✗ FALSE' : 'PENDING'}
                 </Text>
               </View>
             </View>
@@ -197,7 +197,7 @@ export default function CreatorStudioScreen() {
         onPress={() => (navigation as any).navigate('Main', { screen: 'Launch' })}
         activeOpacity={0.8}
       >
-        <Text style={styles.submitBtnText}>âœï¸  Submit New Narrative</Text>
+        <Text style={styles.submitBtnText}>✏️  Submit New Narrative</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -225,8 +225,8 @@ const styles = StyleSheet.create({
   tableRow:       { flexDirection: 'row', paddingVertical: 10, borderBottomWidth: 1 },
   tableCell:      { flex: 1, fontSize: 12 },
   filterRow:      { flexDirection: 'row', gap: 8, marginBottom: 16, flexWrap: 'wrap' },
-  filterPill:     { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999, borderWidth: 1 },
-  filterText:     { fontSize: 12 },
+  filterPill:     { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 9999, borderWidth: 1, flexShrink: 1, minWidth: 64 },
+  filterText:     { fontSize: 12, flexShrink: 1 },
   narrativeRow:   { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, gap: 12 },
   narrativeTitle: { fontSize: 13, fontWeight: '500', marginBottom: 3 },
   earnedText:     { fontSize: 11 },
