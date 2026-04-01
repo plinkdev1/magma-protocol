@@ -424,7 +424,10 @@ const DeFiScreen: React.FC = () => {
 
   const VaultAllocation = () => (
     <View style={[styles.vaultCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-      <Text style={[styles.vaultCardTitle, { color: theme.textPrimary }]}>Vault Allocation</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Text style={[styles.vaultCardTitle, { color: theme.textPrimary }]}>Vault Allocation</Text>
+        {allocationEmpty && <Text style={{ fontSize: 11, color: theme.textTertiary, fontFamily: 'SpaceMono', marginTop: 2 }}>(sample)</Text>}
+      </View>
       {/* Segmented bar */}
       <View style={styles.vaultBar}>
         {VAULT_SEGMENTS.map((seg, i) => (
