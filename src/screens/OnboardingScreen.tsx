@@ -365,6 +365,8 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [selectedPath, setSelectedPath] = useState('predictor');
   const [termsScrolled, setTermsScrolled] = useState(false);
+  const [passportMsg, setPassportMsg] = useState<string | null>(null);
+  const [passportLoading, setPassportLoading] = useState(false);
   const [notifRequested, setNotifRequested] = useState(false);
 
   const goTo = useCallback((idx: number) => {
@@ -405,19 +407,28 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
     }
 
     // Verification slide — Gitcoin Passport check (soft gate, never blocks)
+    // Verification slide — Gitcoin Passport check (soft gate, never blocks)
     if (eyebrow === 'Verification') {
+      setPassportLoading(true);
+      setPassportMsg(null);
       if (account?.address) {
         try {
           const res = await fetch(`${API_URL}/v1/verify/passport/${account.address}`);
           const data = await res.json();
           const score = data.score ?? 0;
           const msg = score > 0
-            ? `Passport score: ${score.toFixed(1)} — verified`
-            : 'No EVM Passport found. You can get one free at passport.xyz';
-          console.log('[Passport]', msg);
-        } catch {}
+            ? `✓ Passport verified — score: ${score.toFixed(1)}`
+            : '⚠️ No EVM Passport found. Get one free at passport.xyz';
+          setPassportMsg(msg);
+        } catch {
+          setPassportMsg('Could not check Passport — continuing anyway.');
+        }
+      } else {
+        setPassportMsg('Connect your wallet first to check Passport.');
       }
-      goTo(current + 1);
+      setPassportLoading(false);
+      // Show result for 2s then advance
+      setTimeout(() => goTo(current + 1), 2000);
       return;
     }
 
@@ -508,6 +519,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         <TouchableOpacity style={s.mainBtn} onPress={handleMain} activeOpacity={0.85}>
           <Text style={s.mainBtnText}>{slide.cta}</Text>
         </TouchableOpacity>
+        {slide.eyebrow === 'Verification' && passportLoading && (
+          <Text style={{ color: '#FFB347', fontSize: 13, textAlign: 'center', marginTop: 12 }}>Checking Passport...</Text>
+        )}
+        {slide.eyebrow === 'Verification' && passportMsg && !passportLoading && (
+          <Text style={{ color: passportMsg.startsWith('✓') ? '#22C55E' : '#FFB347', fontSize: 13, textAlign: 'center', marginTop: 12, paddingHorizontal: 24 }}>{passportMsg}</Text>
+        )}
         {current < SLIDES.length - 1 && (
           <Text style={s.swipeHint}>Swipe to continue</Text>
         )}
