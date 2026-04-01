@@ -1,838 +1,366 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Alert,
-  Image,
+  View, Text, StyleSheet, ScrollView,
+  TouchableOpacity, Switch, Alert,
 } from 'react-native';
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-  FadeIn,
-  FadeOut,
+  useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from 'react-native-reanimated';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
-
-import { useAuthorization } from '../context/WalletContext';
+import { useWallet } from '../context/WalletContext';
+import { useTheme } from '../theme/ThemeContext';
 import { API_URL } from '../config';
 import { useNavigation } from '@react-navigation/native';
 
-// Design tokens
-const COLORS = {
-  background: '#09080C',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#E8E4F0',
-  muted: '#5C5668',
-  card: '#111018',
-  cardBorder: '#1E1B26',
-  success: '#22C55E',
-  error: '#ff3355',
-};
-
-// Tier definitions
-interface Tier {
-  name: string;
-  minBalance: number;
-  maxBalance: number;
-  color: string;
-  icon: string;
-  description: string;
-}
-
-const TIERS: Tier[] = [
-  { name: 'Ember', minBalance: 0, maxBalance: 999, color: '#ff6b35', icon: '🔥', description: 'Just getting started' },
-  { name: 'Flare', minBalance: 1000, maxBalance: 9999, color: '#ffb347', icon: '🌟', description: 'Rising influence' },
-  { name: 'Magma', minBalance: 10000, maxBalance: 99999, color: '#ff3355', icon: '🌋', description: 'Core community member' },
-  { name: 'Core', minBalance: 100000, maxBalance: Infinity, color: '#00ff88', icon: '💎', description: 'Elite tier holder' },
+// Locked conviction score tiers -- matches MAGMA_NOVA_ECONOMICS_TECH_SPEC.md
+const CONVICTION_TIERS = [
+  { name: 'Ember',    min: 0,   max: 99,   color: '#FF6B35', emoji: '\uD83D\uDD25', description: 'Just getting started',    multiplier: '1.0x', fee: '2.0%' },
+  { name: 'Flare',    min: 100, max: 299,  color: '#FFB347', emoji: '\u26A1',         description: 'Rising conviction',       multiplier: '1.3x', fee: '1.5%' },
+  { name: 'Magma',    min: 300, max: 599,  color: '#FF3355', emoji: '\uD83C\uDF0B', description: 'Core community member',   multiplier: '1.6x', fee: '1.5%' },
+  { name: 'Core',     min: 600, max: 899,  color: '#00FF88', emoji: '\uD83D\uDC8E', description: 'Elite backer',            multiplier: '2.0x', fee: '1.0%' },
+  { name: 'Volcanic', min: 900, max: 1000, color: '#9B8FFF', emoji: '\uD83C\uDF0A', description: 'Maximum conviction',      multiplier: '2.5x', fee: '0.0%' },
 ];
 
 const APP_VERSION = '1.0.0-alpha';
 
 const ProfileScreen: React.FC = () => {
-  const { account, isConnected, disconnect, connect, isConnected: isWalletConnected, nftState } = useAuthorization();
+  const { account, isConnected, disconnect, connect, nftState } = useWallet();
+  const { theme, colorScheme, setColorScheme } = useTheme();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const [convictionScore, setConvictionScore] = useState(0);
-  const [convictionTierName, setConvictionTierName] = useState('Unranked');
 
+  const [convictionScore, setConvictionScore] = useState(0);
+  const [convictionTier, setConvictionTier]   = useState(CONVICTION_TIERS[0]);
+  const [accuracyRate, setAccuracyRate]        = useState(0);
+  const [biometricEnabled, setBiometricEnabled]       = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [hasBiometric, setHasBiometric]               = useState(false);
+  const [isDisconnecting, setIsDisconnecting]         = useState(false);
+
+  const badgeScale = useSharedValue(1);
+
+  // Fetch real conviction data
   useEffect(() => {
     if (!account?.address) return;
     fetch(API_URL + '/v1/conviction/' + account.address)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d) {
-          setConvictionScore(d.conviction_score ?? 0);
-          setConvictionTierName(d.conviction_tier ?? 'Unranked');
-        }
+        if (!d) return;
+        const score = d.conviction_score ?? 0;
+        setConvictionScore(score);
+        setAccuracyRate(d.accuracy_rate ?? 0);
+        const tier = CONVICTION_TIERS.find(t => score >= t.min && score <= t.max) ?? CONVICTION_TIERS[0];
+        setConvictionTier(tier);
+        badgeScale.value = withSpring(1.08, { damping: 10 }, () => {
+          badgeScale.value = withTiming(1, { duration: 300 });
+        });
       })
       .catch(() => {});
   }, [account?.address]);
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [hasBiometric, setHasBiometric] = useState(false);
-  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
-  const badgeScale = useSharedValue(1);
-  const badgeRotate = useSharedValue(0);
-
-  // Get current tier
-  const getCurrentTier = useCallback((): Tier => {
-    return TIERS.find((tier) => convictionScore >= tier.minBalance && convictionScore <= tier.maxBalance) || TIERS[0];
-  }, [convictionScore]);
-
-  const currentTier = getCurrentTier();
-
-  // Check biometric support
+  // Check biometric
   useEffect(() => {
-    const checkBiometric = async () => {
-      try {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        setHasBiometric(hasHardware && isEnrolled);
-      } catch (error) {
-        console.error('[ProfileScreen] Biometric check failed:', error);
-        setHasBiometric(false);
-      }
-    };
-    checkBiometric();
+    LocalAuthentication.hasHardwareAsync()
+      .then(h => h ? LocalAuthentication.isEnrolledAsync() : Promise.resolve(false))
+      .then(e => setHasBiometric(e))
+      .catch(() => setHasBiometric(false));
   }, []);
 
-  // Check notification permissions
+  // Check notifications
   useEffect(() => {
-    const checkNotifications = async () => {
-      try {
-        const { status } = await Notifications.getPermissionsAsync();
-        setNotificationsEnabled(status === 'granted');
-      } catch (error) {
-        console.error('[ProfileScreen] Notification check failed:', error);
-      }
-    };
-    checkNotifications();
+    Notifications.getPermissionsAsync()
+      .then(({ status }) => setNotificationsEnabled(status === 'granted'))
+      .catch(() => {});
   }, []);
 
-  // Animate badge on mount
-  useEffect(() => {
-    badgeScale.value = withSpring(1.1, { damping: 10 }, () => {
-      badgeScale.value = withTiming(1, { duration: 300 });
-    });
-  }, [currentTier]);
-
-  // Toggle biometric lock
   const toggleBiometric = useCallback(async (value: boolean) => {
-    if (!value) {
-      setBiometricEnabled(false);
-      return;
-    }
-
+    if (!value) { setBiometricEnabled(false); return; }
     try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (!hasHardware || !isEnrolled) {
-        Alert.alert(
-          'Biometric Not Available',
-          'Your device does not support biometric authentication or no biometrics are enrolled.',
-          [{ text: 'OK' }]
-        );
-        return;
-      }
-
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Enable Biometric Lock',
         fallbackLabel: 'Use Passcode',
-        cancelLabel: 'Cancel',
       });
-
       if (result.success) {
         setBiometricEnabled(true);
-        Alert.alert('Success', 'Biometric lock enabled', [{ text: 'OK' }]);
       } else {
-        Alert.alert('Failed', 'Authentication failed', [{ text: 'OK' }]);
+        Alert.alert('Failed', 'Authentication failed');
       }
-    } catch (error) {
-      console.error('[ProfileScreen] Biometric toggle failed:', error);
-      Alert.alert('Error', 'Failed to enable biometric lock', [{ text: 'OK' }]);
+    } catch {
+      Alert.alert('Error', 'Failed to enable biometric lock');
     }
   }, []);
 
-  // Toggle notifications
   const toggleNotifications = useCallback(async (value: boolean) => {
     if (!value) {
       setNotificationsEnabled(false);
       await Notifications.cancelAllScheduledNotificationsAsync();
       return;
     }
-
-    try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus === 'granted') {
-        setNotificationsEnabled(true);
-        await Notifications.setBadgeCountAsync(0);
-      } else {
-        Alert.alert('Permission Denied', 'Notification permission was not granted', [{ text: 'OK' }]);
-      }
-    } catch (error) {
-      console.error('[ProfileScreen] Notification toggle failed:', error);
-      Alert.alert('Error', 'Failed to enable notifications', [{ text: 'OK' }]);
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status === 'granted') {
+      setNotificationsEnabled(true);
+    } else {
+      Alert.alert('Permission Denied', 'Notification permission was not granted');
     }
   }, []);
 
-  // Handle disconnect
   const handleDisconnect = useCallback(() => {
-    Alert.alert(
-      'Disconnect Wallet',
-      'Are you sure you want to disconnect your wallet? You will need to reconnect to perform transactions.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Disconnect',
-          style: 'destructive',
-          onPress: async () => {
-            setIsDisconnecting(true);
-            try {
-              await disconnect();
-              Alert.alert('Disconnected', 'Wallet disconnected successfully', [{ text: 'OK' }]);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to disconnect wallet', [{ text: 'OK' }]);
-            } finally {
-              setIsDisconnecting(false);
-            }
-          },
+    Alert.alert('Disconnect Wallet', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Disconnect', style: 'destructive',
+        onPress: async () => {
+          setIsDisconnecting(true);
+          try { await disconnect(); } catch { Alert.alert('Error', 'Failed to disconnect'); }
+          finally { setIsDisconnecting(false); }
         },
-      ]
-    );
+      },
+    ]);
   }, [disconnect]);
 
-  // Format address
-  const formatAddress = useCallback((address: string) => {
-    if (!address) return 'Not connected';
-    return `${address.slice(0, 4)}...${address.slice(-4)}`;
-  }, []);
+  const formatAddress = (address: string) =>
+    address ? address.slice(0, 4) + '...' + address.slice(-4) : 'Not connected';
 
-  // Animated badge style
   const badgeStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: badgeScale.value }, { rotate: `${badgeRotate.value}deg` }],
+    transform: [{ scale: badgeScale.value }],
   }));
 
-  // Tier Badge component
-  const TierBadge = () => (
-    <Animated.View style={[styles.tierBadge, badgeStyle]}>
-      <View style={[styles.tierBadgeIcon, { backgroundColor: `${currentTier.color}20` }]}>
-        <Text style={styles.tierBadgeEmoji}>{currentTier.icon}</Text>
-      </View>
-      <Text style={[styles.tierBadgeName, { color: currentTier.color }]}>{currentTier.name}</Text>
-      <Text style={styles.tierBadgeDescription}>{currentTier.description}</Text>
-      <View style={styles.tierBadgeBalance}>
-        <Text style={styles.tierBadgeBalanceValue}>{convictionScore.toLocaleString()}</Text>
-        <Text style={styles.tierBadgeBalanceLabel}>$MAGMA</Text>
-      </View>
-    </Animated.View>
-  );
+  const nextTier = CONVICTION_TIERS[CONVICTION_TIERS.indexOf(convictionTier) + 1];
+  const progress = nextTier
+    ? Math.min(((convictionScore - convictionTier.min) / (nextTier.min - convictionTier.min)) * 100, 100)
+    : 100;
 
-  // Wallet Card component
-  const WalletCard = () => (
-    <View style={styles.walletCard}>
-      <View style={styles.walletCardHeader}>
-        <Text style={styles.walletCardLabel}>Connected Wallet</Text>
-        {isConnected ? (
-          <View style={[styles.connectionStatus, styles.connectionStatusConnected]}>
-            <View style={styles.connectionDot} />
-            <Text style={styles.connectionText}>Connected</Text>
-          </View>
-        ) : (
-          <View style={[styles.connectionStatus, { backgroundColor: `${COLORS.muted}20` }]}>
-            <View style={[styles.connectionDot, { backgroundColor: COLORS.muted }]} />
-            <Text style={[styles.connectionText, { color: COLORS.muted }]}>Disconnected</Text>
-          </View>
-        )}
-      </View>
-      <Text style={styles.walletAddressShort}>
-        {isConnected && account ? formatAddress(account.address) : "Not connected"}
-      </Text>
-    </View>
-  );
-
-  // Setting Row component
-  const SettingRow = ({
-    icon,
-    title,
-    description,
-    value,
-    onValueChange,
-    disabled = false,
-  }: {
-    icon: string;
-    title: string;
-    description: string;
-    value: boolean;
-    onValueChange: (value: boolean) => void;
-    disabled?: boolean;
-  }) => (
-    <View style={[styles.settingRow, disabled && styles.settingRowDisabled]}>
-      <View style={styles.settingRowIcon}>
-        <Text style={styles.settingRowIconText}>{icon}</Text>
-      </View>
-      <View style={styles.settingRowInfo}>
-        <Text style={[styles.settingRowTitle, disabled && styles.settingRowTitleDisabled]}>
-          {title}
-        </Text>
-        <Text style={[styles.settingRowDescription, disabled && styles.settingRowDescriptionDisabled]}>
-          {description}
-        </Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        disabled={disabled}
-        trackColor={{ false: COLORS.cardBorder, true: COLORS.primary }}
-        thumbColor={COLORS.background}
-      />
-    </View>
-  );
-
-  // Settings Section component
-  const SettingsSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <View style={styles.settingsSection}>
-      <Text style={styles.settingsSectionTitle}>{title}</Text>
-      <View style={styles.settingsSectionContent}>{children}</View>
-    </View>
-  );
-
-  // Tier Progress component
-  const TierProgress = () => {
-    const currentIndex = TIERS.findIndex((t) => t.name === currentTier.name);
-    const nextTier = TIERS[currentIndex + 1];
-    const progress = nextTier
-      ? Math.min(((convictionScore - currentTier.minBalance) / (nextTier.minBalance - currentTier.minBalance)) * 100, 100)
-      : 100;
-
-    return (
-      <View style={styles.tierProgress}>
-        <View style={styles.tierProgressHeader}>
-          <Text style={styles.tierProgressLabel}>Progress to {nextTier?.name || 'Max'}</Text>
-          <Text style={styles.tierProgressValue}>{progress.toFixed(1)}%</Text>
-        </View>
-        <View style={styles.tierProgressBar}>
-          <View style={[styles.tierProgressBarFill, { width: `${progress}%`, backgroundColor: currentTier.color }]} />
-        </View>
-        {nextTier && (
-          <Text style={styles.tierProgressRemaining}>
-            {(nextTier.minBalance - convictionScore).toLocaleString()} $MAGMA remaining
-          </Text>
-        )}
-      </View>
-    );
-  };
+  const s = makeStyles(theme, insets);
 
   return (
-    <ScrollView style={[styles.container, { paddingTop: insets.top }]} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[s.container, { backgroundColor: theme.bgBase }]}
+      contentContainerStyle={s.content}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Tier Badge */}
-      <TierBadge />
-
-      {/* Tier Progress */}
-      {currentTier.name !== 'Core' && <TierProgress />}
-
-      {/* Wallet Card */}
-      <WalletCard />
-
-
-          {/* Conviction Score Mini-Summary */}
-          <TouchableOpacity
-            style={styles.convictionCard}
-            onPress={() => navigation.navigate('ConvictionProfile' as never)}
-            activeOpacity={0.85}
-          >
-            <View style={styles.convictionCardLeft}>
-              <Text style={styles.convictionCardLabel}>CONVICTION SCORE</Text>
-              <Text style={styles.convictionCardScore}>
-                {nftState?.total_yield_multiplier ? (nftState.total_yield_multiplier + 'x yield') : 'View Score'}
-              </Text>
-              {nftState?.mlava_tier && (
-                <Text style={styles.convictionCardNFT}>
-                  {nftState.mlava_tier.toUpperCase() + ' NFT Active'}
-                </Text>
-              )}
-              {nftState?.genesis_holder && (
-                <Text style={styles.convictionCardGenesis}>Genesis Card holder</Text>
-              )}
+      <Animated.View style={[s.tierCard, { borderColor: convictionTier.color + '40' }, badgeStyle]}>
+        <Text style={s.tierEmoji}>{convictionTier.emoji}</Text>
+        <Text style={[s.tierName, { color: convictionTier.color }]}>{convictionTier.name}</Text>
+        <Text style={[s.tierDesc, { color: theme.textSecondary }]}>{convictionTier.description}</Text>
+        <View style={s.tierStats}>
+          <View style={s.tierStat}>
+            <Text style={[s.tierStatValue, { color: theme.textPrimary }]}>{convictionScore}</Text>
+            <Text style={[s.tierStatLabel, { color: theme.textTertiary }]}>Score</Text>
+          </View>
+          <View style={[s.tierStatDivider, { backgroundColor: theme.cardBorder }]} />
+          <View style={s.tierStat}>
+            <Text style={[s.tierStatValue, { color: theme.textPrimary }]}>{convictionTier.multiplier}</Text>
+            <Text style={[s.tierStatLabel, { color: theme.textTertiary }]}>Yield Mult</Text>
+          </View>
+          <View style={[s.tierStatDivider, { backgroundColor: theme.cardBorder }]} />
+          <View style={s.tierStat}>
+            <Text style={[s.tierStatValue, { color: theme.textPrimary }]}>{accuracyRate.toFixed(1)}%</Text>
+            <Text style={[s.tierStatLabel, { color: theme.textTertiary }]}>Accuracy</Text>
+          </View>
+        </View>
+        {nextTier && (
+          <View style={s.progressWrap}>
+            <View style={[s.progressBar, { backgroundColor: theme.cardBorder }]}>
+              <View style={[s.progressFill, { width: (progress + '%') as any, backgroundColor: convictionTier.color }]} />
             </View>
-            <Text style={styles.convictionCardArrow}>→</Text>
-          </TouchableOpacity>
-
-      {/* Security Settings */}
-      <SettingsSection title="Security">
-        <SettingRow
-          icon="🔐"
-          title="Biometric Lock"
-          description="Use fingerprint or face to unlock"
-          value={biometricEnabled}
-          onValueChange={toggleBiometric}
-          disabled={!hasBiometric}
-        />
-        {!hasBiometric && (
-          <Text style={styles.settingNote}>Biometric authentication not available on this device</Text>
+            <Text style={[s.progressLabel, { color: theme.textTertiary }]}>
+              {nextTier.min - convictionScore} pts to {nextTier.name}
+            </Text>
+          </View>
         )}
-      </SettingsSection>
+      </Animated.View>
 
-      {/* Notifications Settings */}
-      <SettingsSection title="Notifications">
-        <SettingRow
-          icon="🔔"
-          title="Push Notifications"
-          description="Receive alerts for score changes and payouts"
-          value={notificationsEnabled}
-          onValueChange={toggleNotifications}
-        />
-      </SettingsSection>
+      {/* Conviction Score shortcut */}
+      <TouchableOpacity
+        style={[s.card, s.row, { borderColor: 'rgba(255,107,53,0.25)' }]}
+        onPress={() => navigation.navigate('ConvictionProfile' as never)}
+        activeOpacity={0.8}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[s.cardLabel, { color: theme.textTertiary }]}>MY CONVICTION SCORE</Text>
+          <Text style={[s.cardValue, { color: theme.orange }]}>View Full Profile →</Text>
+          {nftState?.mlava_tier && (
+            <Text style={[s.cardSub, { color: theme.amber }]}>{nftState.mlava_tier.toUpperCase()} NFT Active</Text>
+          )}
+        </View>
+      </TouchableOpacity>
 
-      {/* Account Settings */}
-      <SettingsSection title="Account">
-        <TouchableOpacity style={styles.actionRow} activeOpacity={0.7} onPress={() => (navigation as any).navigate('History')}><View style={styles.actionRowIcon}><Text style={styles.actionRowIconText}>📋</Text></View><View style={styles.actionRowInfo}><Text style={styles.actionRowTitle}>View Activity Log</Text><Text style={styles.actionRowDescription}>See your transaction history</Text></View><Text style={styles.actionRowArrow}>→</Text></TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
-          <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>🛡️</Text>
+      {/* Wallet */}
+      <View style={s.card}>
+        <View style={s.row}>
+          <Text style={[s.cardLabel, { color: theme.textTertiary }]}>CONNECTED WALLET</Text>
+          <View style={[s.badge, { backgroundColor: isConnected ? 'rgba(34,197,94,0.12)' : 'rgba(92,86,104,0.12)' }]}>
+            <View style={[s.dot, { backgroundColor: isConnected ? '#22C55E' : theme.textTertiary }]} />
+            <Text style={[s.badgeText, { color: isConnected ? '#22C55E' : theme.textTertiary }]}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </Text>
           </View>
-          <View style={styles.actionRowInfo}>
-            <Text style={styles.actionRowTitle}>Privacy Settings</Text>
-            <Text style={styles.actionRowDescription}>Manage data and visibility</Text>
-          </View>
-          <Text style={styles.actionRowArrow}>→</Text>
-        </TouchableOpacity>
+        </View>
+        <Text style={[s.walletAddr, { color: theme.textPrimary }]}>
+          {isConnected && account ? formatAddress(account.address) : 'Not connected'}
+        </Text>
+      </View>
 
-        <TouchableOpacity style={styles.actionRow} activeOpacity={0.7}>
-          <View style={styles.actionRowIcon}>
-            <Text style={styles.actionRowIconText}>❓</Text>
+      {/* Security */}
+      <View style={s.section}>
+        <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>SECURITY</Text>
+        <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
+          <View style={[s.settingRow, { borderBottomColor: theme.cardBorder }]}>
+            <Text style={s.settingEmoji}>🔐</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingTitle, { color: hasBiometric ? theme.textPrimary : theme.textTertiary }]}>Biometric Lock</Text>
+              <Text style={[s.settingDesc, { color: theme.textTertiary }]}>
+                {hasBiometric ? 'Use fingerprint or face to unlock' : 'Not available on this device'}
+              </Text>
+            </View>
+            <Switch
+              value={biometricEnabled}
+              onValueChange={toggleBiometric}
+              disabled={!hasBiometric}
+              trackColor={{ false: theme.cardBorder, true: theme.orange }}
+              thumbColor={theme.bgBase}
+            />
           </View>
-          <View style={styles.actionRowInfo}>
-            <Text style={styles.actionRowTitle}>Help & Support</Text>
-            <Text style={styles.actionRowDescription}>FAQs and contact support</Text>
+          <View style={s.settingRow}>
+            <Text style={s.settingEmoji}>🔔</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingTitle, { color: theme.textPrimary }]}>Push Notifications</Text>
+              <Text style={[s.settingDesc, { color: theme.textTertiary }]}>Alerts for resolutions and payouts</Text>
+            </View>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={toggleNotifications}
+              trackColor={{ false: theme.cardBorder, true: theme.orange }}
+              thumbColor={theme.bgBase}
+            />
           </View>
-          <Text style={styles.actionRowArrow}>→</Text>
-        </TouchableOpacity>
-      </SettingsSection>
+        </View>
+      </View>
 
-      {/* Danger Zone */}
-      <SettingsSection title="Danger Zone">
+      {/* Dark Mode */}
+      <View style={s.section}>
+        <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>APPEARANCE</Text>
+        <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
+          <View style={s.settingRow}>
+            <Text style={s.settingEmoji}>🌙</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingTitle, { color: theme.textPrimary }]}>Dark Mode</Text>
+              <Text style={[s.settingDesc, { color: theme.textTertiary }]}>Toggle light / dark theme</Text>
+            </View>
+            <Switch
+              value={colorScheme === 'dark'}
+              onValueChange={v => setColorScheme(v ? 'dark' : 'light')}
+              trackColor={{ false: theme.cardBorder, true: theme.orange }}
+              thumbColor={theme.bgBase}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Account */}
+      <View style={s.section}>
+        <Text style={[s.sectionTitle, { color: theme.textTertiary }]}>ACCOUNT</Text>
+        <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
+          <TouchableOpacity style={[s.actionRow, { borderBottomColor: theme.cardBorder }]} onPress={() => navigation.navigate('History' as never)} activeOpacity={0.7}>
+            <Text style={s.settingEmoji}>📋</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingTitle, { color: theme.textPrimary }]}>Activity Log</Text>
+              <Text style={[s.settingDesc, { color: theme.textTertiary }]}>View transaction history</Text>
+            </View>
+            <Text style={[s.arrow, { color: theme.textTertiary }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[s.actionRow, { borderBottomColor: theme.cardBorder }]} onPress={() => navigation.navigate('Terms' as never)} activeOpacity={0.7}>
+            <Text style={s.settingEmoji}>📜</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingTitle, { color: theme.textPrimary }]}>Terms of Service</Text>
+              <Text style={[s.settingDesc, { color: theme.textTertiary }]}>Read our terms</Text>
+            </View>
+            <Text style={[s.arrow, { color: theme.textTertiary }]}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.actionRow} onPress={() => navigation.navigate('About' as never)} activeOpacity={0.7}>
+            <Text style={s.settingEmoji}>ℹ️</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.settingTitle, { color: theme.textPrimary }]}>About MAGMA</Text>
+              <Text style={[s.settingDesc, { color: theme.textTertiary }]}>Version {APP_VERSION}</Text>
+            </View>
+            <Text style={[s.arrow, { color: theme.textTertiary }]}>›</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Disconnect */}
+      <View style={s.section}>
         {!isConnected && (
-          <TouchableOpacity style={styles.dangerButton} onPress={() => connect()} activeOpacity={0.7}>
-            <Text style={styles.dangerButtonText}>Connect Wallet</Text>
+          <TouchableOpacity style={[s.btn, { borderColor: theme.orange, backgroundColor: 'rgba(255,107,53,0.08)' }]} onPress={() => connect()} activeOpacity={0.7}>
+            <Text style={[s.btnText, { color: theme.orange }]}>Connect Wallet</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={styles.dangerButton}
+          style={[s.btn, { borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.08)', marginTop: 8 }]}
           onPress={handleDisconnect}
           disabled={isDisconnecting || !isConnected}
           activeOpacity={0.7}
         >
-          <Text style={styles.dangerButtonIcon}>👛</Text>
-          <Text style={styles.dangerButtonText}>
+          <Text style={[s.btnText, { color: '#EF4444' }]}>
             {isDisconnecting ? 'Disconnecting...' : isConnected ? 'Disconnect Wallet' : 'No Wallet Connected'}
           </Text>
         </TouchableOpacity>
-        <Text style={styles.dangerNote}>
-          Disconnecting will require you to reconnect to perform transactions
+        <Text style={[s.dangerNote, { color: theme.textTertiary }]}>
+          Disconnecting requires reconnect for transactions
         </Text>
-      </SettingsSection>
+      </View>
 
-      {/* App Info */}
-      <View style={styles.appInfo}>
-        <Text style={styles.appInfoLogo}>MAGMA</Text>
-        <Text style={styles.appInfoVersion}>Version {APP_VERSION}</Text>
-        <Text style={styles.appInfoCopyright}>© 2026 MAGMA Protocol</Text>
-        <View style={styles.appInfoLinks}>
-          <TouchableOpacity>
-            <Text style={styles.appInfoLink}>Terms</Text>
-          </TouchableOpacity>
-          <Text style={styles.appInfoLinkDivider}>•</Text>
-          <TouchableOpacity>
-            <Text style={styles.appInfoLink}>Privacy</Text>
-          </TouchableOpacity>
-          <Text style={styles.appInfoLinkDivider}>•</Text>
-          <TouchableOpacity>
-            <Text style={styles.appInfoLink}>Docs</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Footer */}
+      <View style={[s.footer, { borderTopColor: theme.cardBorder }]}>
+        <Text style={[s.footerLogo, { color: theme.orange }]}>MAGMA</Text>
+        <Text style={[s.footerSub, { color: theme.textTertiary }]}>Version {APP_VERSION} · © 2026 MAGMA Protocol</Text>
       </View>
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    paddingTop: 0,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  tierBadge: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  tierBadgeIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  tierBadgeEmoji: {
-    fontSize: 40,
-  },
-  tierBadgeName: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 4,
-    fontFamily: 'Syne-Bold',
-  },
-  tierBadgeDescription: {
-    fontSize: 13,
-    color: COLORS.muted,
-    marginBottom: 12,
-    fontFamily: 'Syne-Regular',
-  },
-  tierBadgeBalance: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  tierBadgeBalanceValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-    fontFamily: 'Syne-Bold',
-  },
-  tierBadgeBalanceLabel: {
-    fontSize: 14,
-    color: COLORS.muted,
-    marginLeft: 4,
-    fontFamily: 'Syne-Regular',
-  },
-  tierProgress: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginBottom: 16,
-  },
-  tierProgressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  tierProgressLabel: {
-    fontSize: 13,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
-  },
-  tierProgressValue: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    fontFamily: 'Syne-Bold',
-  },
-  tierProgressBar: {
-    height: 8,
-    backgroundColor: COLORS.cardBorder,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  tierProgressBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  tierProgressRemaining: {
-    fontSize: 11,
-    color: COLORS.muted,
-    textAlign: 'center',
-    fontFamily: 'Syne-Regular',
-  },
-  walletCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginBottom: 16,
-  },
-  walletCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  walletCardLabel: {
-    fontSize: 13,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
-  },
-  convictionCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,107,53,0.25)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  convictionCardLeft: { flex: 1, gap: 4 },
-  convictionCardLabel: { fontSize: 9, color: COLORS.muted, letterSpacing: 2, fontFamily: 'SpaceMono', textTransform: 'uppercase' },
-  convictionCardScore: { fontSize: 18, fontWeight: '700', color: '#FF6B35', fontFamily: 'SpaceMono' },
-  convictionCardNFT:   { fontSize: 11, color: '#FFB347', fontFamily: 'SpaceMono' },
-  convictionCardGenesis: { fontSize: 11, color: '#06B6D4', fontFamily: 'SpaceMono' },
-  convictionCardArrow: { fontSize: 18, color: COLORS.muted },
-  connectionStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  connectionStatusConnected: {
-    backgroundColor: `${COLORS.success}20`,
-  },
-  connectionDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.success,
-    marginRight: 6,
-  },
-  connectionText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.success,
-    fontFamily: 'Syne-Regular',
-  },
-  walletAddress: {
-    fontSize: 12,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
-  },
-  walletAddressShort: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginTop: 4,
-    fontFamily: 'Syne-Bold',
-  },
-  settingsSection: {
-    marginBottom: 16,
-  },
-  settingsSectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.muted,
-    marginBottom: 8,
-    marginLeft: 4,
-    fontFamily: 'Syne-Bold',
-  },
-  settingsSectionContent: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    overflow: 'hidden',
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder,
-  },
-  settingRowDisabled: {
-    opacity: 0.5,
-  },
-  settingRowLast: {
-    borderBottomWidth: 0,
-  },
-  settingRowIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.cardBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  settingRowIconText: {
-    fontSize: 18,
-  },
-  settingRowInfo: {
-    flex: 1,
-  },
-  settingRowTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    fontFamily: 'Syne-Regular',
-  },
-  settingRowTitleDisabled: {
-    color: COLORS.muted,
-  },
-  settingRowDescription: {
-    fontSize: 12,
-    color: COLORS.muted,
-    marginTop: 2,
-    fontFamily: 'Syne-Regular',
-  },
-  settingRowDescriptionDisabled: {
-    color: COLORS.muted,
-    opacity: 0.7,
-  },
-  settingNote: {
-    fontSize: 11,
-    color: COLORS.muted,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    fontStyle: 'italic',
-    fontFamily: 'Syne-Regular',
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder,
-  },
-  actionRowIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.cardBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  actionRowIconText: {
-    fontSize: 18,
-  },
-  actionRowInfo: {
-    flex: 1,
-  },
-  actionRowTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    fontFamily: 'Syne-Regular',
-  },
-  actionRowDescription: {
-    fontSize: 12,
-    color: COLORS.muted,
-    marginTop: 2,
-    fontFamily: 'Syne-Regular',
-  },
-  actionRowArrow: {
-    fontSize: 18,
-    color: COLORS.muted,
-  },
-  dangerZone: {
-    marginBottom: 16,
-  },
-  dangerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: `${COLORS.error}15`,
-    borderRadius: 12,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: COLORS.error,
-    gap: 8,
-  },
-  dangerButtonIcon: {
-    fontSize: 18,
-  },
-  dangerButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.error,
-    fontFamily: 'Syne-Bold',
-  },
-  dangerNote: {
-    fontSize: 11,
-    color: COLORS.muted,
-    textAlign: 'center',
-    marginTop: 8,
-    fontFamily: 'Syne-Regular',
-  },
-  appInfo: {
-    alignItems: 'center',
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
-  },
-  appInfoLogo: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.primary,
-    letterSpacing: 4,
-    fontFamily: 'Syne-Bold',
-    marginBottom: 8,
-  },
-  appInfoVersion: {
-    fontSize: 12,
-    color: COLORS.muted,
-    fontFamily: 'Syne-Regular',
-  },
-  appInfoCopyright: {
-    fontSize: 11,
-    color: COLORS.muted,
-    marginTop: 4,
-    fontFamily: 'Syne-Regular',
-  },
-  appInfoLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  appInfoLink: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontFamily: 'Syne-Regular',
-  },
-  appInfoLinkDivider: {
-    fontSize: 12,
-    color: COLORS.muted,
-    marginHorizontal: 8,
-  },
+const makeStyles = (theme: any, insets: any) => StyleSheet.create({
+  container:     { flex: 1 },
+  content:       { padding: 16, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 32, gap: 12 },
+  tierCard:      { borderRadius: 20, borderWidth: 1, padding: 24, alignItems: 'center', gap: 4, backgroundColor: theme.bgSurface },
+  tierEmoji:     { fontSize: 48, marginBottom: 4 },
+  tierName:      { fontSize: 26, fontWeight: '800', letterSpacing: 1 },
+  tierDesc:      { fontSize: 13, marginBottom: 8 },
+  tierStats:     { flexDirection: 'row', alignItems: 'center', gap: 0, width: '100%', marginTop: 12 },
+  tierStat:      { flex: 1, alignItems: 'center', gap: 2 },
+  tierStatValue: { fontSize: 18, fontWeight: '700' },
+  tierStatLabel: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase' },
+  tierStatDivider: { width: 1, height: 32 },
+  progressWrap:  { width: '100%', marginTop: 16, gap: 6 },
+  progressBar:   { height: 6, borderRadius: 3, overflow: 'hidden', width: '100%' },
+  progressFill:  { height: '100%', borderRadius: 3 },
+  progressLabel: { fontSize: 11, textAlign: 'center' },
+  card:          { backgroundColor: theme.bgSurface, borderRadius: 16, borderWidth: 1, borderColor: theme.cardBorder, padding: 16 },
+  row:           { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cardLabel:     { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 },
+  cardValue:     { fontSize: 15, fontWeight: '600' },
+  cardSub:       { fontSize: 11, marginTop: 2 },
+  badge:         { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, gap: 4 },
+  dot:           { width: 6, height: 6, borderRadius: 3 },
+  badgeText:     { fontSize: 11, fontWeight: '600' },
+  walletAddr:    { fontSize: 15, fontWeight: '600', marginTop: 8 },
+  section:       { gap: 8 },
+  sectionTitle:  { fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', marginLeft: 4 },
+  settingRow:    { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, gap: 12 },
+  actionRow:     { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, gap: 12 },
+  settingEmoji:  { fontSize: 20, width: 28, textAlign: 'center' },
+  settingTitle:  { fontSize: 14, fontWeight: '600' },
+  settingDesc:   { fontSize: 12, marginTop: 1 },
+  arrow:         { fontSize: 20, fontWeight: '300' },
+  btn:           { borderRadius: 12, borderWidth: 1, paddingVertical: 14, alignItems: 'center' },
+  btnText:       { fontSize: 14, fontWeight: '700' },
+  dangerNote:    { fontSize: 11, textAlign: 'center', marginTop: 6 },
+  footer:        { alignItems: 'center', paddingTop: 24, borderTopWidth: 1, gap: 4 },
+  footerLogo:    { fontSize: 18, fontWeight: '800', letterSpacing: 4 },
+  footerSub:     { fontSize: 11 },
 });
 
-// WalletPickerModal injected
 export default ProfileScreen;
-
-
-
-
-
-

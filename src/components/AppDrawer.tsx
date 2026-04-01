@@ -174,7 +174,7 @@ export const DrawerContent: React.FC<any> = (props) => {
       <ScrollView showsVerticalScrollIndicator={false} style={styles.drawerScroll}>
 
         <DrawerSection title="NOVA">
-          <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => goTab('Profile')} />
+          <DrawerItem emoji="⚡" label="My Conviction Score" onPress={() => goStack('ConvictionProfile')} />
           <DrawerItem emoji="🌊" label="Echo Pool"           onPress={() => goStack('EchoPool')} />
           <DrawerItem emoji="✍️" label="Creator Studio"      onPress={() => goStack('CreatorStudio')} />
               <DrawerItem emoji="🏆" label="Leaderboard" onPress={() => goStack('Leaderboard')} />

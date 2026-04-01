@@ -58,6 +58,7 @@ export type RootStackParamList = {
   NarrativeDetail: { narrativeId: string };
   History: undefined;
   Terms: undefined;
+  ConvictionProfile: undefined;
   EchoPool: undefined;
   CreatorStudio: undefined;
   Search: undefined;
@@ -103,7 +104,7 @@ function AppTabs() {
       <Tab.Screen name="Launch" component={LaunchScreen} options={{ tabBarLabel: 'Launch' }} />
       <Tab.Screen name="DeFi" component={DeFiTabsScreen} options={{ tabBarLabel: 'DeFi' }} />
       <Tab.Screen name="Portfolio" component={PortfolioScreen} options={{ tabBarLabel: 'Portfolio' }} />
-      <Tab.Screen name="Profile" component={ConvictionProfileScreen} options={{ tabBarLabel: 'Profile' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );
 }
@@ -172,6 +173,7 @@ export default function App() {
                       <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
                       <Stack.Screen name="History" component={TransactionHistoryScreen} />
                       <Stack.Screen name="Terms" component={TermsScreen} />
+                      <Stack.Screen name="ConvictionProfile" component={ConvictionProfileScreen} />
                       <Stack.Screen name="EchoPool" component={EchoPoolScreen} />
                       <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} />
                           <Stack.Screen name="Search" component={SearchScreen} />
