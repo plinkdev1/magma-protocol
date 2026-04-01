@@ -2,10 +2,12 @@
 import { View, Text, ScrollView, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
 import { Image } from 'react-native';
 
 export default function AboutScreen() {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   return (
@@ -43,11 +45,11 @@ export default function AboutScreen() {
           { label: 'Website', url: 'https://magmaprotocol.xyz' },
           { label: 'GitHub', url: 'https://github.com/plinkdev1/magma-protocol' },
           { label: 'Terms & Conditions', url: null, screen: 'Terms' },
-        ].map(({ label, url }) => (
+        ].map(({ label, url, screen }) => (
           <TouchableOpacity
             key={label}
             style={{ padding: 14, backgroundColor: theme.bgSurface, borderRadius: 12, borderWidth: 1, borderColor: theme.cardBorder, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-            onPress={() => url && Linking.openURL(url)}
+            onPress={() => { if (screen) { (navigation as any).navigate(screen); } else if (url) { Linking.openURL(url); } }}
             activeOpacity={0.7}
           >
             <Text style={{ fontSize: 14, color: theme.textPrimary, flex: 1, marginRight: 8 }}>{label}</Text>
