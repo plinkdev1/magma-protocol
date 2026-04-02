@@ -51,10 +51,10 @@ const C = {
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const truncateWallet = (addr: string) =>
-  addr?.length > 12 ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : addr ?? 'â€“';
+  addr?.length > 12 ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : addr ?? '–';
 
 const formatDate = (iso: string | null | undefined) => {
-  if (!iso) return 'â€“';
+  if (!iso) return '–';
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
@@ -262,8 +262,8 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
     oracleStatus === 'running' ? C.accent :
     C.muted;
   const oracleLabel =
-    isTrue ? (isFinal ? 'RESOLVED â€” TRUE  [FINAL]' : 'RESOLVED â€” TRUE') :
-    isFalse ? (isFinal ? 'RESOLVED â€” FALSE  [FINAL]' : 'RESOLVED â€” FALSE') :
+    isTrue ? (isFinal ? 'RESOLVED – TRUE  [FINAL]' : 'RESOLVED – TRUE') :
+    isFalse ? (isFinal ? 'RESOLVED – FALSE  [FINAL]' : 'RESOLVED – FALSE') :
     isUnderReview ? 'UNDER REVIEW' :
     oracleStatus === 'running' ? 'SCORING...' :
     'PENDING';
@@ -437,7 +437,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           )}
         </View>
 
-        {/* SideShift shortcut â€” shown when amount entered */}
+        {/* SideShift shortcut – shown when amount entered */}
         {backAmount && parseFloat(backAmount) > 0 && !txSignature && (
           <View style={styles.convertRow}>
             <Text style={[styles.convertLabel, { color: C.muted }]}>Need {selectedToken}?</Text>
@@ -481,7 +481,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
               style={styles.sideShiftClose}
               onPress={() => setShowSideShift(false)}
             >
-              <Text style={{ color: C.muted, fontSize: 14 }}>âœ• Close</Text>
+              <Text style={{ color: C.muted, fontSize: 14 }}>✕ Close</Text>
             </TouchableOpacity>
             <SideShiftWidget
               settleAddress={account?.publicKey?.toString() ?? ''}
