@@ -37,14 +37,14 @@ interface AgentStep {
   description: string;
 }
 
-const AGENT_STEPS: AgentStep[] = [
-  { id: 'thesis', name: 'Thesis Analyzer', icon: 'Ã°Å¸”Â', description: 'Analyzing narrative thesis' },
-  { id: 'originality', name: 'Originality Checker', icon: 'Ã¢ÅÂ¨', description: 'Checking uniqueness' },
-  { id: 'hook', name: 'Hook Writer', icon: 'Ã°Å¸Å½Â£', description: 'Crafting compelling hook' },
-  { id: 'article', name: 'Article Writer', icon: 'Ã°Å¸“Â', description: 'Writing full article' },
-  { id: 'thread', name: 'Thread Writer', icon: 'Ã°Å¸Â§Âµ', description: 'Creating Twitter thread' },
-  { id: 'score', name: 'Score Evaluator', icon: 'Ã°Å¸“Å ', description: 'Evaluating narrative score' },
-  { id: 'ipfs', name: 'IPFS Publisher', icon: 'Ã°Å¸ÅÂ', description: 'Publishing to IPFS' },
+const AGENT_STEPS: AgentStep[] = [
+  { id: 'thesis',      name: 'Thesis Analyzer',    icon: '📝', description: 'Analyzing narrative thesis' },
+  { id: 'originality', name: 'Originality Checker', icon: '✨',       description: 'Checking uniqueness' },
+  { id: 'hook',        name: 'Hook Writer',         icon: '🧵', description: 'Crafting compelling hook' },
+  { id: 'article',     name: 'Article Writer',      icon: '📰', description: 'Writing full article' },
+  { id: 'thread',      name: 'Thread Writer',       icon: '🧵', description: 'Creating Twitter thread' },
+  { id: 'score',       name: 'Score Evaluator',     icon: '📊', description: 'Evaluating narrative score' },
+  { id: 'ipfs',        name: 'IPFS Publisher',      icon: '🌐', description: 'Publishing to IPFS' },
 ];
 
 type StepStatus = 'pending' | 'running' | 'done' | 'error';
@@ -263,10 +263,10 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
         );
       }
       if (stepState.status === 'done') {
-        return <Text style={styles.statusIcon}>Ã¢Å“</Text>;
+        return <Text style={styles.statusIcon}>✓</Text>;
       }
       if (stepState.status === 'error') {
-        return <Text style={styles.statusIcon}>Ã¢Å•</Text>;
+        return <Text style={styles.statusIcon}>✗</Text>;
       }
       return null;
     };
@@ -346,14 +346,14 @@ export const AgentProgress: React.FC<AgentProgressProps> = ({
 
       {errorMessage && (
         <Animated.View style={styles.errorContainer} entering={FadeIn}>
-          <Text style={styles.errorIcon}>Ã¢Å¡Â Ã¯Â¸Â</Text>
+          <Text style={styles.errorIcon}>⚠️</Text>
           <Text style={styles.errorMessage}>{errorMessage}</Text>
         </Animated.View>
       )}
 
       {overallStatus === 'completed' && (
         <Animated.View style={styles.successContainer} entering={FadeIn}>
-          <Text style={styles.successIcon}>Ã°Å¸Å½â°</Text>
+          <Text style={styles.successIcon}>🎉</Text>
           <Text style={styles.successText}>Pipeline Complete!</Text>
         </Animated.View>
       )}
