@@ -412,7 +412,7 @@ const NarrativeDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           activeOpacity={0.7}
         >
           <Text style={[styles.tokenSelectorText, { color: C.primary }]}>
-            {selectedToken} â–¾
+            {selectedToken} ▾
           </Text>
         </TouchableOpacity>
         <TokenSelectorModal
