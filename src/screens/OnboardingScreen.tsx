@@ -334,9 +334,9 @@ const SLIDES = [
       {
         eyebrow: 'Verification',
         title: 'PROVE YOUR\nHUMANITY',
-        body: 'Verify your humanity with Gitcoin Passport. Solana wallets with EVM history get a score boost. No Passport? Get one free at passport.xyz.',
+    body: 'Optional: check your Gitcoin Passport for a conviction score boost. Solana Attestation Service (SAS) integration coming soon. You can skip this step.',
         visual: (active: boolean) => <VisualAntiSybil />,
-        cta: 'Check My Passport ->',
+        cta: 'Check My Passport (Optional) ->',
       },
       {
         eyebrow: 'Terms of Use',
@@ -418,7 +418,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
           const score = data.score ?? 0;
           const msg = score > 0
             ? `✓ Passport verified — score: ${score.toFixed(1)}`
-            : '⚠️ No EVM Passport found. Get one free at passport.xyz';
+            : 'No Passport — continuing without score boost. SAS integration coming soon.';
           setPassportMsg(msg);
         } catch {
           setPassportMsg('Could not check Passport — continuing anyway.');
