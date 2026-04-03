@@ -4,7 +4,7 @@ import { transact, Web3MobileWallet } from '@solana-mobile/mobile-wallet-adapter
 import { PublicKey } from '@solana/web3.js';
 import { API_URL } from '../config';
 
-const APP_IDENTITY = {
+export const APP_IDENTITY = {
   name: 'MAGMA Protocol',
   uri: 'https://magmaprotocol.xyz',
   icon: 'favicon.ico',

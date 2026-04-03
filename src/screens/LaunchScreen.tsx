@@ -31,7 +31,7 @@ import axios from 'axios';
 
 import VoiceRecorder from '../components/VoiceRecorder';
 import { AgentProgress } from '../components/AgentProgress';
-import { useAuthorization } from '../context/WalletContext';
+import { useAuthorization, APP_IDENTITY } from '../context/WalletContext';
 import WalletPickerModal from '../components/WalletPickerModal';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { DEADLINE_OPTIONS, DEFAULT_DEADLINE, DeadlineTier } from '../constants/programs';
@@ -239,15 +239,34 @@ const LaunchScreen: React.FC = () => {
         kitPreview,
       });
 
-      const { transaction: txBase64, narrativeId } = txResponse.data;
+      const { transaction: txBase64, narrativeId, deadlineTimestamp } = txResponse.data;
 
-      // Mock sign and publish for demo
+      // Deserialize unsigned transaction from backend
+      const txBytes = Buffer.from(txBase64, 'base64');
+      const transaction = Transaction.from(txBytes);
+
+      // Sign and send via MWA -- wallet provides signature, pays gas
+      const signResult = await transact(async (wallet: any) => {
+        // Reauthorize to confirm signing access for this session
+        await wallet.reauthorize({
+          auth_token: account!.authToken,
+          identity: APP_IDENTITY,
+        });
+        const signed = await wallet.signAndSendTransactions({
+          transactions: [transaction],
+        });
+        return signed;
+      });
+
+      const onChainSignature = Array.isArray(signResult) ? signResult[0] : signResult;
+
+      // Send signature + narrativeId to publish endpoint for on-chain verification + Supabase insert
       const sendResponse = await axios.post(`${API_BASE_URL}/v1/narratives/publish`, {
         narrativeId,
-        signedTransaction: 'MOCK_SIGNED_TX',
+        signature: onChainSignature,
         thesis,
-        walletAddress: account?.publicKey?.toBase58() || 'unknown',
-          deadline_days: selectedDeadline.days,
+        walletAddress: account?.address || 'unknown',
+        deadline_days: selectedDeadline.days,
       });
 
       setPublishedNarrativeId(sendResponse.data.narrativeId);
