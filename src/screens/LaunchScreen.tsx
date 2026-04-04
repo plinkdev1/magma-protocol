@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
-import { useColorScheme } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
 import {
   View,
   Text,
@@ -69,8 +69,8 @@ interface KitPreview {
 }
 
 const LaunchScreen: React.FC = () => {
-  const _scheme = useColorScheme();
-  const COLORS = getColors(_scheme !== 'light');
+  const { isDark } = useTheme();
+  const COLORS = getColors(isDark);
   const styles = makeStyles(COLORS);
   const navigation = useNavigation() as any;
   const [shouldNavigateToFeed, setShouldNavigateToFeed] = useState(false);
@@ -237,6 +237,7 @@ const LaunchScreen: React.FC = () => {
       const txResponse = await axios.post(`${API_BASE_URL}/v1/narratives/prepare-mint`, {
         thesis,
         kitPreview,
+        wallet_address: account?.address,
       });
 
       const { transaction: txBase64, narrativeId, deadlineTimestamp } = txResponse.data;
@@ -782,7 +783,7 @@ const LaunchScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ProgressIndicator />
 
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingBottom: insets.bottom + 16 }]}>
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}

@@ -170,16 +170,16 @@ export default function App() {
                           </AppDrawer>
                         )}
                       </Stack.Screen>
-                      <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} />
-                      <Stack.Screen name="History" component={TransactionHistoryScreen} />
-                      <Stack.Screen name="Terms" component={TermsScreen} />
-                      <Stack.Screen name="ConvictionProfile" component={ConvictionProfileScreen} />
-                      <Stack.Screen name="EchoPool" component={EchoPoolScreen} />
-                      <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} />
-                          <Stack.Screen name="Search" component={SearchScreen} />
-                          <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
-                          <Stack.Screen name="NFT" component={NFTScreen} />
-                          <Stack.Screen name="About" component={AboutScreen} />
+                      <Stack.Screen name="NarrativeDetail" component={NarrativeDetailScreen} options={{ headerShown: true, title: 'Narrative', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="History" component={TransactionHistoryScreen} options={{ headerShown: true, title: 'History', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="Terms" component={TermsScreen} options={{ headerShown: true, title: 'Terms', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="ConvictionProfile" component={ConvictionProfileScreen} options={{ headerShown: true, title: 'Conviction Score', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="EchoPool" component={EchoPoolScreen} options={{ headerShown: true, title: 'Echo Pool', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="CreatorStudio" component={CreatorStudioScreen} options={{ headerShown: true, title: 'Creator Studio', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: true, title: 'Search', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="Leaderboard" component={LeaderboardScreen} options={{ headerShown: true, title: 'Leaderboard', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="NFT" component={NFTScreen} options={{ headerShown: true, title: 'NFT Collection', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
+                      <Stack.Screen name="About" component={AboutScreen} options={{ headerShown: true, title: 'About', headerBackTitle: '', headerStyle: { backgroundColor: '#09080C' }, headerTintColor: '#FF6B35', headerTitleStyle: { color: '#F2EEF8', fontFamily: 'Syne-Bold' } }} />
                     </Stack.Navigator>
                 </NavigationContainer>
               </SafeAreaProvider>
