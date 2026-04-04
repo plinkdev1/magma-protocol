@@ -97,7 +97,9 @@ const LaunchScreen: React.FC = () => {
     isOriginal: boolean;
     similarity: number;
     similarNarratives: string[];
+    suggested_category?: string;
   } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [kitPreview, setKitPreview] = useState<KitPreview | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -507,6 +509,29 @@ const LaunchScreen: React.FC = () => {
                 ))}
               </View>
             )}
+            <View style={styles.categorySection}>
+              <Text style={styles.categoryLabel}>
+                AI SUGGESTED: <Text style={{ color: COLORS.primary }}>{originalityResult.suggested_category ?? 'MARKET'}</Text>
+              </Text>
+              <Text style={styles.categorySubLabel}>Tap to override if incorrect</Text>
+              <View style={styles.categoryGrid}>
+                {['MARKET','ECOSYSTEM','SPORTS','ESPORTS','LEGAL','POLITICAL','SCIENTIFIC','GEOPOLITICAL','SOCIAL','CULTURAL','CONVICTION'].map(cat => {
+                  const isSelected = (selectedCategory ?? originalityResult.suggested_category ?? 'MARKET') === cat;
+                  return (
+                    <TouchableOpacity
+                      key={cat}
+                      style={[styles.categoryPill, isSelected && styles.categoryPillSelected]}
+                      onPress={() => setSelectedCategory(cat)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.categoryPillText, isSelected && styles.categoryPillTextSelected]}>
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
           </View>
         )}
       </View>
@@ -1116,6 +1141,14 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
     marginBottom: 4,
     fontFamily: 'Syne-Regular',
   },
+  categorySection: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: COLORS.cardBorder },
+  categoryLabel: { fontSize: 11, color: COLORS.muted, fontFamily: 'Syne-Regular', letterSpacing: 1, marginBottom: 2 },
+  categorySubLabel: { fontSize: 11, color: COLORS.muted, fontFamily: 'Syne-Regular', marginBottom: 12 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  categoryPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999, borderWidth: 1, borderColor: COLORS.cardBorder, backgroundColor: COLORS.card },
+  categoryPillSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '22' },
+  categoryPillText: { fontSize: 11, fontWeight: '600', color: COLORS.muted, fontFamily: 'Syne-Regular' },
+  categoryPillTextSelected: { color: COLORS.primary },
   pipelineContainer: {
     flex: 1,
   },
