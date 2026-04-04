@@ -172,11 +172,18 @@ const LaunchScreen: React.FC = () => {
 
   // Step 3: Handle pipeline complete
   const handlePipelineComplete = useCallback((result: any) => {
-    setTimeout(() => {
-      setKitPreview(result.kitPreview);
-      setCurrentStep(4);
-      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
-    }, 3000);
+    // Backend job result may nest kitPreview or return hooks/article/thread directly
+    const kit = result?.kitPreview ?? result?.kit ?? {
+      hooks: result?.hooks ?? [
+        { id: '1', text: result?.hook ?? 'Your narrative hook is ready.', score: result?.hook_score ?? 85 },
+      ],
+      articleExcerpt: result?.article_excerpt ?? result?.article ?? 'Your narrative article is ready.',
+      threadPreview: result?.thread_preview ?? result?.thread ?? '1/ Your narrative thread is ready.',
+      ipfsHash: result?.ipfs_hash ?? result?.ipfsHash,
+    };
+    setKitPreview(kit);
+    setCurrentStep(4);
+    Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
   }, []);
 
   // Step 3: Start real agent pipeline via backend

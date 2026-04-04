@@ -19,15 +19,15 @@ import { useTheme } from '../theme/ThemeContext';
 
 // Design tokens
 const getColors = (dark: boolean) => ({
-  background: dark ? '#09080C' : '#F5F3F0',
-  primary: '#ff6b35',
-  accent: '#ffb347',
-  text: '#f0d8c0',
-  muted: '#7a4a30',
-  card: '#1a0f0a',
-  cardBorder: '#3d2a1f',
-  success: '#00ff88',
-  error: '#ff3355',
+  background: dark ? '#09080C' : '#F5F4F8',
+  primary: '#FF6B35',
+  accent: '#FFB347',
+  text: dark ? '#E8E4F0' : '#1A1625',
+  muted: dark ? '#5C5668' : '#7C7689',
+  card: dark ? '#111018' : '#FFFFFF',
+  cardBorder: dark ? '#1E1B26' : '#E2DFF0',
+  success: '#22C55E',
+  error: '#EF4444',
 });
 
 // Agent definitions
