@@ -1,7 +1,7 @@
 ﻿import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../config';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, RefreshControl, Dimensions, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, RefreshControl, Dimensions } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -14,6 +14,7 @@ import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 
 import { useAuthorization } from '../context/WalletContext';
+import { useTheme } from '../theme/ThemeContext';
 
 // Design tokens
 const getColors = (dark: boolean) => ({
@@ -60,8 +61,8 @@ interface Payout {
 const API_BASE_URL = API_URL;
 
 const PortfolioScreen: React.FC = () => {
-  const _s = useColorScheme();
-  const COLORS = getColors(_s !== 'light');
+  const { isDark } = useTheme();
+  const COLORS = getColors(isDark);
   const styles = makeStyles(COLORS);
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
@@ -77,29 +78,9 @@ const PortfolioScreen: React.FC = () => {
   const yieldValue = useSharedValue(0);
   const pulseValue = useSharedValue(0);
 
-  // Animate yield counter
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTotalYield((prev) => {
-        const increment = 0.00005 + Math.random() * 0.0001;
-        return prev + increment;
-      });
-      yieldValue.value = withTiming(1, { duration: 300 }, () => {
-        yieldValue.value = withTiming(0, { duration: 300 });
-      });
-    }, 1000);
+  // Yield counter -- static display, no animation loop
 
-    return () => clearInterval(interval);
-  }, []);
-
-  // Pulse animation for balance
-  useEffect(() => {
-    pulseValue.value = withRepeat(
-      withTiming(1, { duration: 2000 }),
-      -1,
-      true
-    );
-  }, []);
+  // Balance card -- no pulse animation
 
   // Request notification permission
   const requestNotificationPermission = useCallback(async () => {
@@ -168,17 +149,9 @@ const PortfolioScreen: React.FC = () => {
     setRefreshing(false);
   }, [fetchPortfolioData]);
 
-  // Animated yield style
-  const yieldStyle = useAnimatedStyle(() => {
-    const scale = 1 + yieldValue.value * 0.03;
-    return { transform: [{ scale }] };
-  });
+  const yieldStyle = {};
 
-  // Animated balance style
-  const balanceStyle = useAnimatedStyle(() => {
-    const opacity = 0.8 + pulseValue.value * 0.2;
-    return { opacity };
-  });
+  const balanceStyle = {};
 
   // Format number
   const formatNumber = (num: number) => {
