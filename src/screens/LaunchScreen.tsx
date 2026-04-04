@@ -179,27 +179,22 @@ const LaunchScreen: React.FC = () => {
     }, 3000);
   }, []);
 
-  // Step 3: Start agent pipeline (MOCKED FOR DEMO)
-  const handlePipelineStart = useCallback(() => {
-    const mockJobId = 'demo-job-' + Date.now();
-    setJobId(mockJobId);
-    Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
-    setTimeout(() => {
-      handlePipelineComplete({
-        kitPreview: {
-          hooks: [
-            { id: '1', text: 'The narrative shift nobody is talking about yet.', score: 92 },
-            { id: '2', text: 'Contrarian take: this is quietly becoming institutional consensus.', score: 87 },
-            { id: '3', text: 'Three on-chain signals confirm this narrative is gaining traction.', score: 84 },
-          ],
-          articleExcerpt: 'In the current macro environment, this thesis represents a significant alpha opportunity.',
-          threadPreview: '1/ The market is missing something big.',
-          ipfsHash: 'QmMockDemo123abc',
-        }
+  // Step 3: Start real agent pipeline via backend
+  const handlePipelineStart = useCallback(async () => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/v1/narratives/generate`, {
+        thesis,
+        walletAddress: account?.address ?? 'unknown',
       });
-    }, 4000);
-
-  }, [handlePipelineComplete]);
+      const realJobId = response.data.jobId;
+      if (!realJobId) throw new Error('No jobId returned');
+      setJobId(realJobId);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Success);
+    } catch (err: any) {
+      console.error('[LaunchScreen] Pipeline start failed:', err);
+      Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
+    }
+  }, [thesis, account, handlePipelineComplete]);
 
 
 
