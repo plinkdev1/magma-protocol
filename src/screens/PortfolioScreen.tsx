@@ -18,14 +18,14 @@ import { useTheme } from '../theme/ThemeContext';
 
 // Design tokens
 const getColors = (dark: boolean) => ({
-  background: dark ? '#09080C' : '#F5F4F8',
-  primary: '#FF6B35',
-  accent: '#FFB347',
-  text: dark ? '#E8E4F0' : '#1A1625',
-  muted: dark ? '#5C5668' : '#7C7689',
-  card: dark ? '#111018' : '#FFFFFF',
-  cardBorder: dark ? '#1E1B26' : '#E2DFF0',
-  success: '#22C55E',
+  background:  dark ? '#09080C' : '#FFF8F0',
+  primary:     dark ? '#FF6B35' : '#D44E1F',
+  accent:      dark ? '#FFB347' : '#CC8A00',
+  text:        dark ? '#E8E4F0' : '#1A0E08',
+  muted:       dark ? '#5C5668' : '#6B5A4A',
+  card:        dark ? '#111018' : '#FFFFFF',
+  cardBorder:  dark ? '#1E1B26' : '#E8D8C0',
+  success:     dark ? '#22C55E' : '#16A34A',
 });
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

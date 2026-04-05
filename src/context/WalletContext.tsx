@@ -75,7 +75,9 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [error,        setError]        = useState<string | null>(null);
   const [nftState,     setNftState]     = useState<NFTState>(DEFAULT_NFT_STATE);
 
-  // Restore wallet session on app launch via stored auth token
+  // Restore wallet identity on app launch directly from AsyncStorage — no transact() call.
+  // transact() always shows the wallet picker UI on Android so must never be called on mount.
+  // reauthorize() runs later inside transact() when the user actually signs a transaction.
   useEffect(() => {
     const restoreSession = async () => {
       try {
@@ -83,27 +85,16 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         if (!stored) return;
         const { authToken, address } = JSON.parse(stored);
         if (!authToken || !address) return;
-        setIsConnecting(true);
-        await transact(async (wallet) => {
-          const reauth = await wallet.reauthorize({ auth_token: authToken, identity: APP_IDENTITY });
-          const firstAccount = reauth.accounts[0];
-          const addressBytes = typeof firstAccount.address === 'string'
-            ? Buffer.from(firstAccount.address, 'base64')
-            : firstAccount.address;
-          const publicKey = new PublicKey(addressBytes);
-          const restoredAddress = publicKey.toBase58();
-          await AsyncStorage.setItem('magma_wallet', JSON.stringify({ authToken: reauth.auth_token, address: restoredAddress }));
-          setAccount({ address: restoredAddress, publicKey, label: firstAccount.label, authToken: reauth.auth_token });
-          setIsConnected(true);
-          fetchNFTState(restoredAddress).then(setNftState).catch(() => {});
-        });
+        // Reconstruct PublicKey from stored base58 address
+        const publicKey = new PublicKey(address);
+        setAccount({ address, publicKey, authToken });
+        setIsConnected(true);
+        fetchNFTState(address).then(setNftState).catch(() => {});
       } catch (err) {
         console.log('[WalletContext] Session restore failed — clearing storage');
         AsyncStorage.removeItem('magma_wallet').catch(() => {});
         setIsConnected(false);
         setAccount(null);
-      } finally {
-        setIsConnecting(false);
       }
     };
     restoreSession();

@@ -39,15 +39,15 @@ import { PublicKey, Transaction } from '@solana/web3.js';
 
 // Design tokens
 const getColors = (dark: boolean) => ({
-  background: dark ? '#09080C' : '#F5F4F8',
-  primary: '#FF6B35',
-  accent: '#FFB347',
-  text: dark ? '#E8E4F0' : '#1A1625',
-  muted: dark ? '#5C5668' : '#7C7689',
-  card: dark ? '#111018' : '#FFFFFF',
-  cardBorder: dark ? '#1E1B26' : '#E2DFF0',
-  success: '#22C55E',
-  error: '#EF4444',
+  background:  dark ? '#09080C' : '#FFF8F0',
+  primary:     dark ? '#FF6B35' : '#D44E1F',
+  accent:      dark ? '#FFB347' : '#CC8A00',
+  text:        dark ? '#E8E4F0' : '#1A0E08',
+  muted:       dark ? '#5C5668' : '#6B5A4A',
+  card:        dark ? '#111018' : '#FFFFFF',
+  cardBorder:  dark ? '#1E1B26' : '#E8D8C0',
+  success:     dark ? '#22C55E' : '#16A34A',
+  error:       dark ? '#EF4444' : '#DC2626',
 });
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -115,6 +115,14 @@ const LaunchScreen: React.FC = () => {
   const [selectedDeadline, setSelectedDeadline] = useState<DeadlineTier>(DEFAULT_DEADLINE);
   const [isPolishing,    setIsPolishing]    = useState(false);
   const [polishedThesis, setPolishedThesis] = useState<string | null>(null);
+  const [scrollHint, setScrollHint] = useState<Record<number, boolean>>({ 1: false, 2: false, 3: false, 4: false, 5: false });
+
+  const onScrollViewLayout = (step: number, contentH: number, layoutH: number) => {
+    if (contentH > layoutH + 10) setScrollHint(prev => ({ ...prev, [step]: true }));
+  };
+  const onScrolled = (step: number) => {
+    setScrollHint(prev => ({ ...prev, [step]: false }));
+  };
 
   // Animate progress bar when step changes
   React.useEffect(() => {
@@ -249,7 +257,7 @@ const LaunchScreen: React.FC = () => {
       const txResponse = await axios.post(`${API_BASE_URL}/v1/narratives/prepare-mint`, {
         thesis,
         kitPreview,
-        wallet_address: account?.address,
+        backer_wallet: account?.address,
       });
 
       const { transaction: txBase64, narrativeId, deadlineTimestamp } = txResponse.data;
@@ -318,6 +326,16 @@ const LaunchScreen: React.FC = () => {
     setShouldNavigateToFeed(false);
   }, []);
 
+  // Scroll hint arrow — shown when step content overflows
+  const ScrollHint = ({ step }: { step: number }) => {
+    if (!scrollHint[step]) return null;
+    return (
+      <View pointerEvents="none" style={styles.scrollHintContainer}>
+        <Text style={styles.scrollHintArrow}>›</Text>
+      </View>
+    );
+  };
+
   // Progress indicator
   const ProgressIndicator = () => {
     const progressStyle = useAnimatedStyle(() => ({
@@ -382,7 +400,18 @@ const LaunchScreen: React.FC = () => {
         Describe your market thesis in your own words
       </Text>
 
-      <ScrollView style={styles.inputContainer} contentContainerStyle={{ paddingBottom: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, position: 'relative' }}>
+      <ScrollHint step={1} />
+      <ScrollView
+        style={styles.inputContainer}
+        contentContainerStyle={{ paddingBottom: 8 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        onScroll={() => onScrolled(1)}
+        scrollEventThrottle={16}
+        onContentSizeChange={(_, h) => onScrollViewLayout(1, h, 0)}
+        onLayout={e => onScrollViewLayout(1, 0, e.nativeEvent.layout.height)}
+      >
         <VoiceRecorder
           onTranscript={handleTranscript}
           size="large"
@@ -436,6 +465,7 @@ const LaunchScreen: React.FC = () => {
         </TouchableOpacity>
       )}
       </ScrollView>
+      </View>
 
       <TouchableOpacity
         style={[styles.continueButton, !thesis.trim() && styles.continueButtonDisabled]}
@@ -456,7 +486,18 @@ const LaunchScreen: React.FC = () => {
         Ensuring your narrative is unique
       </Text>
 
-      <ScrollView style={styles.originalityContainer} contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, position: 'relative' }}>
+      <ScrollHint step={2} />
+      <ScrollView
+        style={styles.originalityContainer}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        onScroll={() => onScrolled(2)}
+        scrollEventThrottle={16}
+        onContentSizeChange={(_, h) => onScrollViewLayout(2, h, 0)}
+        onLayout={e => onScrollViewLayout(2, 0, e.nativeEvent.layout.height)}
+      >
         {!originalityResult ? (
           <>
             <View style={styles.originalityPreview}>
@@ -545,6 +586,7 @@ const LaunchScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
+      </View>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
@@ -571,7 +613,17 @@ const LaunchScreen: React.FC = () => {
         7 agents crafting your narrative kit
       </Text>
 
-      <ScrollView style={styles.pipelineContainer} contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, position: 'relative' }}>
+      <ScrollHint step={3} />
+      <ScrollView
+        style={styles.pipelineContainer}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+        showsVerticalScrollIndicator={false}
+        onScroll={() => onScrolled(3)}
+        scrollEventThrottle={16}
+        onContentSizeChange={(_, h) => onScrollViewLayout(3, h, 0)}
+        onLayout={e => onScrollViewLayout(3, 0, e.nativeEvent.layout.height)}
+      >
         {!jobId ? (
           <View style={styles.pipelineStart}>
             <Text style={styles.pipelinePrompt}>
@@ -593,6 +645,7 @@ const LaunchScreen: React.FC = () => {
           />
         )}
       </ScrollView>
+      </View>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
@@ -696,7 +749,18 @@ const LaunchScreen: React.FC = () => {
         Sign transaction and publish to Solana
       </Text>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <View style={{ flex: 1, position: 'relative' }}>
+      <ScrollHint step={5} />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 80 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        onScroll={() => onScrolled(5)}
+        scrollEventThrottle={16}
+        onContentSizeChange={(_, h) => onScrollViewLayout(5, h, 0)}
+        onLayout={e => onScrollViewLayout(5, 0, e.nativeEvent.layout.height)}
+      >
         {!isConnected ? (
           <View style={styles.connectPrompt}>
             <Text style={styles.connectIcon}>👛</Text>
@@ -802,6 +866,7 @@ const LaunchScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
+      </View>
 
       {!publishedNarrativeId && (
         <View style={styles.buttonRow}>
@@ -945,8 +1010,8 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
   continueButton: {
     backgroundColor: COLORS.primary,
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     alignItems: 'center',
     minWidth: 100,
   },
@@ -989,14 +1054,14 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 8,
     alignItems: 'center',
   },
   backButton: {
     backgroundColor: COLORS.card,
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     minWidth: 100,
@@ -1428,6 +1493,26 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
     fontWeight: '700',
     color: COLORS.background,
     fontFamily: 'Syne-Bold',
+  },
+  scrollHintContainer: {
+    position: 'absolute',
+    bottom: 12,
+    right: 4,
+    zIndex: 10,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.85,
+  },
+  scrollHintArrow: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    transform: [{ rotate: '90deg' }],
+    marginTop: -1,
   },
   deadlineSection: { marginTop: 4, marginBottom: 8 },
   deadlineLabel: { color: COLORS.muted, fontSize: 12, fontFamily: 'SpaceMono', letterSpacing: 1, marginBottom: 10, textTransform: 'uppercase' },
