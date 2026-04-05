@@ -172,14 +172,18 @@ const LaunchScreen: React.FC = () => {
 
   // Step 3: Handle pipeline complete
   const handlePipelineComplete = useCallback((result: any) => {
-    // Backend job result may nest kitPreview or return hooks/article/thread directly
-    const kit = result?.kitPreview ?? result?.kit ?? {
-      hooks: result?.hooks ?? [
-        { id: '1', text: result?.hook ?? 'Your narrative hook is ready.', score: result?.hook_score ?? 85 },
-      ],
-      articleExcerpt: result?.article_excerpt ?? result?.article ?? 'Your narrative article is ready.',
-      threadPreview: result?.thread_preview ?? result?.thread ?? '1/ Your narrative thread is ready.',
-      ipfsHash: result?.ipfs_hash ?? result?.ipfsHash,
+    console.log('[LaunchScreen] Pipeline complete raw result:', JSON.stringify(result, null, 2));
+    const kitSource = result?.kitPreview ?? result?.kit
+      ?? result?.result?.kitPreview ?? result?.result?.kit
+      ?? result?.data?.kitPreview ?? null;
+    const kit: KitPreview = kitSource ?? {
+      hooks: result?.hooks ?? result?.result?.hooks
+        ?? [{ id: '1', text: result?.hook ?? result?.result?.hook ?? 'Hook ready — check Metro logs if blank.', score: result?.hook_score ?? 85 }],
+      articleExcerpt: result?.article_excerpt ?? result?.result?.article_excerpt
+        ?? result?.article ?? result?.result?.article ?? 'Article ready — check Metro logs if blank.',
+      threadPreview: result?.thread_preview ?? result?.result?.thread_preview
+        ?? result?.thread ?? result?.result?.thread ?? '1/ Thread ready — check Metro logs if blank.',
+      ipfsHash: result?.ipfs_hash ?? result?.result?.ipfs_hash ?? result?.ipfsHash,
     };
     setKitPreview(kit);
     setCurrentStep(4);
@@ -229,6 +233,10 @@ const LaunchScreen: React.FC = () => {
 
   // Step 5: Sign and publish via MWA
   const handlePublish = useCallback(async () => {
+    if (!account?.address) {
+      setPublishError('Wallet not connected — please connect your wallet and try again.');
+      return;
+    }
     if (!isConnected) {
       setShowWalletPicker(true); return;
     }
@@ -285,7 +293,7 @@ const LaunchScreen: React.FC = () => {
           setPublishError(msg);
       Haptics?.notificationAsync(Haptics?.NotificationFeedbackType.Error);
     }
-  }, [isConnected, connect, thesis, kitPreview]);
+  }, [isConnected, connect, thesis, kitPreview, account, selectedDeadline]);
 
   // Navigate back
   const handleBack = useCallback(() => {
@@ -374,7 +382,7 @@ const LaunchScreen: React.FC = () => {
         Describe your market thesis in your own words
       </Text>
 
-      <View style={styles.inputContainer}>
+      <ScrollView style={styles.inputContainer} contentContainerStyle={{ paddingBottom: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <VoiceRecorder
           onTranscript={handleTranscript}
           size="large"
@@ -427,7 +435,7 @@ const LaunchScreen: React.FC = () => {
           </Text>
         </TouchableOpacity>
       )}
-      </View>
+      </ScrollView>
 
       <TouchableOpacity
         style={[styles.continueButton, !thesis.trim() && styles.continueButtonDisabled]}
@@ -448,7 +456,7 @@ const LaunchScreen: React.FC = () => {
         Ensuring your narrative is unique
       </Text>
 
-      <View style={styles.originalityContainer}>
+      <ScrollView style={styles.originalityContainer} contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {!originalityResult ? (
           <>
             <View style={styles.originalityPreview}>
@@ -536,7 +544,7 @@ const LaunchScreen: React.FC = () => {
             </View>
           </View>
         )}
-      </View>
+      </ScrollView>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
@@ -563,7 +571,7 @@ const LaunchScreen: React.FC = () => {
         7 agents crafting your narrative kit
       </Text>
 
-      <View style={styles.pipelineContainer}>
+      <ScrollView style={styles.pipelineContainer} contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }} showsVerticalScrollIndicator={false}>
         {!jobId ? (
           <View style={styles.pipelineStart}>
             <Text style={styles.pipelinePrompt}>
@@ -584,7 +592,7 @@ const LaunchScreen: React.FC = () => {
             onError={(error) => console.error('[LaunchScreen] Pipeline error:', error)}
           />
         )}
-      </View>
+      </ScrollView>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
@@ -688,7 +696,7 @@ const LaunchScreen: React.FC = () => {
         Sign transaction and publish to Solana
       </Text>
 
-      <View style={styles.publishContainer}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {!isConnected ? (
           <View style={styles.connectPrompt}>
             <Text style={styles.connectIcon}>👛</Text>
@@ -793,7 +801,7 @@ const LaunchScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </ScrollView>
 
       {!publishedNarrativeId && (
         <View style={styles.buttonRow}>
@@ -972,12 +980,12 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
     gap: 8,
   },
   polishLabel: { fontSize: 10, fontWeight: '700', color: '#FF6B35', letterSpacing: 1 },
-  polishText:  { fontSize: 14, color: '#F2EEF8', lineHeight: 20 },
+  polishText:  { fontSize: 14, color: COLORS.text, lineHeight: 20 },
   polishActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
   polishAccept:  { flex: 1, borderRadius: 9999, backgroundColor: '#FF6B35', paddingVertical: 8, alignItems: 'center' },
   polishAcceptText:   { color: '#09080C', fontSize: 13, fontWeight: '700' },
   polishDiscard: { flex: 1, borderRadius: 9999, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', paddingVertical: 8, alignItems: 'center' },
-  polishDiscardText:  { color: '#9B95A8', fontSize: 13, fontWeight: '600' },
+  polishDiscardText:  { color: COLORS.muted, fontSize: 13, fontWeight: '600' },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1396,7 +1404,7 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
   },
       reframeBanner: { marginTop: 8, padding: 10, backgroundColor: 'rgba(255,107,53,0.08)', borderRadius: 6, borderLeftWidth: 2, borderLeftColor: '#FF6B35', gap: 4 },
       reframeBannerLabel: { fontSize: 9, fontWeight: '700', color: '#FF6B35', letterSpacing: 1.5 },
-      reframeBannerText: { fontSize: 12, color: '#E8E4F0', lineHeight: 18 },
+      reframeBannerText: { fontSize: 12, color: COLORS.text, lineHeight: 18 },
   errorBannerIcon: {
     fontSize: 18,
   },

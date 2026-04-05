@@ -75,6 +75,40 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [error,        setError]        = useState<string | null>(null);
   const [nftState,     setNftState]     = useState<NFTState>(DEFAULT_NFT_STATE);
 
+  // Restore wallet session on app launch via stored auth token
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('magma_wallet');
+        if (!stored) return;
+        const { authToken, address } = JSON.parse(stored);
+        if (!authToken || !address) return;
+        setIsConnecting(true);
+        await transact(async (wallet) => {
+          const reauth = await wallet.reauthorize({ auth_token: authToken, identity: APP_IDENTITY });
+          const firstAccount = reauth.accounts[0];
+          const addressBytes = typeof firstAccount.address === 'string'
+            ? Buffer.from(firstAccount.address, 'base64')
+            : firstAccount.address;
+          const publicKey = new PublicKey(addressBytes);
+          const restoredAddress = publicKey.toBase58();
+          await AsyncStorage.setItem('magma_wallet', JSON.stringify({ authToken: reauth.auth_token, address: restoredAddress }));
+          setAccount({ address: restoredAddress, publicKey, label: firstAccount.label, authToken: reauth.auth_token });
+          setIsConnected(true);
+          fetchNFTState(restoredAddress).then(setNftState).catch(() => {});
+        });
+      } catch (err) {
+        console.log('[WalletContext] Session restore failed — clearing storage');
+        AsyncStorage.removeItem('magma_wallet').catch(() => {});
+        setIsConnected(false);
+        setAccount(null);
+      } finally {
+        setIsConnecting(false);
+      }
+    };
+    restoreSession();
+  }, []);
+
   const connect = useCallback(async () => {
     if (isConnecting) return;
     setIsConnecting(true);
