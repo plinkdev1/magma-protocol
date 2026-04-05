@@ -116,9 +116,19 @@ const LaunchScreen: React.FC = () => {
   const [isPolishing,    setIsPolishing]    = useState(false);
   const [polishedThesis, setPolishedThesis] = useState<string | null>(null);
   const [scrollHint, setScrollHint] = useState<Record<number, boolean>>({ 1: false, 2: false, 3: false, 4: false, 5: false });
+  // Refs store latest content/layout heights per step so comparison uses both real values
+  const scrollContentH = useRef<Record<number, number>>({});
+  const scrollLayoutH   = useRef<Record<number, number>>({});
 
-  const onScrollViewLayout = (step: number, contentH: number, layoutH: number) => {
-    if (contentH > layoutH + 10) setScrollHint(prev => ({ ...prev, [step]: true }));
+  const onContentSize = (step: number, h: number) => {
+    scrollContentH.current[step] = h;
+    const lh = scrollLayoutH.current[step] ?? 0;
+    if (lh > 0 && h > lh + 10) setScrollHint(prev => ({ ...prev, [step]: true }));
+  };
+  const onLayout = (step: number, h: number) => {
+    scrollLayoutH.current[step] = h;
+    const ch = scrollContentH.current[step] ?? 0;
+    if (ch > 0 && ch > h + 10) setScrollHint(prev => ({ ...prev, [step]: true }));
   };
   const onScrolled = (step: number) => {
     setScrollHint(prev => ({ ...prev, [step]: false }));
@@ -409,8 +419,8 @@ const LaunchScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         onScroll={() => onScrolled(1)}
         scrollEventThrottle={16}
-        onContentSizeChange={(_, h) => onScrollViewLayout(1, h, 0)}
-        onLayout={e => onScrollViewLayout(1, 0, e.nativeEvent.layout.height)}
+        onContentSizeChange={(_, h) => onContentSize(1, h)}
+        onLayout={e => onLayout(1, e.nativeEvent.layout.height)}
       >
         <VoiceRecorder
           onTranscript={handleTranscript}
@@ -495,8 +505,8 @@ const LaunchScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         onScroll={() => onScrolled(2)}
         scrollEventThrottle={16}
-        onContentSizeChange={(_, h) => onScrollViewLayout(2, h, 0)}
-        onLayout={e => onScrollViewLayout(2, 0, e.nativeEvent.layout.height)}
+        onContentSizeChange={(_, h) => onContentSize(2, h)}
+        onLayout={e => onLayout(2, e.nativeEvent.layout.height)}
       >
         {!originalityResult ? (
           <>
@@ -621,8 +631,8 @@ const LaunchScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         onScroll={() => onScrolled(3)}
         scrollEventThrottle={16}
-        onContentSizeChange={(_, h) => onScrollViewLayout(3, h, 0)}
-        onLayout={e => onScrollViewLayout(3, 0, e.nativeEvent.layout.height)}
+        onContentSizeChange={(_, h) => onContentSize(3, h)}
+        onLayout={e => onLayout(3, e.nativeEvent.layout.height)}
       >
         {!jobId ? (
           <View style={styles.pipelineStart}>
@@ -669,7 +679,16 @@ const LaunchScreen: React.FC = () => {
           Review your generated content
         </Text>
 
-        <ScrollView style={styles.previewScroll} showsVerticalScrollIndicator={false}>
+        <View style={{ flex: 1, position: 'relative' }}>
+          <ScrollHint step={4} />
+          <ScrollView
+            style={styles.previewScroll}
+            showsVerticalScrollIndicator={false}
+            onScroll={() => onScrolled(4)}
+            scrollEventThrottle={16}
+            onContentSizeChange={(_, h) => onContentSize(4, h)}
+            onLayout={e => onLayout(4, e.nativeEvent.layout.height)}
+          >
           {/* Hooks */}
           <View style={styles.previewSection}>
             <Text style={styles.previewSectionTitle}>Hooks</Text>
@@ -723,7 +742,8 @@ const LaunchScreen: React.FC = () => {
               <Text style={styles.threadText}>{kitPreview.threadPreview}</Text>
             </View>
           </View>
-        </ScrollView>
+          </ScrollView>
+          </View>
 
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
@@ -758,8 +778,8 @@ const LaunchScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
         onScroll={() => onScrolled(5)}
         scrollEventThrottle={16}
-        onContentSizeChange={(_, h) => onScrollViewLayout(5, h, 0)}
-        onLayout={e => onScrollViewLayout(5, 0, e.nativeEvent.layout.height)}
+        onContentSizeChange={(_, h) => onContentSize(5, h)}
+        onLayout={e => onLayout(5, e.nativeEvent.layout.height)}
       >
         {!isConnected ? (
           <View style={styles.connectPrompt}>
@@ -883,7 +903,7 @@ const LaunchScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ProgressIndicator />
 
-      <View style={[styles.content, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={styles.content}>
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
@@ -1056,6 +1076,7 @@ const makeStyles = (COLORS: any) => StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 8,
     alignItems: 'center',
+    paddingBottom: 8,
   },
   backButton: {
     backgroundColor: COLORS.card,
